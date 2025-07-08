@@ -1,23 +1,23 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
 
 function App() {
+  const [message, setMessage] = useState('Loading...');
+
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/test`)
+
+      .then(res => res.json())
+      .then(data => setMessage(data.message))
+      .catch(err => {
+        console.error(err);
+        setMessage('Error connecting to backend');
+      });
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+      <h1>Frontend Connected to Backend</h1>
+      <p>{message}</p>
     </div>
   );
 }
