@@ -13,11 +13,11 @@ app.use(express.json());
 const testRoutes = require('./routes/testRoutes');
 app.use('/api/test', testRoutes);
 
-// Basic route
+// Root
 app.get('/', (req, res) => {
-    res.send('Backend is up and running!');
+  res.send('Backend is up and running!');
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -4,8 +4,7 @@ function App() {
   const [message, setMessage] = useState('Loading...');
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/test`)
-
+    fetch("http://localhost:5000/api/test")
       .then(res => res.json())
       .then(data => setMessage(data.message))
       .catch(err => {
