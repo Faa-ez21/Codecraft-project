@@ -1,0 +1,11 @@
+[33mcommit 5e340e4c4d4585322fbe332a652e5ff70e028044[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/login[m[33m, [m[1;31morigin/feature/login[m[33m)[m
+Author: Faa-ez Abubakar <faaezabubakar@gmail.com>
+Date:   Wed Jul 9 23:34:07 2025 +0000
+
+    Finalize frontend-backend connection and update routes
+
+backend/index.js
+backend/routes/test-server.js
+backend/routes/testRoutes.js
+backend/test-server.js
+frontend/src/App.js
