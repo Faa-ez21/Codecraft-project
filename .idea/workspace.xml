@@ -5,9 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7b97ab9a-c576-4b33-8047-c43591338bfa" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/branch-protection-dev.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/branch-protection.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/required-signatures.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -33,7 +30,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature/login",
+    "git-widget-placeholder": "feature/US-1-product-catalog",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -64,7 +61,7 @@
       <updated>1752102911284</updated>
       <workItem from="1752102913839" duration="7519000" />
       <workItem from="1753620512630" duration="787000" />
-      <workItem from="1753621315424" duration="4854000" />
+      <workItem from="1753621315424" duration="5500000" />
     </task>
     <servers />
   </component>
