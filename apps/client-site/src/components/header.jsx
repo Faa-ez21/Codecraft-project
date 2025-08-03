@@ -6,8 +6,11 @@ import { useState } from 'react';
 
 
 
+
 export default function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   return (
     <header className="p-6 bg-gray-800 z-50 relative">
@@ -18,12 +21,27 @@ export default function Header() {
         <nav className="space-x-4 text-white hidden sm:block">
           <Link to="/home"><button className="hover:underline">Home</button></Link>
           <Link to="/shop"><button className="hover:underline">Products</button></Link>
+          <Link to="/gallery"><button className="hover:underline">Gallery</button></Link>
           <Link to="/services"><button className="hover:underline">Our Services</button></Link>
         </nav>
 
         {/* Icons */}
         <div className="flex items-center gap-4 text-white relative">
-          <Search className="cursor-pointer" />
+          <div className="relative">
+        <Search 
+          className="cursor-pointer w-5 h-5" 
+          onClick={() => setShowSearch(!showSearch)} 
+        />
+        {showSearch && (
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="absolute top-8 right-0 w-40 p-2 text-black bg-white rounded shadow focus:outline-none focus:ring"
+          />
+        )}
+      </div>
           
           {/* User icon with dropdown */}
           <div className="relative">
