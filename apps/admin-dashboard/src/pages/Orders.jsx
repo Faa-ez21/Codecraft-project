@@ -1,15 +1,33 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Orders() {
   const navigate = useNavigate();
+  const [orders, setOrders] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const orders = [
-    { id: 1001, date: "July 12, 2024", customer: "Aisha Mensah", payment: "Paid", status: "Fulfilled", total: "GH₵ 2500" },
-    { id: 1002, date: "July 11, 2024", customer: "Kwame Boateng", payment: "Paid", status: "Fulfilled", total: "GH₵ 1800" },
-    { id: 1003, date: "July 10, 2024", customer: "Ecobank", payment: "Paid", status: "Fulfilled", total: "GH₵ 3200" },
-    { id: 1004, date: "July 9, 2024", customer: "Yaw Asamoah", payment: "Paid", status: "Fulfilled", total: "GH₵ 1500" },
-  ];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Failed to fetch orders:", error.message);
+      } else {
+        setOrders(data);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  const filteredOrders = orders.filter((order) =>
+    order.id.toString().includes(searchTerm)
+  );
 
   return (
     <div>
@@ -29,50 +47,52 @@ export default function Orders() {
           type="text"
           placeholder="Search orders"
           className="bg-transparent outline-none flex-1"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-xl shadow">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
+        <table className="w-full text-left border-collapse min-w-[700px]">
           <thead>
             <tr className="text-gray-500 border-b">
-              <th className="p-4">Order</th>
+              <th className="p-4">Order ID</th>
               <th>Date</th>
-              <th>Customer</th>
+              <th>User ID</th>
               <th>Payment Status</th>
               <th>Fulfillment Status</th>
               <th>Total</th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <tr
                 key={order.id}
                 className="border-b hover:bg-gray-50 cursor-pointer"
                 onClick={() => navigate(`/orders/${order.id}`)}
               >
-                <td className="p-4">#{order.id}</td>
-                <td>{order.date}</td>
-                <td>{order.customer}</td>
+                <td className="p-4">#{order.id.slice(0, 8)}</td>
+                <td>{new Date(order.created_at).toLocaleDateString()}</td>
+                <td>{order.user_id?.slice(0, 8) || "Guest"}</td>
                 <td>
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
-                    {order.payment}
+                    {order.payment_status || "Pending"}
                   </span>
                 </td>
                 <td>
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs">
-                    {order.status}
+                    {order.fulfillment_status || "Processing"}
                   </span>
                 </td>
-                <td>{order.total}</td>
+                <td>GH₵ {order.total_amount}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination Placeholder (optional) */}
       <div className="flex justify-center items-center mt-6 gap-4 text-gray-500">
         <button>&lt;</button>
         <span className="text-green-700 font-semibold">1</span>
