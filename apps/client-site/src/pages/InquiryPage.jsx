@@ -108,6 +108,11 @@ export default function ProductInquiry() {
               ← Back to Products
             </button>
           </Link>
+          <Link to="/services">
+            <button className="bg-green-100 text-green-800 px-4 py-2 rounded hover:bg-green-500 transition">
+              ← Back to Services
+            </button>
+          </Link>
         </div>
       </div>
     </div>

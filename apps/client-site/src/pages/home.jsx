@@ -10,6 +10,7 @@ import Desk from '../assets/Executivedesk.jpg';
 import Swivel from '../assets/Swivel.jpg';
 import Cabinet from '../assets/Cabinet.jpg';
 import { useState } from 'react';
+import VisionMission from '../assets/Vision-Mission.jpg';
 
 
 
@@ -18,6 +19,8 @@ export default function Homepage() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
 
   return (
@@ -34,12 +37,30 @@ export default function Homepage() {
                <Link to="/shop">
                 <button onClick={() => scrollToSection('products')} className="hover:underline">Products</button>
                 </Link>
+                <Link to="/gallery">
+                <button onClick={() => scrollToSection('gallery')} className="hover:underline"> Gallery</button>
+                </Link>
                 <Link to="/services">
                   <button onClick={() => scrollToSection('ourservices')} className="hover:underline">Our Services</button>
                 </Link>
               </nav>
               <div className="flex items-center gap-4 text-white">
-                <Search className="cursor-pointer" />
+                 {/* Search Icon */}
+      <div className="relative">
+        <Search 
+          className="cursor-pointer w-5 h-5" 
+          onClick={() => setShowSearch(!showSearch)} 
+        />
+        {showSearch && (
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="absolute top-8 right-0 w-40 p-2 text-black bg-white rounded shadow focus:outline-none focus:ring"
+          />
+        )}
+      </div>
                 <div className="relative">
                             <User className="cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />
                             {showDropdown && (
@@ -68,6 +89,7 @@ export default function Homepage() {
 
         </div>
       </section>
+       
 
       {/* Commitments */}
       <section className="py-16 bg-white text-center">
@@ -89,6 +111,14 @@ export default function Homepage() {
             <p>Enjoy trial periods, warranties, and easy returns.</p>
           </div>
         </div>
+      </section>
+      {/* 🔽 Vision & Mission Image Section */}
+      <section className="flex justify-center items-center py-12 bg-white">
+        <img 
+          src={VisionMission} 
+          alt="Our Vision and Mission" 
+          className="max-w-full md:max-w-3xl rounded-xl shadow-lg"
+        />
       </section>
 
       {/* Products */}
