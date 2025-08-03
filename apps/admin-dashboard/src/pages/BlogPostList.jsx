@@ -1,23 +1,39 @@
-// src/pages/BlogPostList.jsx
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PencilIcon, Trash2Icon, PlusIcon } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function BlogPostList() {
-  // Dummy data — replace with real data from your backend later
-  const blogPosts = [
-    {
-      id: 1,
-      title: "5 Health Tips for Office Workers",
-      author: "Admin",
-      date: "2025-07-29",
-    },
-    {
-      id: 2,
-      title: "Choosing Ergonomic Furniture",
-      author: "Franklin",
-      date: "2025-07-25",
-    },
-  ];
+  const [blogPosts, setBlogPosts] = useState([]);
+
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    const { data, error } = await supabase
+      .from("blog_posts") // your table name
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching blog posts:", error);
+    } else {
+      setBlogPosts(data);
+    }
+  };
+
+  const deletePost = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this post?");
+    if (!confirmed) return;
+
+    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+    if (error) {
+      console.error("Error deleting post:", error);
+    } else {
+      setBlogPosts((prev) => prev.filter((post) => post.id !== id));
+    }
+  };
 
   return (
     <div className="p-6">
@@ -37,7 +53,7 @@ export default function BlogPostList() {
           <thead className="bg-gray-100 text-left">
             <tr>
               <th className="p-4">Title</th>
-              <th className="p-4">Author</th>
+              <th className="p-4">Author ID</th>
               <th className="p-4">Date</th>
               <th className="p-4">Actions</th>
             </tr>
@@ -46,8 +62,10 @@ export default function BlogPostList() {
             {blogPosts.map((post) => (
               <tr key={post.id} className="border-t hover:bg-gray-50">
                 <td className="p-4">{post.title}</td>
-                <td className="p-4">{post.author}</td>
-                <td className="p-4">{post.date}</td>
+                <td className="p-4">{post.author_id}</td>
+                <td className="p-4">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </td>
                 <td className="p-4 flex gap-2">
                   <Link
                     to={`/content/blogs/edit/${post.id}`}
@@ -56,7 +74,10 @@ export default function BlogPostList() {
                     <PencilIcon className="w-4 h-4" />
                     Edit
                   </Link>
-                  <button className="text-red-600 hover:underline flex items-center gap-1">
+                  <button
+                    onClick={() => deletePost(post.id)}
+                    className="text-red-600 hover:underline flex items-center gap-1"
+                  >
                     <Trash2Icon className="w-4 h-4" />
                     Delete
                   </button>

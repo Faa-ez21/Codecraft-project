@@ -1,39 +1,61 @@
-// src/pages/HomepageBanners.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient"; // adjust if needed
 
 export default function HomepageBanners() {
-  const [banners, setBanners] = useState([
-    {
-      title: "Summer Sale",
-      displayPeriod: "June 1 - June 30",
-      linkTo: "Living Room Furniture",
-      status: "Active",
-      image: "/banners/summer-sale.jpg",
-    },
-    {
-      title: "New Arrivals",
-      displayPeriod: "July 1 - July 31",
-      linkTo: "Bedroom Furniture",
-      status: "Active",
-      image: "/banners/new-arrivals.jpg",
-    },
-    {
-      title: "Dining Sets",
-      displayPeriod: "August 1 - August 31",
-      linkTo: "Dining Room Furniture",
-      status: "Inactive",
-      image: "/banners/dining-sets.jpg",
-    },
-  ]);
+  const [banners, setBanners] = useState([]);
+  const [formData, setFormData] = useState({
+    title: "",
+    display_start: "",
+    display_end: "",
+    link_url: "",
+    image_url: "",
+    status: true,
+  });
+
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  const fetchBanners = async () => {
+    const { data, error } = await supabase.from("homepage_banners").select("*");
+    if (error) console.error("Error fetching banners:", error);
+    else setBanners(data);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const { data, error } = await supabase.from("homepage_banners").insert([formData]);
+    if (error) {
+      console.error("Error saving banner:", error.message);
+    } else {
+      fetchBanners();
+      setFormData({
+        title: "",
+        display_start: "",
+        display_end: "",
+        link_url: "",
+        image_url: "",
+        status: true,
+      });
+    }
+  };
 
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-2">Homepage Banners</h1>
       <p className="text-sm text-gray-600 mb-6">
-        Manage the banners displayed on the homepage, including uploading new banners, setting display periods, and linking to products or categories.
+        Manage banners shown on the homepage.
       </p>
 
-      {/* Table of Existing Banners */}
+      {/* Banners Table */}
       <div className="overflow-x-auto mb-10">
         <table className="w-full border text-sm">
           <thead className="bg-gray-50 text-left">
@@ -41,37 +63,36 @@ export default function HomepageBanners() {
               <th className="p-2">Image</th>
               <th className="p-2">Title</th>
               <th className="p-2">Display Period</th>
-              <th className="p-2">Link To</th>
+              <th className="p-2">Link</th>
               <th className="p-2">Status</th>
-              <th className="p-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {banners.map((banner, index) => (
-              <tr key={index} className="border-t">
+            {banners.map((banner) => (
+              <tr key={banner.id} className="border-t">
                 <td className="p-2">
                   <img
-                    src={banner.image}
+                    src={banner.image_url}
                     alt={banner.title}
-                    className="w-12 h-12 rounded object-cover"
+                    className="w-12 h-12 object-cover rounded"
                   />
                 </td>
                 <td className="p-2">{banner.title}</td>
-                <td className="p-2">{banner.displayPeriod}</td>
-                <td className="p-2">{banner.linkTo}</td>
+                <td className="p-2">
+                  {new Date(banner.display_start).toLocaleDateString()} -{" "}
+                  {new Date(banner.display_end).toLocaleDateString()}
+                </td>
+                <td className="p-2">{banner.link_url}</td>
                 <td className="p-2">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
-                      banner.status === "Active"
+                      banner.status
                         ? "bg-green-100 text-green-800"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {banner.status}
+                    {banner.status ? "Active" : "Inactive"}
                   </span>
-                </td>
-                <td className="p-2 text-blue-600 hover:underline cursor-pointer">
-                  Edit
                 </td>
               </tr>
             ))}
@@ -79,42 +100,76 @@ export default function HomepageBanners() {
         </table>
       </div>
 
-      {/* Form to Add New Banner */}
+      {/* Add Banner Form */}
       <h2 className="text-xl font-semibold mb-4">Add New Banner</h2>
-      <form className="space-y-4">
+      <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
           <label className="block text-sm font-medium mb-1">Banner Title</label>
           <input
+            name="title"
+            value={formData.title}
+            onChange={handleInputChange}
             type="text"
-            placeholder="Enter banner title"
+            placeholder="e.g. Summer Sale"
+            className="w-full border rounded px-4 py-2"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Display Start</label>
+            <input
+              name="display_start"
+              value={formData.display_start}
+              onChange={handleInputChange}
+              type="datetime-local"
+              className="w-full border rounded px-4 py-2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Display End</label>
+            <input
+              name="display_end"
+              value={formData.display_end}
+              onChange={handleInputChange}
+              type="datetime-local"
+              className="w-full border rounded px-4 py-2"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Link URL</label>
+          <input
+            name="link_url"
+            value={formData.link_url}
+            onChange={handleInputChange}
+            type="text"
+            placeholder="e.g. /category/living-room"
             className="w-full border rounded px-4 py-2"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Display Period</label>
+          <label className="block text-sm font-medium mb-1">Image URL</label>
           <input
+            name="image_url"
+            value={formData.image_url}
+            onChange={handleInputChange}
             type="text"
-            placeholder="e.g. August 1 - August 31"
+            placeholder="e.g. https://..."
             className="w-full border rounded px-4 py-2"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Link To</label>
+        <div className="flex items-center gap-2">
           <input
-            type="text"
-            placeholder="Enter product or category name"
-            className="w-full border rounded px-4 py-2"
+            name="status"
+            checked={formData.status}
+            onChange={handleInputChange}
+            type="checkbox"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Upload Image</label>
-          <input
-            type="file"
-            className="w-full border rounded px-4 py-2 file:mr-4 file:py-1 file:px-2 file:border-0 file:bg-gray-200 file:text-sm"
-          />
+          <label className="text-sm">Active</label>
         </div>
 
         <button

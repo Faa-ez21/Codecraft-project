@@ -1,58 +1,73 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Categories() {
-  const [categories, setCategories] = useState([
-    {
-      id: crypto.randomUUID(),
-      name: "Desks",
-      created_at: new Date().toISOString(),
-      subcategories: [
-        { id: crypto.randomUUID(), name: "Executive Desk", category_id: "", created_at: new Date().toISOString() },
-        { id: crypto.randomUUID(), name: "Rectangular Desk", category_id: "", created_at: new Date().toISOString() },
-      ],
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Cabinets",
-      created_at: new Date().toISOString(),
-      subcategories: [
-        { id: crypto.randomUUID(), name: "Wooden Cabinet", category_id: "", created_at: new Date().toISOString() },
-        { id: crypto.randomUUID(), name: "Metal Cabinet", category_id: "", created_at: new Date().toISOString() },
-      ],
-    },
-  ]);
-
+  const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [newSubCategory, setNewSubCategory] = useState("");
 
-  const handleAddCategory = () => {
-    if (!newCategory.trim()) return;
-    const newId = crypto.randomUUID();
-    const now = new Date().toISOString();
+  // ✅ Load categories and subcategories on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: cats, error: catErr } = await supabase.from("categories").select("*");
+      const { data: subs, error: subErr } = await supabase.from("subcategories").select("*");
 
-    setCategories([
-      ...categories,
+      if (catErr || subErr) {
+        console.error("Error fetching data:", catErr?.message || subErr?.message);
+        return;
+      }
+
+      const joined = cats.map((cat) => ({
+        ...cat,
+        subcategories: subs.filter((sub) => sub.category_id === cat.id),
+      }));
+
+      setCategories(joined);
+    };
+
+    fetchData();
+  }, []);
+
+  // ✅ Add Category to Supabase
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    const { data, error } = await supabase.from("categories").insert([
       {
-        id: newId,
-        name: newCategory,
-        created_at: now,
-        subcategories: [],
+        name: newCategory.trim(),
+        created_at: new Date().toISOString(),
       },
-    ]);
+    ]).select();
+
+    if (error) {
+      console.error("Add category failed:", error.message);
+      return;
+    }
+
+    setCategories((prev) => [...prev, { ...data[0], subcategories: [] }]);
     setNewCategory("");
   };
 
-  const handleAddSubCategory = () => {
+  // ✅ Add Subcategory to Supabase
+  const handleAddSubCategory = async () => {
     if (!selectedCategoryId || !newSubCategory.trim()) return;
 
-    const newSub = {
-      id: crypto.randomUUID(),
-      name: newSubCategory,
-      category_id: selectedCategoryId,
-      created_at: new Date().toISOString(),
-    };
+    const { data, error } = await supabase.from("subcategories").insert([
+      {
+        name: newSubCategory.trim(),
+        category_id: selectedCategoryId,
+        created_at: new Date().toISOString(),
+      },
+    ]).select();
+
+    if (error) {
+      console.error("Add subcategory failed:", error.message);
+      return;
+    }
+
+    const newSub = data[0];
 
     setCategories((prev) =>
       prev.map((cat) =>
@@ -64,11 +79,24 @@ export default function Categories() {
     setNewSubCategory("");
   };
 
-  const handleDeleteCategory = (id) => {
-    setCategories(categories.filter((cat) => cat.id !== id));
+  // ✅ Delete Category from Supabase
+  const handleDeleteCategory = async (id) => {
+    const { error } = await supabase.from("categories").delete().eq("id", id);
+    if (error) {
+      console.error("Delete category failed:", error.message);
+      return;
+    }
+    setCategories((prev) => prev.filter((cat) => cat.id !== id));
   };
 
-  const handleDeleteSubCategory = (catId, subId) => {
+  // ✅ Delete Subcategory from Supabase
+  const handleDeleteSubCategory = async (catId, subId) => {
+    const { error } = await supabase.from("subcategories").delete().eq("id", subId);
+    if (error) {
+      console.error("Delete subcategory failed:", error.message);
+      return;
+    }
+
     setCategories((prev) =>
       prev.map((cat) =>
         cat.id === catId
