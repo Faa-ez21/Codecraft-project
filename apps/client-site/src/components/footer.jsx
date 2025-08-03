@@ -16,7 +16,7 @@ export default function Footer() {
         <div className="flex space-x-4 text-yellow-600 text-lg">
           <a href="https://x.com/expertfurnish?s=11" aria-label="Twitter"><FaTwitter /></a>
           <a href="https://www.instagram.com/expertofficefurnish?igsh=MW1kMHlyMXAyd24zMg==" aria-label="Instagram"><FaInstagram /></a>
-          <a href="#" aria-label="Facebook"><FaFacebookF /></a>
+          <a href="https://www.facebook.com/expertofficefurnishgh/" aria-label="Facebook"><FaFacebookF /></a>
           <a href="https://www.linkedin.com/company/expert-office-furnish-company-limited/" aria-label="LinkedIn"><FaLinkedinIn /></a>
         </div>
 
