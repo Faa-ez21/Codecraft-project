@@ -12,11 +12,13 @@ import OurServicesPage from './pages/OurServices'; // Import OurServicesPage
 import InteriorDecor from './pages/InteriorDecor'; // Import InteriorDecor page
 import Gallery from './pages/Gallery'; // Import Gallery page
 import ProductInquiry from './pages/InquiryPage';
+import { CartProvider } from './context/CartContext';
 
 
 const root = createRoot(document.getElementById('root'));
 root.render(
   <StrictMode>
+    <CartProvider>
     <Router>
       <Routes>
         <Route path="/" element={<Homepage />} />
@@ -34,5 +36,6 @@ root.render(
         <Route path="*" element={<div className="text-center py-16">404 - Page Not Found</div>} />
       </Routes>
     </Router>
+    </CartProvider>
   </StrictMode>
 );
