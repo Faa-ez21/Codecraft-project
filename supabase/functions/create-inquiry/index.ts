@@ -17,9 +17,14 @@ serve(async (req) => {
       );
     }
 
+    const inquiryData: Record<string, any> = { name, contact, message };
+    if (product_id) {
+      inquiryData.product_id = product_id;
+    }
+
     const { data, error } = await supabaseClient
       .from('inquiries')
-      .insert([{ name, contact, product_id, message }]);
+      .insert([inquiryData]);
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), { status: 400 });
