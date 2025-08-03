@@ -5,12 +5,20 @@ import heroImage from '../assets/Greencouch.png';
 import logo from '../assets/Logo.png';
 import Footer from '../components/footer';
 import 'tailwindcss/tailwind.css'; // Ensure Tailwind CSS is imported
+import Sofa  from '../assets/sofa.png';
+import Desk from '../assets/Executivedesk.jpg';
+import Swivel from '../assets/Swivel.jpg';
+import Cabinet from '../assets/Cabinet.jpg';
+import { useState } from 'react';
+
 
 
 export default function Homepage() {
   const scrollToSection = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
+  const [showDropdown, setShowDropdown] = useState(false);
+
 
   return (
     <div className="bg-white text-gray-800">
@@ -26,14 +34,21 @@ export default function Homepage() {
                <Link to="/shop">
                 <button onClick={() => scrollToSection('products')} className="hover:underline">Products</button>
                 </Link>
-                <button onClick={() => scrollToSection('testimonials')} className="hover:underline">Testimonials</button>
                 <Link to="/services">
                   <button onClick={() => scrollToSection('ourservices')} className="hover:underline">Our Services</button>
                 </Link>
               </nav>
               <div className="flex items-center gap-4 text-white">
                 <Search className="cursor-pointer" />
-                <User className="cursor-pointer" />
+                <div className="relative">
+                            <User className="cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />
+                            {showDropdown && (
+                              <div className="absolute right-0 mt-2 w-36 bg-white text-black rounded-lg shadow-md">
+                                <Link to="/login" className="block px-4 py-2 hover:bg-gray-100">Login</Link>
+                                <Link to="/signup" className="block px-4 py-2 hover:bg-gray-100">Sign Up</Link>
+                              </div>
+                            )}
+                          </div>
                 <Link to="/cart">
                   <ShoppingCart className="cursor-pointer" />
                 </Link>
@@ -81,20 +96,20 @@ export default function Homepage() {
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">Featured Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4 max-w-6xl mx-auto">
           <div className="bg-white rounded-2xl shadow p-4">
-            <img src="/images/chair.png" alt="Chair" className="w-full h-40 object-cover rounded-xl mb-2" />
-            <h4 className="font-medium">Ergonomic Office Chair</h4>
+            <img src={Sofa} alt="Sofa" className="w-full h-40 object-cover rounded-xl mb-2" />
+            <h4 className="font-medium">Sofa</h4>
           </div>
           <div className="bg-white rounded-2xl shadow p-4">
-            <img src="/images/desk.png" alt="Desk" className="w-full h-40 object-cover rounded-xl mb-2" />
-            <h4 className="font-medium">Standing Desk Converter</h4>
+            <img src={Desk} alt="Desk" className="w-full h-40 object-cover rounded-xl mb-2" />
+            <h4 className="font-medium">Executive Desk</h4>
           </div>
           <div className="bg-white rounded-2xl shadow p-4">
-            <img src="/images/arm.png" alt="Monitor Arm" className="w-full h-40 object-cover rounded-xl mb-2" />
-            <h4 className="font-medium">Adjustable Monitor Arm</h4>
+            <img src={Swivel} alt="Ergonomic Swivel Chairs" className="w-full h-40 object-cover rounded-xl mb-2" />
+            <h4 className="font-medium">Ergonomic Swivel Chair</h4>
           </div>
           <div className="bg-white rounded-2xl shadow p-4">
-            <img src="/images/lamp.png" alt="Lamp" className="w-full h-40 object-cover rounded-xl mb-2" />
-            <h4 className="font-medium">Modern Desk Lamp</h4>
+            <img src={Cabinet} alt="Cabinet" className="w-full h-40 object-cover rounded-xl mb-2" />
+            <h4 className="font-medium">Modern Cabinet</h4>
           </div>
         </div>
       </section>
@@ -128,14 +143,12 @@ export default function Homepage() {
             placeholder="Enter your email"
             className="flex-grow bg-transparent px-4 py-2 text-sm focus:outline-none"
           />
-          <Link to="/signup">
           <button
             type="submit"
             className="bg-green-300 hover:bg-green-400 text-black text-sm font-semibold px-4 py-2 rounded-full transition-colors"
           >
             Subscribe
           </button>
-            </Link>
         </div>
       </form>
     </section>

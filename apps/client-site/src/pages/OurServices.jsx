@@ -10,33 +10,39 @@ const services = [
     title: "Furniture Providers",
     description: "High-quality furniture for any office size.",
     image: "furniture.jpg",
+    path: "/shop",
   },
   {
     title: "Office Design",
     description: "Aid in furniture selection, Layouts in 2D/3D.",
     image: "design.jpg",
+    path: "/interior-decor",
   },
   {
     title: "Office Fitouts",
     description: "Complete fitout solutions for your office.",
     image: "fitouts.jpg",
+    path: "/inquiry",
   },
   {
     title: "Consultancy",
     description: "Expert advice on projects, fitouts, and training.",
     image: "consultancy.jpg",
+    path: "/inquiry",
   },
   {
     title: "Office Refurbishment",
     description:
       "We design and refurbish existing offices to give it a modern outlook bearing in mind your comfort, style and budget.",
     image: "refurbishment.jpg",
+    path: "/inquiry",
   },
   {
     title: "Interior Decoration",
     description:
       "We work with your corporate colours, number of occupants etc., to provide suitable furniture to increase productivity and comfort in a working environment.",
     image: "interior.jpg",
+    path: "/interior-decor", 
   },
 ];
 
@@ -70,9 +76,11 @@ export default function OurServicesPage() {
               <div className="p-4 text-left">
                 <h4 className="text-lg font-semibold mb-1">{service.title}</h4>
                 <p className="text-sm text-gray-600 mb-4">{service.description}</p>
-                <button className="bg-green-700 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-800 transition">
-                  View More
-                </button>
+                <Link to={service.path}>
+                  <button className="bg-green-700 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-800 transition">
+                    View More
+                  </button>
+                </Link>
               </div>
             </div>
           ))}
