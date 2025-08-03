@@ -11,6 +11,7 @@ import Swivel from '../assets/Swivel.jpg';
 import Cabinet from '../assets/Cabinet.jpg';
 import { useState } from 'react';
 import VisionMission from '../assets/Vision-Mission.jpg';
+import BgVision from '../assets/Bg-vision.jpg';
 
 
 
@@ -112,14 +113,17 @@ export default function Homepage() {
           </div>
         </div>
       </section>
-      {/* 🔽 Vision & Mission Image Section */}
-      <section className="flex justify-center items-center py-12 bg-white">
-        <img 
-          src={VisionMission} 
-          alt="Our Vision and Mission" 
-          className="max-w-full md:max-w-3xl rounded-xl shadow-lg"
-        />
-      </section>
+      <section 
+
+      className="flex justify-center items-center py-12 bg-cover bg-center bg-no-repeat bg-green-50" 
+       style={{ backgroundImage: `url(${BgVision})` }}
+      >
+      <img
+        src={VisionMission}
+        alt="Our Vision and Mission"
+        className="max-w-full md:max-w-3xl rounded-xl shadow-lg"
+      />
+</section>
 
       {/* Products */}
       <section id="products" className="py-16 bg-green-50">
