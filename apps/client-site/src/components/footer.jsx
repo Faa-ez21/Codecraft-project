@@ -6,8 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 flex flex-col items-center space-y-4 text-center">
         {/* Navigation Links */}
         <div className="flex flex-wrap justify-center gap-6">
-          <a href="#" className="hover:text-green-800">About Us</a>
-          <a href="#" className="hover:text-green-800">Contact</a>
+          <a href="/contact" className="hover:text-green-800">Contact</a>
           <a href="#" className="hover:text-green-800">FAQ</a>
           <a href="#" className="hover:text-green-800">Privacy Policy</a>
           <a href="#" className="hover:text-green-800">Terms of Service</a>
@@ -18,7 +17,7 @@ export default function Footer() {
           <a href="#" aria-label="Twitter"><FaTwitter /></a>
           <a href="#" aria-label="Instagram"><FaInstagram /></a>
           <a href="#" aria-label="Facebook"><FaFacebookF /></a>
-          <a href="#" aria-label="LinkedIn"><FaLinkedinIn /></a>
+          <a href="https://www.linkedin.com/company/expert-office-furnish-company-limited/" aria-label="LinkedIn"><FaLinkedinIn /></a>
         </div>
 
         {/* Copyright */}
@@ -30,5 +29,4 @@ export default function Footer() {
   );
 }
 
-import React from 'react';
 import 'tailwindcss/tailwind.css'; // Ensure Tailwind CSS is imported

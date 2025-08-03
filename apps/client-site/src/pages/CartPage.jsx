@@ -115,7 +115,7 @@ export default function CartPage() {
 
       <div className="mt-8">
         <button className="px-6 py-3 bg-green-700 text-white rounded-full text-lg hover:bg-green-800">
-          Proceed to Checkout
+          Proceed to Inquire
         </button>
       </div>
 
