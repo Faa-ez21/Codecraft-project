@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
 const AddUser = () => {
   const navigate = useNavigate();
 
+  const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,31 +13,68 @@ const AddUser = () => {
     permissions: [],
   });
 
+  // Fetch active roles from Supabase
+  useEffect(() => {
+    const fetchRoles = async () => {
+      const { data, error } = await supabase
+        .from('roles')
+        .select('name, permissions')
+        .eq('status', 'Active');
+
+      if (error) {
+        console.error('Error fetching roles:', error.message);
+      } else {
+        setRoles(data || []);
+      }
+    };
+
+    fetchRoles();
+  }, []);
+
+  // Handle name and email change
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
+  // When role is selected, auto-fill permissions
+  const handleRoleSelect = (e) => {
+    const selectedRoleName = e.target.value;
+    const selectedRole = roles.find((r) => r.name === selectedRoleName);
+
+    setFormData((prev) => ({
+      ...prev,
+      role: selectedRoleName,
+      permissions: selectedRole?.permissions || [],
+    }));
+  };
+
+  // Toggle individual permission checkbox
   const handleCheckboxChange = (permission) => {
-    setFormData(prev => {
-      const updated = prev.permissions.includes(permission)
-        ? prev.permissions.filter(p => p !== permission)
+    setFormData((prev) => {
+      const exists = prev.permissions.includes(permission);
+      const updatedPermissions = exists
+        ? prev.permissions.filter((p) => p !== permission)
         : [...prev.permissions, permission];
-      return { ...prev, permissions: updated };
+
+      return { ...prev, permissions: updatedPermissions };
     });
   };
 
+  // Submit new user to Supabase
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, role, permissions } = formData;
 
-    const { data, error } = await supabase.from('users').insert([
+    const { error } = await supabase.from('users').insert([
       {
         name,
         email,
         role,
-        permissions, // stored as a JSON array in Supabase
+        permissions,
         status: 'Active',
-        last_active: new Date().toISOString(),
       },
     ]);
 
@@ -44,16 +82,16 @@ const AddUser = () => {
       console.error('Error adding user:', error.message);
       alert('Failed to add user');
     } else {
-      navigate('/users'); // redirect to Users list
+      navigate('/users');
     }
   };
 
-  const permissionOptions = [
+  // All permissions for display
+  const allPermissions = [
     'Manage Products',
     'Manage Orders',
     'Manage Customers',
     'Manage Team',
-    
   ];
 
   return (
@@ -72,6 +110,7 @@ const AddUser = () => {
             required
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium">Email</label>
           <input
@@ -84,25 +123,29 @@ const AddUser = () => {
             required
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium">Role</label>
           <select
             name="role"
             value={formData.role}
-            onChange={handleChange}
+            onChange={handleRoleSelect}
             className="w-full border border-gray-300 rounded p-2 mt-1"
             required
           >
             <option value="">Select role</option>
-            <option value="Admin">Warehouse</option>
-            <option value="Admin">Sales</option>
-            <option value="Manager">Manager</option>
+            {roles.map((role) => (
+              <option key={role.name} value={role.name}>
+                {role.name}
+              </option>
+            ))}
           </select>
         </div>
+
         <div>
           <label className="block font-medium mt-4">Permissions</label>
           <div className="space-y-2 mt-2">
-            {permissionOptions.map((perm) => (
+            {allPermissions.map((perm) => (
               <label key={perm} className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -114,6 +157,7 @@ const AddUser = () => {
             ))}
           </div>
         </div>
+
         <button
           type="submit"
           className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-full mt-4"

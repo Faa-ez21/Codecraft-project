@@ -1,14 +1,46 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from "../lib/supabaseClient";
 
 const EditAdminRole = () => {
-  const [roleName, setRoleName] = useState('Product Manager');
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [roleName, setRoleName] = useState('');
   const [status, setStatus] = useState('Active');
   const [permissions, setPermissions] = useState({
-    products: true,
+    products: false,
     orders: false,
     customers: false,
-    team: true,
+    team: false,
   });
+
+  // Fetch role data by ID
+  useEffect(() => {
+    const fetchRole = async () => {
+      const { data, error } = await supabase
+        .from('roles')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching role:', error);
+        return;
+      }
+
+      setRoleName(data.name);
+      setStatus(data.status);
+      setPermissions({
+        products: data.permissions?.includes('products') || false,
+        orders: data.permissions?.includes('orders') || false,
+        customers: data.permissions?.includes('customers') || false,
+        team: data.permissions?.includes('team') || false,
+      });
+    };
+
+    if (id) fetchRole();
+  }, [id]);
 
   const handleCheckbox = (perm) => {
     setPermissions((prev) => ({
@@ -17,10 +49,49 @@ const EditAdminRole = () => {
     }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const updatedPermissions = Object.keys(permissions).filter((key) => permissions[key]);
+
+    const { error } = await supabase
+      .from('roles')
+      .update({
+        name: roleName,
+        status,
+        permissions: updatedPermissions,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id);
+
+    if (error) {
+      alert('Failed to update role');
+      console.error(error);
+    } else {
+      alert('Role updated successfully');
+      navigate('/admin-roles');
+    }
+  };
+
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this role?');
+    if (!confirmDelete) return;
+
+    const { error } = await supabase.from('roles').delete().eq('id', id);
+
+    if (error) {
+      alert('Failed to delete role');
+      console.error(error);
+    } else {
+      alert('Role deleted successfully');
+      navigate('/admin-roles');
+    }
+  };
+
   return (
     <div className="p-6 md:p-10">
       <h1 className="text-2xl font-semibold mb-6">Edit Role</h1>
-      <form className="max-w-lg space-y-5">
+      <form onSubmit={handleSubmit} className="max-w-lg space-y-5">
         <div>
           <label className="block text-sm font-medium">Role Name</label>
           <input
@@ -81,12 +152,21 @@ const EditAdminRole = () => {
           </select>
         </div>
 
-        <button
-          type="submit"
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full"
-        >
-          Save Changes
-        </button>
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full"
+          >
+            Save Changes
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full"
+          >
+            Delete Role
+          </button>
+        </div>
       </form>
     </div>
   );

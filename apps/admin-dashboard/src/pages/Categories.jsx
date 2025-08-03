@@ -1,34 +1,25 @@
-// src/pages/Categories.jsx
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 export default function Categories() {
   const [categories, setCategories] = useState([
     {
-      id: 1,
+      id: crypto.randomUUID(),
       name: "Desks",
+      created_at: new Date().toISOString(),
       subcategories: [
-        { id: 11, name: "Executive Desk" },
-        { id: 12, name: "Rectangular Desk" },
+        { id: crypto.randomUUID(), name: "Executive Desk", category_id: "", created_at: new Date().toISOString() },
+        { id: crypto.randomUUID(), name: "Rectangular Desk", category_id: "", created_at: new Date().toISOString() },
       ],
     },
     {
-      id: 2,
+      id: crypto.randomUUID(),
       name: "Cabinets",
+      created_at: new Date().toISOString(),
       subcategories: [
-        { id: 21, name: "Wooden Cabinet" },
-        { id: 22, name: "Metal Cabinet" },
+        { id: crypto.randomUUID(), name: "Wooden Cabinet", category_id: "", created_at: new Date().toISOString() },
+        { id: crypto.randomUUID(), name: "Metal Cabinet", category_id: "", created_at: new Date().toISOString() },
       ],
-    },
-    {
-      id: 3,
-      name: "Chairs",
-      subcategories: [{ id: 31, name: "Swivel Chair" }],
-    },
-    {
-      id: 4,
-      name: "Sofa",
-      subcategories: [],
     },
   ]);
 
@@ -38,10 +29,17 @@ export default function Categories() {
 
   const handleAddCategory = () => {
     if (!newCategory.trim()) return;
-    const newId = Date.now();
+    const newId = crypto.randomUUID();
+    const now = new Date().toISOString();
+
     setCategories([
       ...categories,
-      { id: newId, name: newCategory, subcategories: [] },
+      {
+        id: newId,
+        name: newCategory,
+        created_at: now,
+        subcategories: [],
+      },
     ]);
     setNewCategory("");
   };
@@ -49,16 +47,17 @@ export default function Categories() {
   const handleAddSubCategory = () => {
     if (!selectedCategoryId || !newSubCategory.trim()) return;
 
+    const newSub = {
+      id: crypto.randomUUID(),
+      name: newSubCategory,
+      category_id: selectedCategoryId,
+      created_at: new Date().toISOString(),
+    };
+
     setCategories((prev) =>
       prev.map((cat) =>
         cat.id === selectedCategoryId
-          ? {
-              ...cat,
-              subcategories: [
-                ...cat.subcategories,
-                { id: Date.now(), name: newSubCategory },
-              ],
-            }
+          ? { ...cat, subcategories: [...cat.subcategories, newSub] }
           : cat
       )
     );
@@ -70,14 +69,12 @@ export default function Categories() {
   };
 
   const handleDeleteSubCategory = (catId, subId) => {
-    setCategories(
-      categories.map((cat) =>
+    setCategories((prev) =>
+      prev.map((cat) =>
         cat.id === catId
           ? {
               ...cat,
-              subcategories: cat.subcategories.filter(
-                (sub) => sub.id !== subId
-              ),
+              subcategories: cat.subcategories.filter((sub) => sub.id !== subId),
             }
           : cat
       )
@@ -90,14 +87,13 @@ export default function Categories() {
         Categories Management
       </h1>
 
-      {/* Add Category */}
       <div className="flex gap-3 mb-8">
         <input
           type="text"
           placeholder="New Category Name"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
-          className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg p-3"
         />
         <button
           onClick={handleAddCategory}
@@ -107,7 +103,6 @@ export default function Categories() {
         </button>
       </div>
 
-      {/* Categories List */}
       <div className="space-y-6">
         {categories.map((cat) => (
           <div
@@ -127,13 +122,9 @@ export default function Categories() {
               </button>
             </div>
 
-            {/* Subcategories */}
             <ul className="ml-4 text-gray-700 dark:text-gray-300 space-y-1 mb-4">
               {cat.subcategories.map((sub) => (
-                <li
-                  key={sub.id}
-                  className="flex justify-between items-center text-sm"
-                >
+                <li key={sub.id} className="flex justify-between items-center text-sm">
                   <span>{sub.name}</span>
                   <button
                     onClick={() => handleDeleteSubCategory(cat.id, sub.id)}
@@ -146,7 +137,6 @@ export default function Categories() {
               ))}
             </ul>
 
-            {/* Add Subcategory */}
             <div className="flex gap-3 mt-2">
               <input
                 type="text"
@@ -156,7 +146,7 @@ export default function Categories() {
                   setSelectedCategoryId(cat.id);
                   setNewSubCategory(e.target.value);
                 }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg p-2"
               />
               <button
                 onClick={handleAddSubCategory}
