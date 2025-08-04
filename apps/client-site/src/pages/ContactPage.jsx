@@ -1,84 +1,129 @@
-import React from "react";
-import { Link } from 'react-router-dom';
-import { FaUserCircle, FaSearch, FaShoppingCart } from 'react-icons/fa';
-import { ChevronDown } from 'lucide-react';
-import Footer from '../components/footer';
+import React, { useState } from "react";
+import { supabase } from "../supabase/supabaseClient";
 import Header from "../components/header";
+import Footer from "../components/footer";
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const [status, setStatus] = useState({ loading: false, message: "", type: "" });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ loading: true, message: "", type: "" });
+
+    const { name, email, subject, message } = formData;
+
+    if (!name || !email || !subject || !message) {
+      setStatus({ loading: false, message: "All fields are required.", type: "error" });
+      return;
+    }
+
+    const { error } = await supabase.from("contact_messages").insert([
+      { name, email, subject, message, created_at: new Date().toISOString() }
+    ]);
+
+    if (error) {
+      setStatus({ loading: false, message: "Failed to send message.", type: "error" });
+    } else {
+      setStatus({ loading: false, message: "Message sent successfully!", type: "success" });
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    }
+  };
+
   return (
-    <div className="bg-gray-100 text-gray-900 min-h-screen font-sans">
-      {/* Header */}
+    <div className="bg-white text-gray-900 min-h-screen">
       <Header />
 
-      {/* Contact Section */}
-      <main className="max-w-4xl mx-auto px-4 py-10">
-        <h2 className="text-2xl font-semibold mb-1">Contact Us</h2>
-        <p className="text-sm text-gray-500 mb-8">We're here to help. Reach out to us with any questions or inquiries.</p>
+      <main className="max-w-4xl mx-auto px-6 py-16">
+        <h2 className="text-3xl font-bold mb-2 text-center">Contact Us</h2>
+        <p className="text-gray-500 text-center mb-10">
+          We're here to help — reach out to us with any questions or feedback.
+        </p>
 
-        {/* Form */}
-        <form className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium">Your Name</label>
-            <input type="text" placeholder="Enter your name" className="w-full p-3 rounded bg-gray-900 text-white" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Your Email</label>
-            <input type="email" placeholder="Enter your email" className="w-full p-3 rounded bg-gray-900 text-white" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Subject</label>
-            <input type="text" placeholder="Enter the subject" className="w-full p-3 rounded bg-gray-900 text-white" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Message</label>
-            <textarea rows="5" placeholder="" className="w-full p-3 rounded bg-gray-900 text-white"></textarea>
-          </div>
-          <button type="submit" className="bg-green-800 text-white px-5 py-2 rounded-full text-sm">Send Message</button>
+        <form onSubmit={handleSubmit} className="bg-gray-50 p-8 rounded-lg shadow space-y-6">
+          {["name", "email", "subject", "message"].map((field) => (
+            <div key={field}>
+              <label className="block text-sm font-medium mb-1 capitalize">
+                {field === "message" ? "Your Message" : `Your ${field}`}
+              </label>
+              {field === "message" ? (
+                <textarea
+                  name={field}
+                  rows="5"
+                  value={formData[field]}
+                  onChange={handleChange}
+                  className="w-full p-3 rounded border bg-white focus:ring-2 focus:ring-green-500"
+                  placeholder="Type your message here..."
+                  required
+                />
+              ) : (
+                <input
+                  type={field === "email" ? "email" : "text"}
+                  name={field}
+                  value={formData[field]}
+                  onChange={handleChange}
+                  className="w-full p-3 rounded border bg-white focus:ring-2 focus:ring-green-500"
+                  placeholder={`Enter your ${field}`}
+                  required
+                />
+              )}
+            </div>
+          ))}
+
+          <button
+            type="submit"
+            disabled={status.loading}
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded font-medium transition"
+          >
+            {status.loading ? "Sending..." : "Send Message"}
+          </button>
+
+          {status.message && (
+            <p
+              className={`text-sm text-center ${
+                status.type === "success" ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {status.message}
+            </p>
+          )}
         </form>
 
-        {/* Location Info */}
-        <div className="mt-10">
-          <h3 className="text-lg font-semibold mb-2">Our Location</h3>
-          <address className="not-italic text-sm text-gray-700 leading-relaxed">
-            Expert Office Furnish<br />
-            123 Business Avenue<br />
-            Suite 456<br />
-            Cityville, State 78901<br />
-            <br />
-            Phone: (555) 123–4567<br />
-            Email: support@expertofficefurnish.com
-          </address>
-
-          {/* Socials */}
-          <div className="flex space-x-6 mt-4">
-            <a href="#" aria-label="Twitter">
-              <i className="fab fa-twitter"></i>
-            </a>
-            <a href="#" aria-label="Facebook">
-              <i className="fab fa-facebook"></i>
-            </a>
-            <a href="#" aria-label="Instagram">
-              <i className="fab fa-instagram"></i>
-            </a>
-            <a href="#" aria-label="LinkedIn">
-              <i className="fab fa-linkedin"></i>
-            </a>
+        <section className="mt-16 grid md:grid-cols-2 gap-10">
+          {/* Location Info */}
+          <div>
+            <h3 className="text-xl font-semibold mb-3">Visit Our Office</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Expert Office Furnish<br />
+              123 Business Avenue, Suite 456<br />
+              Cityville, State 78901<br /><br />
+              Phone: (555) 123–4567<br />
+              Email: support@expertofficefurnish.com
+            </p>
           </div>
-        </div>
 
-        {/* Map */}
-        <div className="mt-6 rounded-lg overflow-hidden shadow-md">
-          <iframe
-            title="Map"
-            className="w-full h-64 border-0"
-            src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=Des+Moines,IA"
-            allowFullScreen
-          ></iframe>
-        </div>
+          {/* Embedded Google Map */}
+          <div className="rounded-lg overflow-hidden shadow-md">
+            <iframe
+              title="Company Location"
+              src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=Accra+Ghana"
+              className="w-full h-64 border-0"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </section>
       </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

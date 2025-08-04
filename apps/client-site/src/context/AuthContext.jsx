@@ -3,22 +3,45 @@ import { supabase } from '../supabase/supabaseClient';
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check existing session on load
     const getSession = async () => {
       const { data, error } = await supabase.auth.getSession();
-      if (!error) setUser(data?.session?.user ?? null);
+      const sessionUser = data?.session?.user ?? null;
+
+      if (sessionUser) {
+        const { data: roleData } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', sessionUser.id)
+          .single();
+
+        setUser({ ...sessionUser, role: roleData?.role || 'customer' });
+      } else {
+        setUser(null);
+      }
+
       setLoading(false);
     };
+
     getSession();
 
-    // Listen for auth changes (login, logout)
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase
+          .from('users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            setUser({ ...session.user, role: data?.role || 'customer' });
+          });
+      } else {
+        setUser(null);
+      }
     });
 
     return () => {
@@ -28,10 +51,11 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
-      {!loading ? children : <div className="text-center py-16">Loading...</div>}
+      {children}
     </AuthContext.Provider>
   );
-};
+}
 
-// Custom hook to use auth in components
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  return useContext(AuthContext);
+}

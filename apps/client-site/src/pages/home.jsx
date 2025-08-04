@@ -1,195 +1,197 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { CheckCircle2, Search, ShoppingCart, User } from 'lucide-react';
-import heroImage from '../assets/Greencouch.png';
-import logo from '../assets/Logo.png';
-import Footer from '../components/footer';
-import 'tailwindcss/tailwind.css'; // Ensure Tailwind CSS is imported
-import Sofa  from '../assets/sofa.png';
-import Desk from '../assets/Executivedesk.jpg';
-import Swivel from '../assets/Swivel.jpg';
-import Cabinet from '../assets/Cabinet.jpg';
-import { useState } from 'react';
-import VisionMission from '../assets/Vision-Mission.jpg';
-import BgVision from '../assets/Bg-vision.jpg';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Search, ShoppingCart, User, CheckCircle2 } from "lucide-react";
+import { supabase } from "../supabase/supabaseClient";
 
-
+import logo from "../assets/Logo.png";
+import heroImage from "../assets/Greencouch.png";
+import VisionMission from "../assets/Vision-Mission.jpg";
+import BgVision from "../assets/Bg-vision.jpg";
+import Footer from "../components/footer";
 
 export default function Homepage() {
-  const scrollToSection = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
 
+  const scrollToSection = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data, error } = await supabase.from("products").select("*").limit(4);
+      if (error) console.error("Failed to fetch products:", error);
+      else setProducts(data);
+    };
+
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = searchTerm
+    ? products.filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : products;
 
   return (
-    <div className="bg-white text-gray-800">
-      {/* Hero with Header Combined */}
-      <section className="relative h-screen bg-green-100 text-white" style={{ backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-0"></div>
-        <div className="relative z-10 h-full flex flex-col">
-          <header className="p-6 bg-transparent z-50">
-            <div className="container mx-auto flex justify-between items-center">
-              <img src={logo} alt="Expert Office Logo" className="h-20" />
-              <nav className="space-x-4 text-white hidden sm:block">
-                <button onClick={() => scrollToSection('home')} className="hover:underline">Home</button>
-               <Link to="/shop">
-                <button onClick={() => scrollToSection('products')} className="hover:underline">Products</button>
-                </Link>
-                <Link to="/gallery">
-                <button onClick={() => scrollToSection('gallery')} className="hover:underline"> Gallery</button>
-                </Link>
-                <Link to="/services">
-                  <button onClick={() => scrollToSection('ourservices')} className="hover:underline">Our Services</button>
-                </Link>
-              </nav>
-              <div className="flex items-center gap-4 text-white">
-                 {/* Search Icon */}
-      <div className="relative">
-        <Search 
-          className="cursor-pointer w-5 h-5" 
-          onClick={() => setShowSearch(!showSearch)} 
-        />
-        {showSearch && (
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="absolute top-8 right-0 w-40 p-2 text-black bg-white rounded shadow focus:outline-none focus:ring"
-          />
-        )}
-      </div>
-                <div className="relative">
-                            <User className="cursor-pointer" onClick={() => setShowDropdown(!showDropdown)} />
-                            {showDropdown && (
-                              <div className="absolute right-0 mt-2 w-36 bg-white text-black rounded-lg shadow-md">
-                                <Link to="/login" className="block px-4 py-2 hover:bg-gray-100">Login</Link>
-                                <Link to="/signup" className="block px-4 py-2 hover:bg-gray-100">Sign Up</Link>
-                              </div>
-                            )}
-                          </div>
-                <Link to="/cart">
-                  <ShoppingCart className="cursor-pointer" />
-                </Link>
-                <Link to={"/contact"}>
-                  <button onClick={() => scrollToSection('contact')} className="bg-white text-green-800 px-3 py-1 rounded-lg text-sm font-semibold hover:bg-green-200">Contact</button>
-                </Link>
-              </div>
-            </div>
-          </header>
-          <div id="home" className="flex-grow flex flex-col justify-center items-start text-left px-4 sm:px-16 py-12">
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4">Elevate Your Workspace</h1>
-            <p className="text-lg max-w-2xl mb-6">Discover premium office furniture designed with purpose. Solutions tailored for your health and productivity.</p>
-             <Link to="/shop">
-             <button className="bg-green-700 text-white px-6 py-3 rounded-full hover:bg-green-800">Shop Now</button>
-            </Link>
-          </div>
-
-        </div>
-      </section>
-       
-
-      {/* Commitments */}
-      <section className="py-16 bg-white text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-10">Your Health Your Wealth</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 max-w-6xl mx-auto">
-          <div className="bg-green-50 p-6 rounded-2xl shadow">
-            <CheckCircle2 className="text-yellow-600 mb-3 w-6 h-6 mx-auto" />
-            <h3 className="font-semibold mb-2">Eco-Friendly Materials</h3>
-            <p>We prioritize sustainable, responsibly sourced materials.</p>
-          </div>
-          <div className="bg-green-50 p-6 rounded-2xl shadow">
-            <CheckCircle2 className="text-yellow-600 mb-3 w-6 h-6 mx-auto" />
-            <h3 className="font-semibold mb-2">Ergonomic Comfort</h3>
-            <p>Furniture designed to support posture and reduce strain.</p>
-          </div>
-          <div className="bg-green-50 p-6 rounded-2xl shadow">
-            <CheckCircle2 className="text-yellow-600 mb-3 w-6 h-6 mx-auto" />
-            <h3 className="font-semibold mb-2">Free Trials & Policies</h3>
-            <p>Enjoy trial periods, warranties, and easy returns.</p>
-          </div>
-        </div>
-      </section>
-      <section 
-
-      className="flex justify-center items-center py-12 bg-cover bg-center bg-no-repeat bg-green-50" 
-       style={{ backgroundImage: `url(${BgVision})` }}
+    <div className="bg-white text-gray-900">
+      {/* Hero Section */}
+      <section
+        className="relative h-screen bg-cover bg-center"
+        style={{ backgroundImage: `url(${heroImage})` }}
       >
-      <img
-        src={VisionMission}
-        alt="Our Vision and Mission"
-        className="max-w-full md:max-w-3xl rounded-xl shadow-lg"
-      />
-</section>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 z-0" />
 
-      {/* Products */}
-      <section id="products" className="py-16 bg-green-50">
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">Featured Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 px-4 max-w-6xl mx-auto">
-          <div className="bg-white rounded-2xl shadow p-4">
-            <img src={Sofa} alt="Sofa" className="w-full h-40 object-cover rounded-xl mb-2" />
-            <h4 className="font-medium">Sofa</h4>
+        {/* Header */}
+        <header className="relative z-10 p-6">
+          <div className="container mx-auto flex justify-between items-center">
+            <img src={logo} alt="Logo" className="h-14" />
+            <nav className="hidden md:flex space-x-6 text-white font-medium">
+              <button onClick={() => scrollToSection("home")}>Home</button>
+              <Link to="/shop">Products</Link>
+              <Link to="/gallery">Gallery</Link>
+              <Link to="/services">Our Services</Link>
+            </nav>
+
+            <div className="flex items-center gap-4 text-white">
+              <div className="relative">
+                <Search
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="cursor-pointer w-5 h-5 hover:text-yellow-400"
+                />
+                {showSearch && (
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    className="absolute top-8 right-0 w-44 px-2 py-1 text-black bg-white rounded shadow"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                )}
+              </div>
+
+              <div className="relative">
+                <User
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="cursor-pointer hover:text-yellow-400"
+                />
+                {showDropdown && (
+                  <div className="absolute right-0 mt-2 w-36 bg-white text-black rounded shadow z-50">
+                    <Link to="/login" className="block px-4 py-2 hover:bg-gray-100">Login</Link>
+                    <Link to="/signup" className="block px-4 py-2 hover:bg-gray-100">Sign Up</Link>
+                  </div>
+                )}
+              </div>
+
+              <Link to="/cart">
+                <ShoppingCart className="cursor-pointer hover:text-yellow-400" />
+              </Link>
+              <Link to="/contact">
+                <button className="bg-yellow-400 hover:bg-yellow-300 text-black px-4 py-1 rounded-lg text-sm font-semibold">
+                  Contact
+                </button>
+              </Link>
+            </div>
           </div>
-          <div className="bg-white rounded-2xl shadow p-4">
-            <img src={Desk} alt="Desk" className="w-full h-40 object-cover rounded-xl mb-2" />
-            <h4 className="font-medium">Executive Desk</h4>
-          </div>
-          <div className="bg-white rounded-2xl shadow p-4">
-            <img src={Swivel} alt="Ergonomic Swivel Chairs" className="w-full h-40 object-cover rounded-xl mb-2" />
-            <h4 className="font-medium">Ergonomic Swivel Chair</h4>
-          </div>
-          <div className="bg-white rounded-2xl shadow p-4">
-            <img src={Cabinet} alt="Cabinet" className="w-full h-40 object-cover rounded-xl mb-2" />
-            <h4 className="font-medium">Modern Cabinet</h4>
-          </div>
+        </header>
+
+        {/* Hero Content */}
+        <div className="relative z-10 flex flex-col justify-center h-full px-6 sm:px-16">
+          <h1 className="text-5xl font-extrabold text-white max-w-3xl leading-tight mb-4 drop-shadow-lg">
+            Transform Your Office Space with Style & Comfort
+          </h1>
+          <p className="text-lg text-gray-200 max-w-xl mb-6">
+            Premium ergonomic furniture designed for health, productivity, and modern aesthetics.
+          </p>
+          <Link to="/shop">
+            <button className="bg-yellow-400 hover:bg-yellow-300 text-black px-6 py-3 rounded-full font-semibold shadow-lg transition-all">
+              Shop Now
+            </button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Commitments Section */}
+      <section className="py-20 text-center bg-white">
+        <h2 className="text-3xl font-bold mb-12 text-gray-800">Why Choose Us?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 px-6 max-w-7xl mx-auto">
+          {[
+            ["Eco-Friendly Materials", "We prioritize sustainable, responsibly sourced materials."],
+            ["Ergonomic Comfort", "Furniture designed to support posture and reduce strain."],
+            ["Flexible Policies", "Enjoy trial periods, warranties, and hassle-free returns."]
+          ].map(([title, desc], idx) => (
+            <div key={idx} className="bg-white shadow-xl hover:shadow-2xl transition p-8 rounded-xl border border-gray-200">
+              <CheckCircle2 className="text-green-600 mb-4 w-8 h-8 mx-auto" />
+              <h3 className="text-lg font-semibold mb-2">{title}</h3>
+              <p className="text-sm text-gray-600">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Vision & Mission Banner */}
+      <section className="flex justify-center py-12 bg-cover bg-center" style={{ backgroundImage: `url(${BgVision})` }}>
+        <img src={VisionMission} alt="Vision & Mission" className="max-w-5xl rounded-xl shadow-2xl" />
+      </section>
+
+      {/* Featured Products */}
+      <section className="py-20 bg-gray-50" id="products">
+        <h2 className="text-3xl font-bold text-center mb-10">Featured Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 px-6 max-w-7xl mx-auto">
+          {filteredProducts.length ? (
+            filteredProducts.map((product) => (
+              <div key={product.id} className="backdrop-blur-md bg-white/60 rounded-xl p-4 shadow-md hover:shadow-lg transition-all text-center">
+                <img
+                  src={product.image_url || heroImage}
+                  alt={product.name}
+                  className="w-full h-44 object-cover rounded mb-3"
+                />
+                <h4 className="font-semibold text-lg text-gray-800">{product.name}</h4>
+              </div>
+            ))
+          ) : (
+            <p className="col-span-full text-center text-gray-500">No products found.</p>
+          )}
         </div>
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-16 bg-white">
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-10">What Our Customers Say</h2>
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
-          <div className="bg-green-50 p-6 rounded-xl shadow">
-            <p className="italic mb-4">"The ergonomic chair changed my work-from-home life! No more back pain. Highly recommend Expert Office."</p>
-            <div className="font-semibold">– Ama K., Accra</div>
-          </div>
-          <div className="bg-green-50 p-6 rounded-xl shadow">
-            <p className="italic mb-4">"Beautiful, functional designs that actually help me stay focused and feel better throughout the day."</p>
-            <div className="font-semibold">– Kojo M., Kumasi</div>
-          </div>
+      <section className="py-20 bg-white">
+        <h2 className="text-3xl font-bold text-center mb-10">What Our Customers Say</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 px-6 max-w-6xl mx-auto">
+          {[
+            ['"The ergonomic chair changed my life—no more back pain!"', '– Ama K., Accra'],
+            ['"Functional and stylish. My office looks amazing now."', '– Kojo M., Kumasi']
+          ].map(([quote, author], i) => (
+            <div key={i} className="bg-green-50 rounded-xl p-6 shadow hover:shadow-lg transition-all">
+              <p className="italic text-gray-800 mb-4">{quote}</p>
+              <div className="text-gray-700 font-semibold">{author}</div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="py-12 px-4 bg-white text-center">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Stay Updated</h2>
-      <p className="text-sm text-gray-600 mb-6">
-        Sign up for our newsletter to receive exclusive offers and the latest news on our products.
-      </p>
+      {/* Newsletter Signup */}
+      <section className="py-16 bg-gradient-to-br from-green-100 via-yellow-100 to-green-200 text-center">
+        <h2 className="text-3xl font-bold mb-3 text-gray-800">Stay in the Loop</h2>
+        <p className="text-sm text-gray-600 mb-6">Join our newsletter to get exclusive deals and design tips.</p>
+        <form className="flex justify-center px-6">
+          <div className="bg-white p-2 rounded-full flex items-center shadow-md w-full max-w-lg">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-grow bg-transparent px-4 py-2 text-sm focus:outline-none"
+            />
+            <button type="submit" className="bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
+              Subscribe
+            </button>
+          </div>
+        </form>
+      </section>
 
-      <form className="flex justify-center">
-        <div className="bg-gray-100 p-2 rounded-full flex items-center w-full max-w-md">
-          <input
-            type="email"
-            placeholder="Enter your email"
-            className="flex-grow bg-transparent px-4 py-2 text-sm focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="bg-green-300 hover:bg-green-400 text-black text-sm font-semibold px-4 py-2 rounded-full transition-colors"
-          >
-            Subscribe
-          </button>
-        </div>
-      </form>
-    </section>
-
-      {/* Footer */}
       <Footer />
     </div>
   );
 }
-import 'tailwindcss/tailwind.css'; // Ensure Tailwind CSS is imported
