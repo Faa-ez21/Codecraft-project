@@ -22,5 +22,5 @@ export default function AdminRoute() {
 
   if (!isAdmin) return <Navigate to="/not-authorized" />;
 
-  return <iframe src="/admin-dashboard/index.htm" className="w-full h-screen border-none" title="Admin Dashboard" />;
+  return <iframe src="http://localhost:5173/" className="w-full h-screen border-none" title="Admin Dashboard" />;
 }

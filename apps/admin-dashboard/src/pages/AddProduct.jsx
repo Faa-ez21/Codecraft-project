@@ -19,12 +19,12 @@ export default function AddProduct() {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [colors, setColors] = useState([]);
-  const [sizes, setSizes] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Fetch categories and subcategories
   useEffect(() => {
     const fetchCategories = async () => {
       const { data: categories } = await supabase.from("categories").select("id, name");
@@ -33,10 +33,10 @@ export default function AddProduct() {
       setCategoryOptions(categories.map((cat) => ({ value: cat.id, label: cat.name })));
       setSubcategoryOptions(subcategories);
     };
-
     fetchCategories();
   }, []);
 
+  // Image file preview
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -57,21 +57,26 @@ export default function AddProduct() {
 
     let imageUrl = "";
     if (imageFile) {
-      const fileName = `${uuidv4()}-${imageFile.name}`;
+      const fileExt = imageFile.name.split(".").pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+
       const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .upload(fileName, imageFile);
+        .upload(filePath, imageFile, { upsert: true });
 
       if (uploadError) {
-        setMessage("Image upload failed");
+        console.error("Upload error:", uploadError.message);
+        setMessage("❌ Image upload failed.");
         setLoading(false);
         return;
       }
 
-      const { data: publicURL } = supabase.storage
+      const { data: publicData } = supabase.storage
         .from("product-images")
-        .getPublicUrl(fileName);
-      imageUrl = publicURL.publicUrl;
+        .getPublicUrl(filePath);
+
+      imageUrl = publicData.publicUrl;
     }
 
     const productData = {
@@ -83,16 +88,16 @@ export default function AddProduct() {
       subcategory_id: selectedSubcategory?.value || null,
       materials: materials.map((m) => m.value),
       colors: colors.map((c) => c.value),
-      sizes: sizes.map((s) => s.value),
       created_at: new Date().toISOString(),
     };
 
     const { error } = await supabase.from("products").insert([productData]);
     if (error) {
       console.error("Insert error:", error.message);
-      setMessage("Failed to add product.");
+      setMessage("❌ Failed to add product.");
     } else {
-      setMessage("Product added successfully.");
+      setMessage("✅ Product added successfully.");
+      // Optionally reset the form here
     }
 
     setLoading(false);
@@ -100,7 +105,6 @@ export default function AddProduct() {
 
   const materialOptions = ["Wood", "Metal", "Glass", "Plastic"].map((v) => ({ value: v, label: v }));
   const colorOptions = ["Black", "White", "Brown", "Gray"].map((v) => ({ value: v, label: v }));
-  const sizeOptions = ["Small", "Medium", "Large", "Extra Large"].map((v) => ({ value: v, label: v }));
 
   return (
     <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-6 rounded shadow">
@@ -190,12 +194,6 @@ export default function AddProduct() {
           </label>
           <Select isMulti options={colorOptions} value={colors} onChange={setColors} />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-            Size
-          </label>
-          <Select isMulti options={sizeOptions} value={sizes} onChange={setSizes} />
-        </div>
 
         {/* Submit Button */}
         <button
@@ -206,7 +204,7 @@ export default function AddProduct() {
           {loading ? "Adding..." : "Add Product"}
         </button>
 
-        {message && <p className="text-sm mt-2 text-blue-600">{message}</p>}
+        {message && <p className="text-sm mt-2 text-blue-600 dark:text-green-400">{message}</p>}
       </form>
     </div>
   );
