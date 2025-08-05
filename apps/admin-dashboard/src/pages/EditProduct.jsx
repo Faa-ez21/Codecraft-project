@@ -10,7 +10,8 @@ export default function EditProduct() {
   const [product, setProduct] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [colors, setColors] = useState([]);
-  const [sizes, setSizes] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const materialOptions = ["Wood", "Metal", "Glass", "Plastic"].map((m) => ({
@@ -21,33 +22,54 @@ export default function EditProduct() {
     value: c,
     label: c,
   }));
-  const sizeOptions = ["Small", "Medium", "Large", "Extra Large"].map((s) => ({
-    value: s,
-    label: s,
-  }));
 
-  // Fetch product on load
+  const isValidUUID = (uuid) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+
   useEffect(() => {
-    const fetchProduct = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      if (!isValidUUID(id)) {
+        console.error("Invalid UUID format:", id);
+        setLoading(false);
+        return;
+      }
+
+      const { data: productData, error: productError } = await supabase
         .from("products")
         .select("*")
         .eq("id", id)
         .single();
 
-      if (error) {
-        console.error("Error fetching product:", error.message);
+      const { data: categoryData } = await supabase
+        .from("categories")
+        .select("id, name");
+
+      const { data: subcategoryData } = await supabase
+        .from("subcategories")
+        .select("id, name");
+
+      if (productError) {
+        console.error("Error fetching product:", productError.message);
       } else {
-        setProduct(data);
-        setMaterials(data.materials ? [{ value: data.materials, label: data.materials }] : []);
-        setColors(data.colors?.map((c) => ({ value: c, label: c })) || []);
-        setSizes(data.sizes?.map((s) => ({ value: s, label: s })) || []);
+        setProduct(productData);
+        setMaterials(
+          Array.isArray(productData.materials)
+            ? productData.materials.map((m) => ({ value: m, label: m }))
+            : []
+        );
+        setColors(
+          Array.isArray(productData.colors)
+            ? productData.colors.map((c) => ({ value: c, label: c }))
+            : []
+        );
       }
 
+      setCategories(categoryData || []);
+      setSubcategories(subcategoryData || []);
       setLoading(false);
     };
 
-    fetchProduct();
+    fetchData();
   }, [id]);
 
   const handleChange = (field, value) => {
@@ -59,9 +81,8 @@ export default function EditProduct() {
 
     const updates = {
       ...product,
-      materials: materials.length ? materials.map((m) => m.value).join(", ") : null,
+      materials: materials.map((m) => m.value),
       colors: colors.map((c) => c.value),
-      sizes: sizes.map((s) => s.value),
     };
 
     const { error } = await supabase
@@ -79,7 +100,7 @@ export default function EditProduct() {
   };
 
   if (loading) return <p className="p-6">Loading...</p>;
-  if (!product) return <p className="p-6 text-red-500">Product not found.</p>;
+  if (!product) return <p className="p-6 text-red-500">Product not found or invalid ID.</p>;
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -88,15 +109,14 @@ export default function EditProduct() {
           Edit Product (ID: {id})
         </h2>
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Editable Text Fields */}
           {[
             { label: "Product Name", key: "name" },
             { label: "Description", key: "description" },
             { label: "Price (GHS)", key: "price" },
             { label: "Stock Quantity", key: "stock_quantity" },
-            { label: "Category ID", key: "category_id" },
-            { label: "Subcategory ID", key: "subcategory_id" },
+            { label: "Quantity", key: "quantity" },
             { label: "Image URL", key: "image_url" },
+            { label: "SKU", key: "sku" },
             { label: "Status", key: "status" },
           ].map(({ label, key }) => (
             <div key={key}>
@@ -104,7 +124,13 @@ export default function EditProduct() {
                 {label}
               </label>
               <input
-                type={key === "price" || key === "stock_quantity" ? "number" : "text"}
+                type={
+                  key === "price" ||
+                  key === "stock_quantity" ||
+                  key === "quantity"
+                    ? "number"
+                    : "text"
+                }
                 value={product[key] || ""}
                 onChange={(e) => handleChange(key, e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600"
@@ -112,7 +138,45 @@ export default function EditProduct() {
             </div>
           ))}
 
-          {/* Multi-select Dropdowns */}
+          {/* Category Select */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
+              Category
+            </label>
+            <Select
+              options={categories.map((c) => ({
+                value: c.id,
+                label: c.name,
+              }))}
+              value={categories
+                .map((c) => ({ value: c.id, label: c.name }))
+                .find((opt) => opt.value === product.category_id) || null}
+              onChange={(selected) =>
+                handleChange("category_id", selected.value)
+              }
+            />
+          </div>
+
+          {/* Subcategory Select */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
+              Subcategory
+            </label>
+            <Select
+              options={subcategories.map((s) => ({
+                value: s.id,
+                label: s.name,
+              }))}
+              value={subcategories
+                .map((s) => ({ value: s.id, label: s.name }))
+                .find((opt) => opt.value === product.subcategory_id) || null}
+              onChange={(selected) =>
+                handleChange("subcategory_id", selected.value)
+              }
+            />
+          </div>
+
+          {/* Material Multi-select */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
               Material
@@ -125,6 +189,7 @@ export default function EditProduct() {
             />
           </div>
 
+          {/* Color Multi-select */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
               Color
@@ -134,18 +199,6 @@ export default function EditProduct() {
               options={colorOptions}
               value={colors}
               onChange={setColors}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
-              Size
-            </label>
-            <Select
-              isMulti
-              options={sizeOptions}
-              value={sizes}
-              onChange={setSizes}
             />
           </div>
 
