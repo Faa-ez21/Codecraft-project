@@ -1,210 +1,245 @@
-import { useState, useEffect } from "react";
-import Select from "react-select";
+import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
+import imageCompression from "browser-image-compression";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-export default function AddProduct() {
-  const [formData, setFormData] = useState({
+export default function AddProduct({ productId = null }) {
+  const [form, setForm] = useState({
     name: "",
     description: "",
-    quantity: 0,
-    sku: "",
-    status: "In Stock",
     price: "",
+    stock_quantity: "",
+    category: "",
+    subcategory: "",
+    image_url: "",
+    materials: [],
+    colors: [],
+    sku: uuidv4().slice(0, 8),
+    status: "active",
   });
 
-  const [categoryOptions, setCategoryOptions] = useState([]);
-  const [subcategoryOptions, setSubcategoryOptions] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
-  const [materials, setMaterials] = useState([]);
-  const [colors, setColors] = useState([]);
-  const [imageFile, setImageFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [imageFile, setImageFile] = useState(null);
 
-  // Fetch categories and subcategories
   useEffect(() => {
-    const fetchCategories = async () => {
-      const { data: categories } = await supabase.from("categories").select("id, name");
-      const { data: subcategories } = await supabase.from("subcategories").select("id, name, category_id");
-
-      setCategoryOptions(categories.map((cat) => ({ value: cat.id, label: cat.name })));
-      setSubcategoryOptions(subcategories);
-    };
     fetchCategories();
-  }, []);
+    if (productId) {
+      fetchProductData(productId);
+    }
+  }, [productId]);
 
-  // Image file preview
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setPreview(URL.createObjectURL(file));
+  const fetchCategories = async () => {
+    const { data: cats, error } = await supabase.from("categories").select("*");
+    if (!error) setCategories(cats);
+  };
+
+  const fetchProductData = async (id) => {
+    const { data, error } = await supabase.from("products").select("*").eq("id", id).single();
+    if (data && !error) {
+      setForm({
+        ...data,
+        category: data.category_id,
+        subcategory: data.subcategory_id,
+        materials: data.materials || [],
+        colors: data.colors || [],
+      });
+    } else {
+      toast.error("Error fetching product.");
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleImageUpload = async () => {
+    if (!imageFile) return form.image_url;
+
+    const compressedImage = await imageCompression(imageFile, {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+    });
+
+    const fileExt = imageFile.name.split(".").pop();
+    const fileName = `${uuidv4()}.${fileExt}`;
+    const filePath = `products/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, compressedImage);
+
+    if (uploadError) {
+      throw new Error("Image upload failed.");
+    }
+
+    const { data } = supabase.storage.from("product-images").getPublicUrl(filePath);
+    return data.publicUrl;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
 
-    let imageUrl = "";
-    if (imageFile) {
-      const fileExt = imageFile.name.split(".").pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `products/${fileName}`;
+    try {
+      const image_url = await handleImageUpload();
 
-      const { error: uploadError } = await supabase.storage
-        .from("product-images")
-        .upload(filePath, imageFile, { upsert: true });
+      const productPayload = {
+        name: form.name,
+        description: form.description,
+        price: Number(form.price),
+        stock_quantity: Number(form.stock_quantity),
+        image_url,
+        materials: form.materials,
+        colors: form.colors,
+        category_id: form.category,
+        subcategory_id: form.subcategory,
+        sku: form.sku || uuidv4().slice(0, 8),
+        status: form.status || "active",
+        created_at: new Date().toISOString(),
+      };
 
-      if (uploadError) {
-        console.error("Upload error:", uploadError.message);
-        setMessage("❌ Image upload failed.");
-        setLoading(false);
-        return;
+      if (productId) {
+        const { error } = await supabase
+          .from("products")
+          .update(productPayload)
+          .eq("id", productId);
+        if (error) throw error;
+        toast.success("Product updated!");
+      } else {
+        const { error } = await supabase.from("products").insert([productPayload]);
+        if (error) throw error;
+        toast.success("Product added!");
       }
-
-      const { data: publicData } = supabase.storage
-        .from("product-images")
-        .getPublicUrl(filePath);
-
-      imageUrl = publicData.publicUrl;
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred. Please check inputs.");
+    } finally {
+      setLoading(false);
     }
-
-    const productData = {
-      ...formData,
-      price: parseFloat(formData.price || 0),
-      stock_quantity: parseInt(formData.quantity),
-      image_url: imageUrl,
-      category_id: selectedCategory?.value || null,
-      subcategory_id: selectedSubcategory?.value || null,
-      materials: materials.map((m) => m.value),
-      colors: colors.map((c) => c.value),
-      created_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase.from("products").insert([productData]);
-    if (error) {
-      console.error("Insert error:", error.message);
-      setMessage("❌ Failed to add product.");
-    } else {
-      setMessage("✅ Product added successfully.");
-      // Optionally reset the form here
-    }
-
-    setLoading(false);
   };
 
-  const materialOptions = ["Wood", "Metal", "Glass", "Plastic"].map((v) => ({ value: v, label: v }));
-  const colorOptions = ["Black", "White", "Brown", "Gray"].map((v) => ({ value: v, label: v }));
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      const selectedCategory = form.category;
+      if (selectedCategory) {
+        const { data: subcats } = await supabase
+          .from("subcategories")
+          .select("*")
+          .eq("category_id", selectedCategory);
+        setSubcategories(subcats);
+      }
+    };
+
+    if (form.category) {
+      fetchSubcategories();
+    } else {
+      setSubcategories([]);
+    }
+  }, [form.category]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleMultiSelectChange = (name, values) => {
+    setForm((prev) => ({
+      ...prev,
+      [name]: values.split(",").map((v) => v.trim()),
+    }));
+  };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-6 rounded shadow">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-white">Add New Product</h2>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded shadow">
+      <h2 className="text-2xl font-bold mb-4">{productId ? "Edit" : "Add"} Product</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-
-        {/* Image Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-            Product Image
-          </label>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-          {preview && (
-            <img
-              src={preview}
-              alt="Preview"
-              className="mt-2 h-32 object-cover rounded border"
-            />
-          )}
-        </div>
-
-        {/* Input Fields */}
-        {[
-          { label: "Product Name", name: "name" },
-          { label: "Description", name: "description" },
-          { label: "Quantity", name: "quantity", type: "number" },
-          { label: "SKU", name: "sku" },
-          { label: "Status", name: "status" },
-          { label: "Price (GHS)", name: "price", type: "number" },
-        ].map(({ label, name, type = "text" }) => (
-          <div key={name}>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-              {label}
-            </label>
-            <input
-              type={type}
-              name={name}
-              value={formData[name]}
-              onChange={handleChange}
-              className="w-full px-3 py-2 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white"
-              required
-            />
-          </div>
-        ))}
-
-        {/* Category Select */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-            Category
-          </label>
-          <Select
-            options={categoryOptions}
-            value={selectedCategory}
-            onChange={(cat) => {
-              setSelectedCategory(cat);
-              setSelectedSubcategory(null);
-            }}
-          />
-        </div>
-
-        {/* Subcategory Select */}
-        {selectedCategory && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-              Subcategory
-            </label>
-            <Select
-              options={subcategoryOptions
-                .filter((sub) => sub.category_id === selectedCategory.value)
-                .map((sub) => ({ value: sub.id, label: sub.name }))}
-              value={selectedSubcategory}
-              onChange={setSelectedSubcategory}
-            />
-          </div>
-        )}
-
-        {/* Multi-selects */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-            Material
-          </label>
-          <Select isMulti options={materialOptions} value={materials} onChange={setMaterials} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
-            Color
-          </label>
-          <Select isMulti options={colorOptions} value={colors} onChange={setColors} />
-        </div>
-
-        {/* Submit Button */}
+        <input
+          type="text"
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          placeholder="Product Name"
+          className="w-full border px-3 py-2"
+          required
+        />
+        <textarea
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          placeholder="Description"
+          className="w-full border px-3 py-2"
+          required
+        />
+        <input
+          type="number"
+          name="price"
+          value={form.price}
+          onChange={handleChange}
+          placeholder="Price"
+          className="w-full border px-3 py-2"
+          required
+        />
+        <input
+          type="number"
+          name="stock_quantity"
+          value={form.stock_quantity}
+          onChange={handleChange}
+          placeholder="Stock Quantity"
+          className="w-full border px-3 py-2"
+          required
+        />
+        <select
+          name="category"
+          value={form.category}
+          onChange={handleChange}
+          className="w-full border px-3 py-2"
+          required
+        >
+          <option value="">Select Category</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
+        <select
+          name="subcategory"
+          value={form.subcategory}
+          onChange={handleChange}
+          className="w-full border px-3 py-2"
+          required
+        >
+          <option value="">Select Subcategory</option>
+          {subcategories.map((sub) => (
+            <option key={sub.id} value={sub.id}>{sub.name}</option>
+          ))}
+        </select>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files[0])}
+          className="w-full"
+        />
+        <input
+          type="text"
+          placeholder="Materials (comma-separated)"
+          value={form.materials.join(", ")}
+          onChange={(e) => handleMultiSelectChange("materials", e.target.value)}
+          className="w-full border px-3 py-2"
+        />
+        <input
+          type="text"
+          placeholder="Colors (comma-separated)"
+          value={form.colors.join(", ")}
+          onChange={(e) => handleMultiSelectChange("colors", e.target.value)}
+          className="w-full border px-3 py-2"
+        />
         <button
           type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-60"
           disabled={loading}
-          className="bg-lime-500 hover:bg-lime-600 text-white px-6 py-2 rounded font-medium"
         >
-          {loading ? "Adding..." : "Add Product"}
+          {loading ? "Saving..." : productId ? "Update Product" : "Add Product"}
         </button>
-
-        {message && <p className="text-sm mt-2 text-blue-600 dark:text-green-400">{message}</p>}
       </form>
     </div>
   );
