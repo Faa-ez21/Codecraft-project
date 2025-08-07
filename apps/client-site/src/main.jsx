@@ -15,6 +15,7 @@ import ProductInquiry from './pages/InquiryPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext'; // <- new import
 import ProductPage from './pages/ProductPage';
+import NewsletterForm from './pages/NewsletterForm';
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
@@ -49,6 +50,7 @@ root.render(
             <Route path="/inquiry" element={<ProductInquiry />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/test-product" element={<ProductPage />} />
+            <Route path="/newsletter" element={<NewsletterForm />} />
 
             <Route
               path="/products/:id"

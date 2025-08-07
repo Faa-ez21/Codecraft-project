@@ -184,9 +184,11 @@ export default function Homepage() {
               placeholder="Enter your email"
               className="flex-grow bg-transparent px-4 py-2 text-sm focus:outline-none"
             />
-            <button type="submit" className="bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
-              Subscribe
-            </button>
+            <Link to="/newsletter" className="ml-2">
+              <button type="submit" className="bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
+                Subscribe
+              </button>
+            </Link>
           </div>
         </form>
       </section>
