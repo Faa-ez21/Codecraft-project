@@ -4,45 +4,51 @@ import { FaUserCircle, FaSearch, FaShoppingCart } from 'react-icons/fa';
 import { ChevronDown } from 'lucide-react';
 import Footer from '../components/footer';
 import Header from "../components/header";
+import Design from '../assets/Design.jpg';
+import Refurbish from '../assets/Refurbish.jpg';
+import Consultancy from '../assets/Consultancy.jpg';
+import Fitouts from '../assets/Fitouts.jpg';
+import Interior from '../assets/Interior Decor.jpg';
+import ExpertOffice from '../assets/ExpertOffice.jpg';
 
 const services = [
   {
     title: "Furniture Providers",
     description: "High-quality furniture for any office size.",
-    image: "furniture.jpg",
+    image: ExpertOffice,
     path: "/shop",
   },
   {
     title: "Office Design",
     description: "Aid in furniture selection, Layouts in 2D/3D.",
-    image: "design.jpg",
+    image: Design,
     path: "/interior-decor",
   },
   {
     title: "Office Fitouts",
     description: "Complete fitout solutions for your office.",
-    image: "fitouts.jpg",
+    image: Fitouts,
     path: "/inquiry",
   },
   {
     title: "Consultancy",
     description: "Expert advice on projects, fitouts, and training.",
-    image: "consultancy.jpg",
+    image: Consultancy,
     path: "/inquiry",
   },
   {
     title: "Office Refurbishment",
     description:
       "We design and refurbish existing offices to give it a modern outlook bearing in mind your comfort, style and budget.",
-    image: "refurbishment.jpg",
+    image: Refurbish,
     path: "/inquiry",
   },
   {
     title: "Interior Decoration",
     description:
       "We work with your corporate colours, number of occupants etc., to provide suitable furniture to increase productivity and comfort in a working environment.",
-    image: "interior.jpg",
-    path: "/interior-decor", 
+    image: Interior,
+    path: "/interior-decor",
   },
 ];
 

@@ -1,8 +1,49 @@
 import React, { useState } from 'react';
-import { useCart } from '../context/CartContext';
-import Header from '../components/header';
-import Footer from '../components/footer';
 import { Link } from 'react-router-dom';
+import { FaUserCircle, FaSearch, FaShoppingCart } from 'react-icons/fa';
+import { ChevronDown } from 'lucide-react';
+import Footer from '../components/footer';
+import Header from "../components/header";
+
+
+const initialCartItems = [
+  {
+    id: 1,
+    name: 'Ergonomic Office Chair',
+    qty: 1,
+    image: '/chair.png',
+  },
+  {
+    id: 2,
+    name: 'Adjustable Standing Desk',
+    qty: 1,
+    image: '/desk.png',
+  },
+  {
+    id: 3,
+    name: 'Blue Light Blocking Glasses',
+    qty: 2,
+    image: '/glasses.png',
+  },
+];
+
+const suggestions = [
+  {
+    id: 1,
+    name: 'Modern Desk Lamp',
+    image: '/lamp.png',
+  },
+  {
+    id: 2,
+    name: 'Ergonomic Keyboard',
+    image: '/keyboard.png',
+  },
+  {
+    id: 3,
+    name: 'Wireless Mouse',
+    image: '/mouse.png',
+  },
+];
 
 export default function CartPage() {
   const {
@@ -23,115 +64,86 @@ export default function CartPage() {
     if (success) setCouponInput('');
   };
 
+  const getTotal = () =>
+    cartItems.reduce((total, item) => total + item.qty * item.price, 0);
+
   return (
-    <div className="min-h-screen flex flex-col bg-white text-gray-900 font-sans">
-      <Header />
+    <div className="bg-gray-100 text-gray-900 min-h-screen font-sans">
+        <Header />
+    <div className="px-6 md:px-20 py-10">
+      <h1 className="text-3xl font-semibold mb-6">Your Cart</h1>
 
-      <main className="flex-grow px-4 md:px-12 lg:px-24 py-10">
-        <h1 className="text-3xl font-bold mb-6 border-b pb-4">Your Shopping Cart</h1>
+      <div className="border rounded-xl overflow-hidden">
+        <div className="grid grid-cols-3 bg-gray-100 p-4 font-medium text-sm">
+          <span>Product</span>
+          <span className="col-span-1">Description</span>
+          <span className="text-right">Subtotal</span>
+        </div>
 
-        {cartItems.length === 0 ? (
-          <p className="text-gray-500 text-lg">Your cart is empty.</p>
-        ) : (
-          <>
-            <div className="space-y-6">
-              {cartItems.map(item => (
-                <div
-                  key={item.id}
-                  className="border rounded-lg p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center shadow-sm hover:shadow-md transition"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <img
-                      src={item.image_url}
-                      alt={item.name}
-                      className="w-24 h-24 object-cover rounded-md border"
-                    />
-                    <div>
-                      <h2 className="font-semibold text-lg">{item.name}</h2>
-                      <div className="flex gap-2 mt-3 items-center">
-                        <button
-                          onClick={() => updateQuantity(item.id, 'decrease')}
-                          className="px-3 py-1 border rounded hover:bg-gray-100"
-                        >
-                          −
-                        </button>
-                        <span className="px-3 py-1">{item.qty}</span>
-                        <button
-                          onClick={() => updateQuantity(item.id, 'increase')}
-                          className="px-3 py-1 border rounded hover:bg-gray-100"
-                        >
-                          +
-                        </button>
-                        <button
-                          onClick={() => removeFromCart(item.id)}
-                          className="ml-4 text-red-600 hover:underline text-sm"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Clear Cart */}
-            <div className="mt-6 text-right">
+        {cartItems.map(item => (
+          <div key={item.id} className="grid grid-cols-3 items-center border-t p-4">
+            <img src={item.image} alt={item.name} className="w-10 h-10 object-contain" />
+            <span>{item.name}</span>
+            <div className="text-right flex items-center justify-end gap-2">
               <button
-                onClick={clearCart}
-                className="text-sm text-red-500 underline hover:text-red-700"
+                onClick={() => handleQuantityChange(item.id, 'decrease')}
+                className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
               >
-                Clear Entire Cart
+                -
+              </button>
+              <span>{item.qty}</span>
+              <button
+                onClick={() => handleQuantityChange(item.id, 'increase')}
+                className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+              >
+                +
               </button>
             </div>
+          </div>
+        ))}
+      </div>
 
-            {/* Coupon Section */}
-            <div className="mt-10 bg-gray-50 p-6 rounded-lg">
-              <label className="block mb-2 font-medium">Coupon Code</label>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Enter coupon code"
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value)}
-                  className="border p-2 rounded w-full sm:w-64"
-                />
-                <button
-                  onClick={handleApplyCoupon}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                >
-                  Apply
-                </button>
-                {coupon && (
-                  <button
-                    onClick={clearCoupon}
-                    className="text-red-600 underline hover:text-red-800 text-sm"
-                  >
-                    Remove Coupon
-                  </button>
-                )}
-              </div>
-              {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
+      <div className="mt-8">
+        <label className="block mb-2 text-sm font-medium">Coupon Code</label>
+        <input
+          type="text"
+          placeholder="Enter coupon code"
+          className="border rounded-lg px-4 py-2 w-full max-w-md"
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-4 mt-6">
+        <button className="px-4 py-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600">
+          Clear Cart
+        </button>
+        <button className="px-4 py-2 bg-green-700 text-white rounded-full hover:bg-green-800">
+          Update Cart
+        </button>
+      </div>
+
+      <div className="mt-8">
+        <button className="px-6 py-3 bg-green-700 text-white rounded-full text-lg hover:bg-green-800">
+          Proceed to Inquire
+        </button>
+      </div>
+
+      <div className="mt-16">
+        <h2 className="text-xl font-semibold mb-4">You May Be Interested In</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {suggestions.map(product => (
+            <div key={product.id} className="text-center">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-40 object-cover rounded-lg mb-2"
+              />
+              <p>{product.name}</p>
             </div>
-
-            {/* Summary Section */}
-            <div className="mt-10 bg-gray-100 p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-bold mb-4">Summary</h2>
-              <p className="text-gray-600 mb-4">
-                You have <span className="font-semibold">{cartItems.length}</span> item(s) in your cart.
-              </p>
-
-              <Link to="/inquiry" state={{ fromCart: true }}>
-                <button className="mt-4 w-full bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-6 rounded-lg shadow">
-                  Proceed to Inquiry
-                </button>
-              </Link>
-            </div>
-          </>
-        )}
-      </main>
-
-      <Footer />
+          ))}
+        </div>
+      </div>
+    </div>
+    <Footer />
     </div>
   );
 }

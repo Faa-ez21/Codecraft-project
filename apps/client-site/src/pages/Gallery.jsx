@@ -4,42 +4,104 @@ import { FaUserCircle, FaSearch, FaShoppingCart } from 'react-icons/fa';
 import { ChevronDown } from 'lucide-react';
 import Footer from '../components/footer';
 import Header from "../components/header";
+import swivel from "../assets/Swivel.jpg";
+import Executivedesk from "../assets/ExecutiveDesk.jpg";
+import Cabinet from "../assets/Cabinet.jpg";
+import  Sofa  from "../assets/sofa.png";
+import RectangularDesk from "../assets/RectangularDesk.jpg";
+import Canteen from "../assets/Canteen Chair.JPG";
+import Executivedesk2 from "../assets/ExecutiveDesk2.png";
+import Executivedesk3 from "../assets/ExecutiveDesk3.jpg";
+import Teller from "../assets/Teller.JPG";
+import MetalCabinet from "../assets/MetalCabinet.jpg";
+import MetalCabinet1 from "../assets/MetalCabinet1.jpg";
+import Orthopedic from "../assets/Orthopedic.jpg";
+import Sofa1 from "../assets/Sofa1.png";
 
 // Sample products with categories
 const products = [
   {
     id: 1,
-    name: 'Ergonomic Office Chair',
+    name: 'Ergonomic Swivel Chair',
     category: 'Chairs',
-    image: 'https://images.unsplash.com/photo-1598300053181-72d04f38011a',
+    image: swivel,
   },
   {
     id: 2,
-    name: 'Executive Wooden Desk',
+    name: 'Executive Desk',
     category: 'Desks',
-    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc',
+    image: Executivedesk,
   },
   {
     id: 3,
     name: 'Bookshelf Cabinet',
-    category: 'Storage',
-    image: 'https://images.unsplash.com/photo-1598300052479-83867caa50c7',
+    category: 'Cabinets',
+    image: Cabinet,
   },
   {
     id: 4,
-    name: 'Minimalist Chair',
-    category: 'Chairs',
-    image: 'https://images.unsplash.com/photo-1591364251423-df2fcd6b3393',
+    name: 'Sofa Set',
+    category: 'Sofas',
+    image: Sofa,
   },
   {
     id: 5,
-    name: 'Standing Desk Converter',
+    name: 'Rectangular Desk',
     category: 'Desks',
-    image: 'https://images.unsplash.com/photo-1605540061258-13f09f98c161',
+    image: RectangularDesk,
+  },
+  // Add more products as needed
+  {
+    id: 6,
+    name: 'Canteen Chair',
+    category: 'Chairs',
+    image: Canteen,
+  },
+  {
+    id: 7,
+    name: 'Executive Desk',
+    category: 'Desks',
+    image: Executivedesk2,
+  },
+  {
+    id: 8,
+    name: 'Luxury Sofa',
+    category: 'Sofas',
+    image: Sofa1,
+  },
+  {
+    id: 9,
+    name: 'Executive Desk',
+    category: 'Desks',
+    image: Executivedesk3,
+  },
+  {
+    id: 10,
+    name: 'Orthopedic Chair',
+    category: 'Chairs',
+    image: Orthopedic,
+  },
+  {
+    id: 11,
+    name: 'Teller',
+    category: 'Chairs',
+    image: Teller,
+  },
+  {
+    id: 12,
+    name: 'Metal Cabinet',
+    category: 'Cabinets',
+    image: MetalCabinet,
+  },
+  {
+    id: 13,
+    name: 'Metal Cabinet',
+    category: 'Cabinets',
+    image: MetalCabinet1,
   },
 ];
 
-const categories = ['All', 'Chairs', 'Desks', 'Storage'];
+const categories = ['All', 'Chairs', 'Desks', 'Cabinets', 'Sofas'];
 
 export default function Gallery() {
   const [selectedCategory, setSelectedCategory] = useState('All');

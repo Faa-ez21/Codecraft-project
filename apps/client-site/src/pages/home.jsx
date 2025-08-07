@@ -173,22 +173,17 @@ export default function Homepage() {
         </div>
       </section>
 
-      {/* Newsletter Signup */}
+      {/* Newsletter Signup (Updated Section) */}
       <section className="py-16 bg-gradient-to-br from-green-100 via-yellow-100 to-green-200 text-center">
         <h2 className="text-3xl font-bold mb-3 text-gray-800">Stay in the Loop</h2>
         <p className="text-sm text-gray-600 mb-6">Join our newsletter to get exclusive deals and design tips.</p>
-        <form className="flex justify-center px-6">
-          <div className="bg-white p-2 rounded-full flex items-center shadow-md w-full max-w-lg">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-grow bg-transparent px-4 py-2 text-sm focus:outline-none"
-            />
-            <button type="submit" className="bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
-              Subscribe
+        <div className="flex justify-center mt-6">
+          <Link to="/newsletter">
+            <button className="bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-6 py-3 rounded-full shadow">
+              Subscribe to Newsletter
             </button>
-          </div>
-        </form>
+          </Link>
+        </div>
       </section>
 
       <Footer />

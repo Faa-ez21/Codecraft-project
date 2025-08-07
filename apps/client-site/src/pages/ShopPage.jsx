@@ -9,19 +9,20 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
   return (
-    <div className="group relative w-full bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition-all duration-300">
-      <img
-        src={product.image_url}
-        alt={product.name}
-        className="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-300"
-      />
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+    <div className="w-full max-w-[170px] group cursor-pointer">
+      <div className="bg-white rounded-lg overflow-hidden relative shadow hover:shadow-lg transition-shadow duration-300">
+        <img
+          src={product.image_url}
+          alt={product.name}
+          className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105"
+        />
         <button
           onClick={() => addToCart(product)}
           className="bg-green-700 hover:bg-green-800 text-white text-xs px-3 py-2 rounded-full shadow"
         >
           Add to Inquiry Cart
         </button>
+
       </div>
       <div className="p-3 text-center">
         <h3 className="text-sm font-semibold truncate">{product.name}</h3>
