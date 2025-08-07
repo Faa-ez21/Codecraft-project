@@ -48,6 +48,8 @@ root.render(
             <Route path="/interior-decor" element={<InteriorDecor />} />
             <Route path="/inquiry" element={<ProductInquiry />} />
             <Route path="/gallery" element={<Gallery />} />
+            <Route path="/test-product" element={<ProductPage />} />
+
             <Route
               path="/products/:id"
               element={

@@ -1,8 +1,16 @@
-import React from 'react';
-import { Star, ShoppingCart } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase/supabaseClient';
+import Header from '../components/header';
+import Footer from '../components/footer';
+import { Link } from 'react-router-dom';
+import { Star } from 'lucide-react';
+
 
 export default function ProductPage() {
   return (
+    <div className="bg-white text-gray-900">
+        <Header />
     <div className="max-w-6xl mx-auto px-4 py-10">
       {/* Breadcrumb */}
       <div className="text-sm text-green-800 mb-4 font-medium">
@@ -56,9 +64,11 @@ export default function ProductPage() {
           </div>
 
           {/* Add to Cart */}
+          <Link to="/inquiry" >
           <button className="mt-6 bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600 flex items-center gap-2 shadow">
-            <ShoppingCart size={16} /> Add to Cart
+            Proceed to Inquire
           </button>
+          </Link>
         </div>
       </div>
 
@@ -98,6 +108,8 @@ export default function ProductPage() {
           ))}
         </div>
       </div>
+    </div>
+    <Footer />
     </div>
   );
 }
