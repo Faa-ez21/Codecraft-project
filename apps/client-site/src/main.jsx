@@ -14,6 +14,7 @@ import Gallery from './pages/Gallery';
 import ProductInquiry from './pages/InquiryPage';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext'; // <- new import
+import ProductPage from './pages/ProductPage';
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
@@ -47,6 +48,7 @@ root.render(
             <Route path="/interior-decor" element={<InteriorDecor />} />
             <Route path="/inquiry" element={<ProductInquiry />} />
             <Route path="/gallery" element={<Gallery />} />
+            <Route path="/product/:id" element={<ProductPage />} />
             <Route path="*" element={<div className="text-center py-16">404 - Page Not Found</div>} />
           </Routes>
         </Router>
