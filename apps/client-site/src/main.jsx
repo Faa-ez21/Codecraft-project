@@ -48,7 +48,14 @@ root.render(
             <Route path="/interior-decor" element={<InteriorDecor />} />
             <Route path="/inquiry" element={<ProductInquiry />} />
             <Route path="/gallery" element={<Gallery />} />
-            <Route path="/product/:id" element={<ProductPage />} />
+            <Route
+              path="/products/:id"
+              element={
+                <ProtectedRoute>
+                  <ProductPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<div className="text-center py-16">404 - Page Not Found</div>} />
           </Routes>
         </Router>

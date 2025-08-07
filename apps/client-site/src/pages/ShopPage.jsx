@@ -20,12 +20,14 @@ const ProductCard = ({ product }) => {
           alt={product.name}
           className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105"
         />
+       
         <button
           onClick={() => addToCart(product)}
           className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-green-700 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         >
           Add to Inquiry Cart
         </button>
+
       </div>
       <div className="pt-2 text-xs">
         <p className="truncate font-medium">{product.name}</p>
