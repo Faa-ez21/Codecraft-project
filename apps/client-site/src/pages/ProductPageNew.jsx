@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../supabase/supabaseClient";
 import { useCart } from "../context/CartContext";
-import Header from "../components/header";
+import Navbar from "../components/Navbar";
 import Footer from "../components/footer";
 
 const ProductPage = () => {
@@ -102,7 +102,7 @@ const ProductPage = () => {
     try {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, image_url, description")
+        .select("id, name, image_url, price, description")
         .eq("category_id", product.category_id)
         .neq("id", product.id)
         .limit(4);
@@ -133,7 +133,7 @@ const ProductPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-yellow-50">
-        <Header />
+        <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
@@ -147,7 +147,7 @@ const ProductPage = () => {
   if (error || !product) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-yellow-50">
-        <Header />
+        <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="text-6xl mb-4">😔</div>
@@ -171,7 +171,7 @@ const ProductPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-yellow-50">
-      <Header />
+      <Navbar />
 
       <div className="pt-20">
         {/* Breadcrumb & Back Button */}
@@ -303,15 +303,16 @@ const ProductPage = () => {
                 </div>
               </div>
 
-              {/* Quality Assurance */}
+              {/* Price */}
               <div className="bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl p-6 border-2 border-dashed border-green-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">
-                      Premium Quality
-                    </p>
+                    <p className="text-sm text-gray-600 mb-1">Starting at</p>
                     <p className="text-3xl font-bold text-green-600">
-                      Expert Crafted
+                      GHS{" "}
+                      {product.price
+                        ? parseFloat(product.price).toLocaleString()
+                        : "Contact for Price"}
                     </p>
                   </div>
                   <div className="text-right">
@@ -606,8 +607,11 @@ const ProductPage = () => {
                       {relatedProduct.description}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
-                        View Details
+                      <span className="font-bold text-green-600">
+                        GHS{" "}
+                        {relatedProduct.price
+                          ? parseFloat(relatedProduct.price).toLocaleString()
+                          : "N/A"}
                       </span>
                       <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-green-600 transition-colors" />
                     </div>

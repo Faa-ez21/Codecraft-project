@@ -1,133 +1,392 @@
-import React, { useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import Header from '../components/header';
-import Footer from '../components/footer';
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import {
+  Send,
+  ArrowLeft,
+  CheckCircle2,
+  User,
+  Mail,
+  MessageSquare,
+  ShoppingBag,
+  Star,
+  Sparkles,
+  Phone,
+  MapPin,
+  Clock,
+  ArrowRight,
+  Heart,
+  Award,
+  Users,
+  Package,
+} from "lucide-react";
+import Header from "../components/header";
+import Footer from "../components/footer";
 
 export default function ProductInquiry() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { cartItems } = useCart();
   const fromCart = location?.state?.fromCart || false;
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const formRef = useRef(null);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Your inquiry has been sent successfully!');
-    // Future: Send to Supabase or backend
+    setIsLoading(true);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    setIsLoading(false);
+    setIsSubmitted(true);
+
+    // Reset form after success animation
+    setTimeout(() => {
+      setForm({ name: "", email: "", message: "" });
+      setIsSubmitted(false);
+    }, 3000);
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-yellow-50 text-gray-900 relative overflow-hidden">
+      {/* Floating Background Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-20">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-green-400 to-yellow-400 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-60 right-20 w-40 h-40 bg-gradient-to-r from-yellow-400 to-green-400 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-40 left-1/4 w-24 h-24 bg-gradient-to-r from-green-300 to-yellow-300 rounded-full blur-2xl animate-bounce"></div>
+      </div>
+
       <Header />
 
-      <div className="px-4 md:px-12 lg:px-24 py-10">
-        {/* Breadcrumb */}
-        <div className="text-sm text-green-700 mb-2">
-          Home / {fromCart ? 'Cart Inquiry' : 'Services'} / Inquiry
+      {/* Enhanced Hero Section */}
+      <section className="relative py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-yellow-600/10"></div>
+        <div className="relative max-w-4xl mx-auto text-center">
+          <div
+            className={`inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-6 transition-all duration-700 ${
+              isVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-10 opacity-0"
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            {fromCart ? "Product Inquiry" : "Get In Touch"}
+          </div>
+
+          <h1
+            className={`text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-800 mb-6 transition-all duration-700 delay-200 ${
+              isVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-10 opacity-0"
+            }`}
+          >
+            {fromCart ? (
+              <>
+                Let's Discuss Your{" "}
+                <span className="bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
+                  Product Selection
+                </span>
+              </>
+            ) : (
+              <>
+                Ready to Transform{" "}
+                <span className="bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
+                  Your Workspace?
+                </span>
+              </>
+            )}
+          </h1>
+
+          <p
+            className={`text-xl text-gray-600 mb-8 max-w-2xl mx-auto transition-all duration-700 delay-400 ${
+              isVisible
+                ? "translate-y-0 opacity-100"
+                : "translate-y-10 opacity-0"
+            }`}
+          >
+            {fromCart
+              ? "Share your requirements and let our experts help you create the perfect office setup."
+              : "Connect with our furniture experts for personalized consultations and custom solutions."}
+          </p>
         </div>
+      </section>
 
-        {/* Title */}
-        <h1 className="text-3xl font-bold mb-6">
-          {fromCart ? 'Product Inquiry' : 'Service Inquiry'}
-        </h1>
+      {/* Main Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Contact Information Sidebar */}
+          <div
+            className={`lg:col-span-1 transition-all duration-700 delay-600 ${
+              isVisible
+                ? "translate-x-0 opacity-100"
+                : "-translate-x-10 opacity-0"
+            }`}
+          >
+            <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 sticky top-8">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-yellow-500 rounded-2xl mb-4">
+                  <Phone className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent mb-2">
+                  Get In Touch
+                </h3>
+                <p className="text-gray-600">
+                  We're here to help you create amazing spaces
+                </p>
+              </div>
 
-        {/* If from Cart, show cart summary */}
-        {fromCart && cartItems.length > 0 && (
-          <div className="bg-gray-100 rounded-xl p-6 shadow-sm mb-8">
-            <h2 className="text-xl font-semibold mb-4">Inquired Products</h2>
-            <div className="grid gap-4">
-              {cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-4 border-b pb-3"
-                >
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
+              <div className="space-y-6">
+                <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-2xl">
+                  <div className="p-2 bg-green-100 rounded-xl">
+                    <Phone className="w-5 h-5 text-green-600" />
+                  </div>
                   <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-600">Quantity: {item.qty}</p>
+                    <p className="font-semibold text-gray-800">Call Us</p>
+                    <p className="text-green-600">+233 123 456 789</p>
                   </div>
                 </div>
-              ))}
+
+                <div className="flex items-center space-x-4 p-4 bg-yellow-50 rounded-2xl">
+                  <div className="p-2 bg-yellow-100 rounded-xl">
+                    <Mail className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">Email Us</p>
+                    <p className="text-yellow-600">info@expertoffice.com</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-2xl">
+                  <div className="p-2 bg-green-100 rounded-xl">
+                    <MapPin className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">Visit Us</p>
+                    <p className="text-green-600">Accra, Ghana</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 p-4 bg-yellow-50 rounded-2xl">
+                  <div className="p-2 bg-yellow-100 rounded-xl">
+                    <Clock className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      Business Hours
+                    </p>
+                    <p className="text-yellow-600">Mon-Fri: 8AM-6PM</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl border border-green-100">
+                <div className="flex items-center mb-4">
+                  <Award className="w-6 h-6 text-green-600 mr-2" />
+                  <h4 className="font-bold text-gray-800">Why Choose Us?</h4>
+                </div>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-center">
+                    <Star className="w-4 h-4 text-yellow-500 mr-2" />
+                    15+ Years Experience
+                  </li>
+                  <li className="flex items-center">
+                    <Users className="w-4 h-4 text-green-500 mr-2" />
+                    50K+ Happy Clients
+                  </li>
+                  <li className="flex items-center">
+                    <Package className="w-4 h-4 text-yellow-500 mr-2" />
+                    Premium Quality
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Inquiry Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white shadow-xl border rounded-xl p-6 md:p-10 space-y-6"
-        >
-          <h3 className="text-2xl font-semibold">Send Us Your Inquiry</h3>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-800">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              required
-              value={form.name}
-              onChange={handleChange}
-              className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500"
-              placeholder="Your full name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-800">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              required
-              value={form.email}
-              onChange={handleChange}
-              className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-800">Message</label>
-            <textarea
-              name="message"
-              rows="4"
-              required
-              value={form.message}
-              onChange={handleChange}
-              className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500"
-              placeholder={
-                fromCart
-                  ? 'Write any specifications or questions about the selected items...'
-                  : 'Tell us how we can assist you with our services...'
-              }
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-3 px-6 rounded-lg shadow"
+          {/* Form Section */}
+          <div
+            className={`lg:col-span-2 transition-all duration-700 delay-800 ${
+              isVisible
+                ? "translate-x-0 opacity-100"
+                : "translate-x-10 opacity-0"
+            }`}
           >
-            Submit Inquiry
-          </button>
-        </form>
+            {/* Cart Items Display */}
+            {fromCart && cartItems.length > 0 && (
+              <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 mb-8">
+                <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent flex items-center">
+                  <ShoppingBag className="w-6 h-6 mr-3 text-green-600" />
+                  Selected Products
+                </h2>
+                <div className="grid gap-4">
+                  {cartItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-4 p-4 bg-green-50 rounded-2xl border border-green-100"
+                    >
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        className="w-20 h-20 object-cover rounded-xl"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-800 text-lg">
+                          {item.name}
+                        </p>
+                        <p className="text-green-600 font-medium">
+                          Quantity: {item.qty}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <Heart className="w-5 h-5 text-red-500 mb-2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Back Buttons */}
-        <div className="mt-8 flex gap-4">
-          <Link to="/shop">
-            <button className="bg-green-100 text-green-800 px-4 py-2 rounded hover:bg-green-500 hover:text-white transition">
-              ← Back to Products
-            </button>
-          </Link>
-          <Link to="/services">
-            <button className="bg-green-100 text-green-800 px-4 py-2 rounded hover:bg-green-500 hover:text-white transition">
-              ← Back to Services
-            </button>
-          </Link>
+            {/* Main Form */}
+            <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8">
+              {isSubmitted ? (
+                <div className="text-center py-12 animate-fadeIn">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+                    <CheckCircle2 className="w-10 h-10 text-green-600" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
+                    Thank You!
+                  </h3>
+                  <p className="text-gray-600 text-lg mb-8">
+                    Your inquiry has been submitted successfully. We'll get back
+                    to you within 24 hours.
+                  </p>
+                  <div className="flex justify-center gap-4">
+                    <button
+                      onClick={() => navigate("/shop")}
+                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-yellow-600 text-white rounded-2xl font-semibold hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                    >
+                      Continue Shopping
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form
+                  ref={formRef}
+                  onSubmit={handleSubmit}
+                  className="space-y-8"
+                >
+                  <div className="text-center mb-8">
+                    <h3 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent mb-2">
+                      Send Us Your Inquiry
+                    </h3>
+                    <p className="text-gray-600">
+                      Fill out the form below and we'll respond promptly
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                        <User className="w-4 h-4 mr-2 text-green-600" />
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        required
+                        value={form.name}
+                        onChange={handleChange}
+                        className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                        <Mail className="w-4 h-4 mr-2 text-green-600" />
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        value={form.email}
+                        onChange={handleChange}
+                        className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
+                        placeholder="Enter your email address"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                      <MessageSquare className="w-4 h-4 mr-2 text-green-600" />
+                      Message *
+                    </label>
+                    <textarea
+                      name="message"
+                      rows="6"
+                      required
+                      value={form.message}
+                      onChange={handleChange}
+                      className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white resize-none"
+                      placeholder={
+                        fromCart
+                          ? "Share your requirements, specifications, or any questions about the selected items..."
+                          : "Tell us about your project, timeline, budget, or any specific requirements..."
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="flex-1 group relative px-8 py-4 bg-gradient-to-r from-green-600 to-yellow-600 text-white rounded-2xl font-semibold hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                    >
+                      <span className="relative z-10 flex items-center justify-center">
+                        {isLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
+                            Submit Inquiry
+                          </>
+                        )}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </button>
+
+                    <Link to="/shop" className="flex-1">
+                      <button
+                        type="button"
+                        className="w-full group px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-green-200 text-green-700 rounded-2xl font-semibold hover:bg-white hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      >
+                        <span className="flex items-center justify-center">
+                          <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                          Back to Shop
+                        </span>
+                      </button>
+                    </Link>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
