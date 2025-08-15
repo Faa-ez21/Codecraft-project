@@ -27,8 +27,9 @@ import Categories from "./pages/Categories";
 import ContentManagement from "./pages/ContentManagement";
 import BlogPostList from "./pages/BlogPostList";
 import CreateBlogPost from "./pages/CreateBlogpost";
-import EditBlogPost from "./pages/EditBlogPost"; // ✅ Added
+import EditBlogPost from "./pages/EditBlogPost";
 import HomePageBanners from "./pages/HomepageBanners";
+import UploadImages from "./pages/UploadImages"; // ✅ Added
 
 // Discounts
 import Discounts from "./pages/Discounts";
@@ -90,8 +91,9 @@ export default function App() {
           <Route path="/content" element={<ContentManagement />} />
           <Route path="/content/blogs" element={<BlogPostList />} />
           <Route path="/content/blogs/create" element={<CreateBlogPost />} />
-          <Route path="/content/blogs/edit/:id" element={<EditBlogPost />} /> {/* ✅ Added */}
+          <Route path="/content/blogs/edit/:id" element={<EditBlogPost />} />
           <Route path="/content/banners" element={<HomePageBanners />} />
+          <Route path="/content/media-upload" element={<UploadImages />} /> {/* ✅ Added */}
 
           {/* Analytics */}
           <Route path="/analytics" element={<AnalyticsOverview />} />

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
-import imageCompression from "browser-image-compression";
 import { toast } from "react-toastify";
+import { uploadImage } from "../lib/imageUpload";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function AddProduct({ productId = null }) {
@@ -52,37 +52,12 @@ export default function AddProduct({ productId = null }) {
     }
   };
 
-  const handleImageUpload = async () => {
-    if (!imageFile) return form.image_url;
-
-    const compressedImage = await imageCompression(imageFile, {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 800,
-      useWebWorker: true,
-    });
-
-    const fileExt = imageFile.name.split(".").pop();
-    const fileName = `${uuidv4()}.${fileExt}`;
-    const filePath = `products/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(filePath, compressedImage);
-
-    if (uploadError) {
-      throw new Error("Image upload failed.");
-    }
-
-    const { data } = supabase.storage.from("product-images").getPublicUrl(filePath);
-    return data.publicUrl;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const image_url = await handleImageUpload();
+      const image_url = imageFile ? await uploadImage(imageFile) : form.image_url;
 
       const productPayload = {
         name: form.name,
@@ -154,90 +129,22 @@ export default function AddProduct({ productId = null }) {
     <div className="max-w-2xl mx-auto p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-4">{productId ? "Edit" : "Add"} Product</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Product Name"
-          className="w-full border px-3 py-2"
-          required
-        />
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="w-full border px-3 py-2"
-          required
-        />
-        <input
-          type="number"
-          name="price"
-          value={form.price}
-          onChange={handleChange}
-          placeholder="Price"
-          className="w-full border px-3 py-2"
-          required
-        />
-        <input
-          type="number"
-          name="stock_quantity"
-          value={form.stock_quantity}
-          onChange={handleChange}
-          placeholder="Stock Quantity"
-          className="w-full border px-3 py-2"
-          required
-        />
-        <select
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          className="w-full border px-3 py-2"
-          required
-        >
+        <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Product Name" className="w-full border px-3 py-2" required />
+        <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description" className="w-full border px-3 py-2" required />
+        <input type="number" name="price" value={form.price} onChange={handleChange} placeholder="Price" className="w-full border px-3 py-2" required />
+        <input type="number" name="stock_quantity" value={form.stock_quantity} onChange={handleChange} placeholder="Stock Quantity" className="w-full border px-3 py-2" required />
+        <select name="category" value={form.category} onChange={handleChange} className="w-full border px-3 py-2" required>
           <option value="">Select Category</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
-          ))}
+          {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
         </select>
-        <select
-          name="subcategory"
-          value={form.subcategory}
-          onChange={handleChange}
-          className="w-full border px-3 py-2"
-          required
-        >
+        <select name="subcategory" value={form.subcategory} onChange={handleChange} className="w-full border px-3 py-2" required>
           <option value="">Select Subcategory</option>
-          {subcategories.map((sub) => (
-            <option key={sub.id} value={sub.id}>{sub.name}</option>
-          ))}
+          {subcategories.map((sub) => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
         </select>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files[0])}
-          className="w-full"
-        />
-        <input
-          type="text"
-          placeholder="Materials (comma-separated)"
-          value={form.materials.join(", ")}
-          onChange={(e) => handleMultiSelectChange("materials", e.target.value)}
-          className="w-full border px-3 py-2"
-        />
-        <input
-          type="text"
-          placeholder="Colors (comma-separated)"
-          value={form.colors.join(", ")}
-          onChange={(e) => handleMultiSelectChange("colors", e.target.value)}
-          className="w-full border px-3 py-2"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-60"
-          disabled={loading}
-        >
+        <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full" />
+        <input type="text" placeholder="Materials (comma-separated)" value={form.materials.join(", ")} onChange={(e) => handleMultiSelectChange("materials", e.target.value)} className="w-full border px-3 py-2" />
+        <input type="text" placeholder="Colors (comma-separated)" value={form.colors.join(", ")} onChange={(e) => handleMultiSelectChange("colors", e.target.value)} className="w-full border px-3 py-2" />
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-60" disabled={loading}>
           {loading ? "Saving..." : productId ? "Update Product" : "Add Product"}
         </button>
       </form>

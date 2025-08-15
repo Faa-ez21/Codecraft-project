@@ -8,35 +8,48 @@ export default function ProductList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select(`
-          id,
-          name,
-          price,
-          status,
-          stock_quantity,
-          image_url,
-          categories (
-            name
-          ),
-          subcategories (
-            name
-          )
-        `);
-
-      if (error) {
-        console.error("Error loading products:", error.message);
-        setError("Failed to load products.");
-      } else {
-        setProducts(data);
-      }
-      setLoading(false);
-    };
-
     fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select(`
+        id,
+        name,
+        price,
+        status,
+        stock_quantity,
+        image_url,
+        categories (
+          name
+        ),
+        subcategories (
+          name
+        )
+      `);
+
+    if (error) {
+      console.error("Error loading products:", error.message);
+      setError("Failed to load products.");
+    } else {
+      setProducts(data);
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) {
+      console.error("Error deleting product:", error.message);
+      alert("Delete failed!");
+    } else {
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      alert("Product deleted successfully!");
+    }
+  };
 
   return (
     <div className="p-6">
@@ -96,13 +109,19 @@ export default function ProductList() {
                     </span>
                   </td>
                   <td className="p-3">{prod.stock_quantity}</td>
-                  <td className="p-3">
+                  <td className="p-3 space-x-3">
                     <Link
                       to={`/edit-product/${prod.id}`}
                       className="text-blue-500 hover:underline text-sm"
                     >
                       Edit
                     </Link>
+                    <button
+                      onClick={() => handleDelete(prod.id)}
+                      className="text-red-500 hover:underline text-sm"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
