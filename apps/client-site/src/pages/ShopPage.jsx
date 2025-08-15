@@ -315,7 +315,7 @@ const ShopPage = () => {
   };
 
   const handleGetConsultation = () => {
-    navigate('/inquiry');
+    navigate("/inquiry");
   };
 
   return (
@@ -360,7 +360,7 @@ const ShopPage = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
 
-            <button 
+            <button
               onClick={handleGetConsultation}
               className="group px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-green-200 text-green-700 rounded-2xl font-semibold hover:bg-white hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >

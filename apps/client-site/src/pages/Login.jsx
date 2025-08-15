@@ -116,7 +116,7 @@ export default function LoginPage() {
                 Welcome Back
               </h2>
               <p className="text-gray-600">
-                Sign in to your Expert Office account
+                Sign in to your Expert Office Furnish account
               </p>
             </div>
 
