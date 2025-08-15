@@ -17,7 +17,7 @@ import {
   Award,
   TrendingUp,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/footer";
 import Header from "../components/header";
 import { useCart } from "../context/CartContext";
@@ -202,6 +202,7 @@ const ProductCard = ({ product, index }) => {
 };
 
 const ShopPage = () => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState({});
   const [expandedCats, setExpandedCats] = useState({});
@@ -313,6 +314,10 @@ const ShopPage = () => {
     }));
   };
 
+  const handleGetConsultation = () => {
+    navigate('/inquiry');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-yellow-50 text-gray-900 relative overflow-hidden">
       {/* Floating Background Elements */}
@@ -355,7 +360,10 @@ const ShopPage = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
 
-            <button className="group px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-green-200 text-green-700 rounded-2xl font-semibold hover:bg-white hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <button 
+              onClick={handleGetConsultation}
+              className="group px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-green-200 text-green-700 rounded-2xl font-semibold hover:bg-white hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
               <span className="flex items-center">
                 <ArrowRight className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
                 Get Consultation

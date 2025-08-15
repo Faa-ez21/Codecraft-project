@@ -84,21 +84,39 @@ export default function Header() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-green-100"
-          : "bg-transparent backdrop-blur-sm"
+          ? "bg-white/95 backdrop-blur-lg shadow-xl border-b border-green-100/50"
+          : "bg-black/20 backdrop-blur-md"
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+          {/* Enhanced Logo */}
           <Link to="/" className="flex items-center group">
             <div className="relative">
               <img
                 src={logo}
                 alt="Expert Office Logo"
-                className="h-10 sm:h-12 transition-transform duration-300 group-hover:scale-105 drop-shadow-lg"
+                className="h-10 sm:h-12 transition-all duration-300 group-hover:scale-105 drop-shadow-lg"
               />
-              <div className="absolute -inset-2 bg-gradient-to-r from-green-400/10 to-yellow-400/10 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-3 bg-gradient-to-r from-green-400/20 to-yellow-400/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="ml-3 hidden sm:block">
+              <h1
+                className={`text-xl font-bold transition-all duration-300 ${
+                  isScrolled
+                    ? "bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent"
+                    : "text-white drop-shadow-lg"
+                }`}
+              >
+                Expert Office Furnish
+              </h1>
+              <p
+                className={`text-xs font-medium transition-all duration-300 ${
+                  isScrolled ? "text-gray-500" : "text-white/80 drop-shadow-md"
+                }`}
+              >
+                Premium Furniture
+              </p>
             </div>
           </Link>
 
@@ -106,10 +124,10 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-6">
             <Link
               to="/home"
-              className={`relative font-medium text-sm transition-all duration-300 hover:scale-105 group ${
+              className={`relative font-semibold text-sm transition-all duration-300 hover:scale-105 group ${
                 isScrolled
                   ? "text-gray-700 hover:text-green-600"
-                  : "text-white hover:text-yellow-200"
+                  : "text-white drop-shadow-lg hover:text-yellow-200"
               }`}
             >
               Home
@@ -123,10 +141,10 @@ export default function Header() {
             </Link>
             <Link
               to="/shop"
-              className={`relative font-medium text-sm transition-all duration-300 hover:scale-105 group ${
+              className={`relative font-semibold text-sm transition-all duration-300 hover:scale-105 group ${
                 isScrolled
                   ? "text-gray-700 hover:text-green-600"
-                  : "text-white hover:text-yellow-200"
+                  : "text-white drop-shadow-lg hover:text-yellow-200"
               }`}
             >
               Products
@@ -140,10 +158,10 @@ export default function Header() {
             </Link>
             <Link
               to="/gallery"
-              className={`relative font-medium text-sm transition-all duration-300 hover:scale-105 group ${
+              className={`relative font-semibold text-sm transition-all duration-300 hover:scale-105 group ${
                 isScrolled
                   ? "text-gray-700 hover:text-green-600"
-                  : "text-white hover:text-yellow-200"
+                  : "text-white drop-shadow-lg hover:text-yellow-200"
               }`}
             >
               Gallery
@@ -157,10 +175,10 @@ export default function Header() {
             </Link>
             <Link
               to="/services"
-              className={`relative font-medium text-sm transition-all duration-300 hover:scale-105 group ${
+              className={`relative font-semibold text-sm transition-all duration-300 hover:scale-105 group ${
                 isScrolled
                   ? "text-gray-700 hover:text-green-600"
-                  : "text-white hover:text-yellow-200"
+                  : "text-white drop-shadow-lg hover:text-yellow-200"
               }`}
             >
               Our Services
@@ -176,14 +194,14 @@ export default function Header() {
 
           {/* Right-side icons */}
           <div className="flex items-center gap-1 sm:gap-3">
-            {/* Enhanced Search */}
+            {/* Modern Search */}
             <div className="relative">
               <button
                 onClick={() => setShowSearch(!showSearch)}
-                className={`p-2 rounded-full transition-all duration-300 hover:scale-110 ${
+                className={`p-2.5 rounded-xl transition-all duration-300 hover:scale-105 border ${
                   isScrolled
-                    ? "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600"
-                    : "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20"
+                    ? "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600 border-gray-200 hover:border-green-300"
+                    : "bg-white/10 text-white hover:bg-white/20 hover:text-yellow-200 border-white/20 hover:border-white/40 drop-shadow-lg"
                 }`}
               >
                 <Search className="w-5 h-5" />
@@ -227,13 +245,13 @@ export default function Header() {
               )}
             </div>
 
-            {/* Enhanced Cart */}
+            {/* Modern Cart */}
             <Link to="/cart" className="relative group">
               <div
-                className={`p-2 rounded-full transition-all duration-300 hover:scale-110 ${
+                className={`p-2.5 rounded-xl transition-all duration-300 hover:scale-105 border ${
                   isScrolled
-                    ? "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600"
-                    : "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20"
+                    ? "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600 border-gray-200 hover:border-green-300"
+                    : "bg-white/10 text-white hover:bg-white/20 hover:text-yellow-200 border-white/20 hover:border-white/40 drop-shadow-lg"
                 }`}
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -245,14 +263,14 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* Enhanced User Menu */}
+            {/* Modern User Menu */}
             <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className={`p-2 rounded-full transition-all duration-300 hover:scale-110 ${
+                className={`p-2.5 rounded-xl transition-all duration-300 hover:scale-105 border ${
                   isScrolled
-                    ? "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600"
-                    : "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20"
+                    ? "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600 border-gray-200 hover:border-green-300"
+                    : "bg-white/10 text-white hover:bg-white/20 hover:text-yellow-200 border-white/20 hover:border-white/40 drop-shadow-lg"
                 }`}
               >
                 <User className="w-5 h-5" />
@@ -325,27 +343,27 @@ export default function Header() {
               )}
             </div>
 
-            {/* Enhanced Contact button */}
+            {/* Modern Contact Button */}
             <Link to="/contact">
               <button
-                className={`px-3 sm:px-4 py-2 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+                className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105 hover:shadow-lg ${
                   isScrolled
-                    ? "bg-gradient-to-r from-green-500 to-yellow-500 text-white hover:from-green-600 hover:to-yellow-600"
-                    : "bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30"
+                    ? "bg-gradient-to-r from-green-500 to-yellow-500 text-white hover:from-green-600 hover:to-yellow-600 border border-green-400"
+                    : "bg-gradient-to-r from-green-400 to-yellow-400 text-white hover:from-green-500 hover:to-yellow-500 border border-white/30 drop-shadow-lg"
                 }`}
               >
-                <span className="hidden sm:inline">Contact</span>
+                <span className="hidden sm:inline">Contact Us</span>
                 <span className="sm:hidden">Call</span>
               </button>
             </Link>
 
-            {/* Mobile Menu Button */}
+            {/* Modern Mobile Menu Button */}
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className={`lg:hidden p-2 rounded-full transition-all duration-300 hover:scale-110 ${
+              className={`lg:hidden p-2.5 rounded-xl transition-all duration-300 hover:scale-105 border ${
                 isScrolled
-                  ? "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600"
-                  : "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20"
+                  ? "bg-gray-50 text-gray-600 hover:bg-green-50 hover:text-green-600 border-gray-200 hover:border-green-300"
+                  : "bg-white/10 text-white hover:bg-white/20 hover:text-yellow-200 border-white/20 hover:border-white/40 drop-shadow-lg"
               }`}
             >
               {showMobileMenu ? (

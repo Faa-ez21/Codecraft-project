@@ -27,7 +27,14 @@ export default function ProductInquiry() {
   const location = useLocation();
   const navigate = useNavigate();
   const { cartItems } = useCart();
+
+  // Get state from navigation
   const fromCart = location?.state?.fromCart || false;
+  const includeProducts = location?.state?.includeProducts || false;
+  const fromService = location?.state?.fromService || false;
+  const serviceName = location?.state?.serviceName || "";
+  const itemsToShow = location?.state?.cartItems || cartItems || [];
+
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +99,14 @@ export default function ProductInquiry() {
                 : "translate-y-10 opacity-0"
             }`}
           >
-            {fromCart ? (
+            {fromService ? (
+              <>
+                Service{" "}
+                <span className="bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
+                  Consultation
+                </span>
+              </>
+            ) : includeProducts ? (
               <>
                 Let's Discuss Your{" "}
                 <span className="bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
@@ -116,7 +130,9 @@ export default function ProductInquiry() {
                 : "translate-y-10 opacity-0"
             }`}
           >
-            {fromCart
+            {fromService
+              ? `Get expert consultation for ${serviceName.toLowerCase()} and receive a customized solution for your business needs.`
+              : includeProducts
               ? "Share your requirements and let our experts help you create the perfect office setup."
               : "Connect with our furniture experts for personalized consultations and custom solutions."}
           </p>
@@ -222,15 +238,33 @@ export default function ProductInquiry() {
                 : "translate-x-10 opacity-0"
             }`}
           >
+            {/* Service Information Display */}
+            {fromService && serviceName && (
+              <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 mb-8">
+                <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent flex items-center">
+                  <Award className="w-6 h-6 mr-3 text-green-600" />
+                  Service Inquiry
+                </h2>
+                <div className="bg-green-50 rounded-2xl border border-green-100 p-6">
+                  <h3 className="font-semibold text-gray-800 text-xl mb-2">
+                    {serviceName}
+                  </h3>
+                  <p className="text-green-600 font-medium">
+                    Requesting consultation and quote for this service
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Cart Items Display */}
-            {fromCart && cartItems.length > 0 && (
+            {includeProducts && itemsToShow.length > 0 && (
               <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 mb-8">
                 <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent flex items-center">
                   <ShoppingBag className="w-6 h-6 mr-3 text-green-600" />
                   Selected Products
                 </h2>
                 <div className="grid gap-4">
-                  {cartItems.map((item) => (
+                  {itemsToShow.map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center gap-4 p-4 bg-green-50 rounded-2xl border border-green-100"

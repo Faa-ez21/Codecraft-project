@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Sparkles,
   ArrowRight,
@@ -129,10 +129,23 @@ const services = [
 ];
 
 export default function OurServicesPage() {
+  const navigate = useNavigate();
   const [visibleCards, setVisibleCards] = useState(new Set());
   const [hoveredCard, setHoveredCard] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const observerRef = useRef(null);
+
+  const handleServiceInquiry = (serviceName) => {
+    navigate("/inquiry", {
+      state: {
+        fromCart: false,
+        includeProducts: false,
+        fromService: true,
+        serviceName: serviceName,
+        cartItems: [],
+      },
+    });
+  };
 
   // Initialize intersection observer for animations
   useEffect(() => {
@@ -228,15 +241,15 @@ export default function OurServicesPage() {
               Browse Products
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
-            <Link
-              to="/inquiry"
+            <button
+              onClick={() => handleServiceInquiry("General Consultation")}
               className="bg-white text-gray-700 px-8 py-4 rounded-2xl font-semibold border-2 border-gray-200 
                        hover:border-green-500 hover:text-green-600 transition-all duration-300 transform hover:scale-105 
                        shadow-sm hover:shadow-lg flex items-center group"
             >
               Get Consultation
               <Shield className="w-5 h-5 ml-2 group-hover:rotate-12 transition-transform duration-300" />
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -331,15 +344,26 @@ export default function OurServicesPage() {
                 </div>
 
                 {/* CTA Button */}
-                <Link to={service.path}>
+                {service.path === "/inquiry" ? (
                   <button
+                    onClick={() => handleServiceInquiry(service.title)}
                     className={`w-full bg-gradient-to-r ${service.color} text-white py-3 px-6 rounded-2xl font-semibold 
                                    hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center group`}
                   >
-                    <span>Explore Service</span>
+                    <span>Get Quote</span>
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                   </button>
-                </Link>
+                ) : (
+                  <Link to={service.path}>
+                    <button
+                      className={`w-full bg-gradient-to-r ${service.color} text-white py-3 px-6 rounded-2xl font-semibold 
+                                     hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center group`}
+                    >
+                      <span>Explore Service</span>
+                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                    </button>
+                  </Link>
+                )}
               </div>
 
               {/* Decorative Elements */}

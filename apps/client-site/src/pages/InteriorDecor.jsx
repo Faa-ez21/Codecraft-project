@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Sparkles,
   ArrowRight,
@@ -23,6 +23,7 @@ import ExpertOffice from "../assets/ExpertOffice.jpg";
 const InteriorDecor = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [hoveredProject, setHoveredProject] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -57,6 +58,14 @@ const InteriorDecor = () => {
       year: "2024",
     },
   ];
+
+  const handleViewPortfolio = () => {
+    // Scroll to the portfolio section on the same page
+    const portfolioSection = document.getElementById('portfolio-section');
+    if (portfolioSection) {
+      portfolioSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const services = [
     {
@@ -154,7 +163,10 @@ const InteriorDecor = () => {
               </button>
             </Link>
 
-            <button className="group px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-green-200 text-green-700 rounded-2xl font-semibold hover:bg-white hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <button 
+              onClick={handleViewPortfolio}
+              className="group px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-green-200 text-green-700 rounded-2xl font-semibold hover:bg-white hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
               <span className="flex items-center">
                 <Eye className="w-5 h-5 mr-2" />
                 View Portfolio
@@ -208,6 +220,7 @@ const InteriorDecor = () => {
 
       {/* Projects Portfolio Section */}
       <section
+        id="portfolio-section"
         className={`relative py-20 px-4 bg-white/50 backdrop-blur-sm transition-all duration-700 delay-1000 ${
           isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
         }`}

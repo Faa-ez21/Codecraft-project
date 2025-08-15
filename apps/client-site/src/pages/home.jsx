@@ -496,12 +496,16 @@ export default function Homepage() {
       <section
         ref={blogRef}
         data-section="blog"
-        className="py-24 bg-white relative overflow-hidden"
+        className="py-24 relative overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, #fefefe 0%, #f9fafb 50%, #f3f4f6 100%)`,
+        }}
       >
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 left-20 w-40 h-40 bg-green-500 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-20 w-60 h-60 bg-yellow-500 rounded-full blur-3xl animate-pulse"></div>
+        {/* Enhanced Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-20 w-40 h-40 bg-gradient-to-br from-green-100/30 to-transparent rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-60 h-60 bg-gradient-to-tl from-yellow-100/25 to-transparent rounded-full blur-3xl animate-pulse delay-500"></div>
+          <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-gradient-to-r from-green-50/40 to-yellow-50/40 rounded-full blur-2xl"></div>
         </div>
 
         <div className="relative z-10">
@@ -630,12 +634,16 @@ export default function Homepage() {
       <section
         ref={testimonialsRef}
         data-section="testimonials"
-        className="py-24 bg-gradient-to-br from-white to-gray-50 relative overflow-hidden"
+        className="py-24 relative overflow-hidden"
+        style={{
+          background: `linear-gradient(135deg, #ffffff 0%, #f8fafc 30%, #e2e8f0 70%, #f1f5f9 100%)`,
+        }}
       >
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 right-20 w-40 h-40 bg-green-500 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 left-20 w-60 h-60 bg-yellow-500 rounded-full blur-3xl animate-pulse"></div>
+        {/* Enhanced Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-10 right-10 w-64 h-64 bg-gradient-to-bl from-yellow-100/25 to-transparent rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-10 left-10 w-80 h-80 bg-gradient-to-tr from-green-100/20 to-transparent rounded-full blur-3xl animate-pulse delay-700"></div>
+          <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-gradient-to-l from-green-50/30 to-yellow-50/30 rounded-full blur-2xl"></div>
         </div>
 
         <div className="relative z-10">
