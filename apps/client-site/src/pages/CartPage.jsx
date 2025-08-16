@@ -15,12 +15,7 @@ import {
 } from "lucide-react";
 import Header from "../components/header";
 import Footer from "../components/footer";
-
-const suggestions = [
-  { id: 1, name: "Modern Desk Lamp", image: "/lamp.png" },
-  { id: 2, name: "Ergonomic Keyboard", image: "/keyboard.png" },
-  { id: 3, name: "Wireless Mouse", image: "/mouse.png" },
-];
+import RelatedProducts from "../components/RelatedProducts";
 
 export default function CartPage() {
   const { cartItems, updateQuantity, clearCart } = useCart();
@@ -457,7 +452,7 @@ export default function CartPage() {
           </>
         )}
 
-        {/* Suggestions Section */}
+        {/* Related Products Section */}
         <div
           className={`transition-all duration-1000 delay-1100 ${
             isAnimated
@@ -465,51 +460,25 @@ export default function CartPage() {
               : "opacity-0 translate-y-10"
           }`}
         >
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
-              You May Be Interested In
-            </h2>
-            <p className="text-gray-600 text-lg">
-              Discover more amazing products from our collection
-            </p>
-          </div>
+          <div className="space-y-8">
+            {/* Products similar to cart items */}
+            <RelatedProducts
+              cartItems={cartItems}
+              algorithm="similar"
+              title="Complete Your Setup"
+              subtitle="Products that go well with your cart items"
+              limit={4}
+              showAddToCart={true}
+            />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {suggestions.map((product, index) => (
-              <div
-                key={product.id}
-                className={`group cursor-pointer transition-all duration-700 ${
-                  isAnimated
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-10"
-                }`}
-                style={{ transitionDelay: `${1200 + index * 100}ms` }}
-              >
-                <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl border border-green-100 overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-300 group-hover:border-green-300">
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="absolute top-4 right-4">
-                      <div className="w-10 h-10 bg-white/90 backdrop-blur-lg rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110">
-                        <ArrowRight className="w-5 h-5 text-green-600" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-6 text-center">
-                    <h3 className="font-bold text-gray-800 text-lg group-hover:text-green-600 transition-colors duration-300">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-500 text-sm mt-2">
-                      Premium Quality Furniture
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {/* Popular products */}
+            <RelatedProducts
+              algorithm="popular"
+              title="Popular This Week"
+              subtitle="Most viewed office furniture by other customers"
+              limit={4}
+              showAddToCart={true}
+            />
           </div>
         </div>
       </div>
