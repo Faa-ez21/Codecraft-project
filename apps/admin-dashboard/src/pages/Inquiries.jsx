@@ -44,14 +44,16 @@ export default function Inquiries() {
       // Fetch inquiries with product information if available
       const { data, error } = await supabase
         .from("inquiries")
-        .select(`
+        .select(
+          `
           *,
           products (
             id,
             name,
             image_url
           )
-        `)
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -63,9 +65,12 @@ export default function Inquiries() {
 
       // Calculate stats
       const total = data?.length || 0;
-      const pending = data?.filter((inq) => inq.status === "pending").length || 0;
-      const responded = data?.filter((inq) => inq.status === "responded").length || 0;
-      const resolved = data?.filter((inq) => inq.status === "resolved").length || 0;
+      const pending =
+        data?.filter((inq) => inq.status === "pending").length || 0;
+      const responded =
+        data?.filter((inq) => inq.status === "responded").length || 0;
+      const resolved =
+        data?.filter((inq) => inq.status === "resolved").length || 0;
 
       setStats({ total, pending, responded, resolved });
     } catch (error) {
@@ -183,7 +188,9 @@ export default function Inquiries() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Customer Inquiries</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Customer Inquiries
+          </h1>
           <p className="text-gray-600 mt-2">
             Manage and respond to customer inquiries and product questions
           </p>
@@ -204,7 +211,9 @@ export default function Inquiries() {
         <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Inquiries</p>
+              <p className="text-sm font-medium text-gray-600">
+                Total Inquiries
+              </p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
@@ -217,7 +226,9 @@ export default function Inquiries() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {stats.pending}
+              </p>
             </div>
             <div className="p-3 bg-yellow-100 rounded-lg">
               <Clock className="w-6 h-6 text-yellow-600" />
@@ -229,7 +240,9 @@ export default function Inquiries() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Responded</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.responded}</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {stats.responded}
+              </p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
               <AlertCircle className="w-6 h-6 text-blue-600" />
@@ -241,7 +254,9 @@ export default function Inquiries() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Resolved</p>
-              <p className="text-2xl font-bold text-green-600">{stats.resolved}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {stats.resolved}
+              </p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
               <CheckCircle className="w-6 h-6 text-green-600" />
@@ -315,8 +330,12 @@ export default function Inquiries() {
                         <User className="w-4 h-4 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{inquiry.name}</p>
-                        <p className="text-sm text-gray-600">{inquiry.contact}</p>
+                        <p className="font-medium text-gray-900">
+                          {inquiry.name}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {inquiry.contact}
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -324,7 +343,10 @@ export default function Inquiries() {
                     {inquiry.products ? (
                       <div className="flex items-center gap-3">
                         <img
-                          src={inquiry.products.image_url || "/api/placeholder/40/40"}
+                          src={
+                            inquiry.products.image_url ||
+                            "/api/placeholder/40/40"
+                          }
                           alt={inquiry.products.name}
                           className="w-10 h-10 rounded-lg object-cover"
                         />
@@ -332,7 +354,9 @@ export default function Inquiries() {
                           <p className="font-medium text-gray-900">
                             {inquiry.products.name}
                           </p>
-                          <p className="text-sm text-gray-600">Product Inquiry</p>
+                          <p className="text-sm text-gray-600">
+                            Product Inquiry
+                          </p>
                         </div>
                       </div>
                     ) : (
@@ -361,7 +385,9 @@ export default function Inquiries() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-gray-900">{formatDate(inquiry.created_at)}</p>
+                    <p className="text-gray-900">
+                      {formatDate(inquiry.created_at)}
+                    </p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
@@ -378,7 +404,9 @@ export default function Inquiries() {
                       <div className="relative group">
                         <select
                           value={inquiry.status || "pending"}
-                          onChange={(e) => updateInquiryStatus(inquiry.id, e.target.value)}
+                          onChange={(e) =>
+                            updateInquiryStatus(inquiry.id, e.target.value)
+                          }
                           className="text-sm border border-gray-300 rounded px-2 py-1"
                         >
                           <option value="pending">Pending</option>
@@ -442,11 +470,15 @@ export default function Inquiries() {
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Name</label>
+                    <label className="text-sm font-medium text-gray-600">
+                      Name
+                    </label>
                     <p className="text-gray-900">{selectedInquiry.name}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Contact</label>
+                    <label className="text-sm font-medium text-gray-600">
+                      Contact
+                    </label>
                     <p className="text-gray-900">{selectedInquiry.contact}</p>
                   </div>
                 </div>
@@ -460,7 +492,10 @@ export default function Inquiries() {
                   </h3>
                   <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                     <img
-                      src={selectedInquiry.products.image_url || "/api/placeholder/60/60"}
+                      src={
+                        selectedInquiry.products.image_url ||
+                        "/api/placeholder/60/60"
+                      }
                       alt={selectedInquiry.products.name}
                       className="w-16 h-16 rounded-lg object-cover"
                     />
@@ -478,7 +513,9 @@ export default function Inquiries() {
 
               {/* Message */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Message</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Message
+                </h3>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <p className="text-gray-900">{selectedInquiry.message}</p>
                 </div>
@@ -487,7 +524,9 @@ export default function Inquiries() {
               {/* Status & Date */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Status</label>
+                  <label className="text-sm font-medium text-gray-600">
+                    Status
+                  </label>
                   <div className="mt-1">
                     <span
                       className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
@@ -495,14 +534,20 @@ export default function Inquiries() {
                       )}`}
                     >
                       {getStatusIcon(selectedInquiry.status || "pending")}
-                      {(selectedInquiry.status || "pending").charAt(0).toUpperCase() +
+                      {(selectedInquiry.status || "pending")
+                        .charAt(0)
+                        .toUpperCase() +
                         (selectedInquiry.status || "pending").slice(1)}
                     </span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Date Submitted</label>
-                  <p className="text-gray-900">{formatDate(selectedInquiry.created_at)}</p>
+                  <label className="text-sm font-medium text-gray-600">
+                    Date Submitted
+                  </label>
+                  <p className="text-gray-900">
+                    {formatDate(selectedInquiry.created_at)}
+                  </p>
                 </div>
               </div>
 

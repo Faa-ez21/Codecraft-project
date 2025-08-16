@@ -235,18 +235,27 @@ export default function AddProduct({ productId = null }) {
         created_at: new Date().toISOString(),
       };
 
+      console.log("🚀 Product Payload:", productPayload);
+      console.log("📝 Form Data:", {
+        category: form.category,
+        subcategory: form.subcategory,
+      });
+
       if (productId) {
         const { error } = await supabase
           .from("products")
           .update(productPayload)
           .eq("id", productId);
         if (error) throw error;
+        console.log("✅ Product updated successfully!");
         toast.success("Product updated successfully!");
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("products")
-          .insert([productPayload]);
+          .insert([productPayload])
+          .select();
         if (error) throw error;
+        console.log("✅ Product created successfully:", data);
         toast.success("Product added successfully!");
       }
 

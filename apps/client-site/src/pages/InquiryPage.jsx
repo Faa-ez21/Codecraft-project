@@ -68,9 +68,9 @@ export default function ProductInquiry() {
       if (includeProducts && itemsToShow.length > 0) {
         // For now, just use the first product if multiple items
         inquiryData.product_id = itemsToShow[0].id;
-        
+
         // Enhance message with product details
-        const productNames = itemsToShow.map(item => item.name).join(", ");
+        const productNames = itemsToShow.map((item) => item.name).join(", ");
         inquiryData.message += `\n\nProducts of interest: ${productNames}`;
       }
 
@@ -81,17 +81,17 @@ export default function ProductInquiry() {
 
       // Submit to Supabase
       const { data, error } = await supabase
-        .from('inquiries')
+        .from("inquiries")
         .insert([inquiryData])
         .select();
 
       if (error) {
-        console.error('Error submitting inquiry:', error);
-        setSubmitError('Failed to submit inquiry. Please try again.');
+        console.error("Error submitting inquiry:", error);
+        setSubmitError("Failed to submit inquiry. Please try again.");
         return;
       }
 
-      console.log('Inquiry submitted successfully:', data);
+      console.log("Inquiry submitted successfully:", data);
       setIsSubmitted(true);
 
       // Reset form after success animation
@@ -99,10 +99,9 @@ export default function ProductInquiry() {
         setForm({ name: "", email: "", message: "" });
         setIsSubmitted(false);
       }, 3000);
-      
     } catch (error) {
-      console.error('Error submitting inquiry:', error);
-      setSubmitError('An unexpected error occurred. Please try again.');
+      console.error("Error submitting inquiry:", error);
+      setSubmitError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -369,7 +368,7 @@ export default function ProductInquiry() {
                     <p className="text-gray-600">
                       Fill out the form below and we'll respond promptly
                     </p>
-                    
+
                     {/* Error Message */}
                     {submitError && (
                       <div className="mt-4 p-4 bg-red-100 border border-red-300 rounded-lg">

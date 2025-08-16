@@ -69,29 +69,28 @@ export default function App() {
   }, [darkMode]);
 
   return (
-    <div className={darkMode ? "dark bg-gray-900 text-gray-100" : "bg-white text-gray-900"}>
+    <div
+      className={
+        darkMode ? "dark bg-gray-900 text-gray-100" : "bg-white text-gray-900"
+      }
+    >
       <AdminLayout toggleDarkMode={toggleDarkMode} darkMode={darkMode}>
         <Routes>
           {/* Dashboard */}
           <Route path="/" element={<Dashboard />} />
-
           {/* Products */}
           <Route path="/products" element={<Products />} />
           <Route path="/product-list" element={<ProductList />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/edit-product/:id" element={<EditProduct />} />
-
           {/* Orders */}
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
-
           {/* Inquiries */}
           <Route path="/inquiries" element={<Inquiries />} />
-
           {/* Customers */}
           <Route path="/customers" element={<Customers />} />
           <Route path="/customers/:id" element={<CustomerDetails />} />
-
           {/* Categories & Content */}
           <Route path="/categories" element={<Categories />} />
           <Route path="/content" element={<ContentManagement />} />
@@ -99,24 +98,24 @@ export default function App() {
           <Route path="/content/blogs/create" element={<CreateBlogPost />} />
           <Route path="/content/blogs/edit/:id" element={<EditBlogPost />} />
           <Route path="/content/banners" element={<HomePageBanners />} />
-          <Route path="/content/media-upload" element={<UploadImages />} /> {/* ✅ Added */}
-
+          <Route path="/content/media-upload" element={<UploadImages />} />{" "}
+          {/* ✅ Added */}
           {/* Analytics */}
           <Route path="/analytics" element={<AnalyticsOverview />} />
-          <Route path="/analytics/sales-performance" element={<SalesPerformance />} />
+          <Route
+            path="/analytics/sales-performance"
+            element={<SalesPerformance />}
+          />
           <Route path="/analytics/top-products" element={<TopProducts />} />
           <Route path="/analytics/user-behavior" element={<UserBehavior />} />
-
           {/* Discounts */}
           <Route path="/discounts" element={<Discounts />} />
           <Route path="/discounts/create" element={<CreateDiscount />} />
           <Route path="/discounts/edit/:id" element={<EditDiscount />} />
-
           {/* User Management */}
           <Route path="/users" element={<Users />} />
           <Route path="/add-user" element={<AddUser />} />
           <Route path="/edit-user/:id" element={<EditUser />} />
-
           {/* Admin Roles */}
           <Route path="/admin-roles" element={<AdminRoles />} />
           <Route path="/add-role" element={<AddRole />} />

@@ -16,6 +16,7 @@ import {
   Zap,
   Award,
   TrendingUp,
+  RefreshCw,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/footer";
@@ -216,15 +217,43 @@ const ShopPage = () => {
   const observer = useRef();
 
   const loadCategories = async () => {
-    const { data: catData } = await supabase.from("categories").select("*");
-    const { data: subData } = await supabase.from("subcategories").select("*");
-    const groupedSub = subData.reduce((acc, curr) => {
-      acc[curr.category_id] = acc[curr.category_id] || [];
-      acc[curr.category_id].push(curr);
-      return acc;
-    }, {});
-    setCategories(catData || []);
-    setSubcategories(groupedSub);
+    console.log("🏷️ Loading categories and subcategories...");
+    try {
+      const { data: catData, error: catError } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name");
+
+      const { data: subData, error: subError } = await supabase
+        .from("subcategories")
+        .select("*")
+        .order("name");
+
+      if (catError) {
+        console.error("Error loading categories:", catError);
+        return;
+      }
+
+      if (subError) {
+        console.error("Error loading subcategories:", subError);
+        return;
+      }
+
+      const groupedSub = subData.reduce((acc, curr) => {
+        acc[curr.category_id] = acc[curr.category_id] || [];
+        acc[curr.category_id].push(curr);
+        return acc;
+      }, {});
+
+      console.log("📊 Categories loaded:", catData?.length || 0);
+      console.log("📊 Subcategories loaded:", subData?.length || 0);
+      console.log("🗂️ Grouped subcategories:", groupedSub);
+
+      setCategories(catData || []);
+      setSubcategories(groupedSub);
+    } catch (error) {
+      console.error("Error in loadCategories:", error);
+    }
   };
 
   const loadFilterOptions = async () => {
@@ -237,42 +266,80 @@ const ShopPage = () => {
   };
 
   const loadProducts = async (reset = false) => {
+    console.log("📦 Loading products...", {
+      selectedCategory,
+      reset,
+      page: reset ? 1 : page,
+    });
     setIsLoading(true);
-    let query = supabase.from("products").select(`
-        *,
-        categories(name),
-        subcategories(name)
-      `);
 
-    if (selectedCategory !== "All") {
-      const matchedCategory = categories.find(
-        (c) => c.name === selectedCategory
-      );
-      const matchedSub = Object.values(subcategories)
-        .flat()
-        .find((s) => s.name === selectedCategory);
-      if (matchedCategory) query = query.eq("category_id", matchedCategory.id);
-      else if (matchedSub) query = query.eq("subcategory_id", matchedSub.id);
-    }
+    try {
+      let query = supabase.from("products").select(`
+          *,
+          categories(id, name),
+          subcategories(id, name)
+        `);
 
-    if (filters.material)
-      query = query.contains("materials", [filters.material]);
-    if (filters.color) query = query.contains("colors", [filters.color]);
-    if (filters.inStock) query = query.gt("stock_quantity", 0);
-    if (searchTerm) query = query.ilike("name", `%${searchTerm}%`);
+      // Add status filter to only show active products
+      query = query.eq("status", "active");
 
-    query = query.range((page - 1) * 12, page * 12 - 1);
+      if (selectedCategory !== "All") {
+        const matchedCategory = categories.find(
+          (c) => c.name === selectedCategory
+        );
+        const matchedSub = Object.values(subcategories)
+          .flat()
+          .find((s) => s.name === selectedCategory);
 
-    const { data, error } = await query;
-    if (!error) {
+        console.log("🔍 Category filter:", {
+          selectedCategory,
+          matchedCategory,
+          matchedSub,
+        });
+
+        if (matchedCategory) {
+          query = query.eq("category_id", matchedCategory.id);
+          console.log("✅ Filtering by category_id:", matchedCategory.id);
+        } else if (matchedSub) {
+          query = query.eq("subcategory_id", matchedSub.id);
+          console.log("✅ Filtering by subcategory_id:", matchedSub.id);
+        }
+      }
+
+      if (filters.material)
+        query = query.contains("materials", [filters.material]);
+      if (filters.color) query = query.contains("colors", [filters.color]);
+      if (filters.inStock) query = query.gt("stock_quantity", 0);
+      if (searchTerm) query = query.ilike("name", `%${searchTerm}%`);
+
+      // Add pagination
+      const currentPage = reset ? 1 : page;
+      query = query.range((currentPage - 1) * 12, currentPage * 12 - 1);
+
+      // Add ordering for consistent results
+      query = query.order("created_at", { ascending: false });
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("❌ Error loading products:", error);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("📦 Products loaded:", data?.length || 0);
+      console.log("🔍 Sample product:", data?.[0]);
+
       if (reset) {
-        setProducts(data);
+        setProducts(data || []);
         setPage(2);
       } else {
-        setProducts((prev) => [...prev, ...data]);
+        setProducts((prev) => [...prev, ...(data || [])]);
         setPage((prev) => prev + 1);
       }
-      setHasMore(data.length === 12);
+      setHasMore((data || []).length === 12);
+    } catch (error) {
+      console.error("❌ Error in loadProducts:", error);
     }
 
     // Add delay for smooth loading animation
@@ -297,6 +364,71 @@ const ShopPage = () => {
   useEffect(() => {
     loadCategories();
     loadFilterOptions();
+
+    // Set up real-time subscription for products
+    const productSubscription = supabase
+      .channel("products-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "products",
+        },
+        (payload) => {
+          console.log("🔄 Product change detected:", payload);
+          console.log("🔄 Event type:", payload.eventType);
+          console.log("🔄 New data:", payload.new);
+          console.log("🔄 Old data:", payload.old);
+          // Refresh products when changes occur
+          setTimeout(() => {
+            console.log("⏱️ Refreshing products after 1 second delay...");
+            loadProducts(true);
+          }, 1000);
+        }
+      )
+      .subscribe();
+
+    // Set up real-time subscription for categories
+    const categorySubscription = supabase
+      .channel("categories-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "categories",
+        },
+        () => {
+          console.log("🔄 Category change detected");
+          loadCategories();
+        }
+      )
+      .subscribe();
+
+    // Set up real-time subscription for subcategories
+    const subcategorySubscription = supabase
+      .channel("subcategories-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "subcategories",
+        },
+        () => {
+          console.log("🔄 Subcategory change detected");
+          loadCategories();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscriptions
+    return () => {
+      productSubscription.unsubscribe();
+      categorySubscription.unsubscribe();
+      subcategorySubscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -437,10 +569,24 @@ const ShopPage = () => {
 
           {/* Categories */}
           <div className="mb-10">
-            <h3 className="font-semibold mb-6 text-gray-700 flex items-center text-lg">
-              <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-yellow-400 rounded-full mr-3"></div>
-              Categories
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-semibold text-gray-700 flex items-center text-lg">
+                <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-yellow-400 rounded-full mr-3"></div>
+                Categories
+              </h3>
+              <button
+                onClick={() => {
+                  console.log("🔄 Manual refresh triggered");
+                  loadCategories();
+                  loadProducts(true);
+                  loadFilterOptions();
+                }}
+                className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                title="Refresh products"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
             <ul className="space-y-3">
               <li
                 onClick={() => {

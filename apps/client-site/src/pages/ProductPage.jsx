@@ -30,7 +30,10 @@ import Header from "../components/header";
 import Footer from "../components/footer";
 import RelatedProducts from "../components/RelatedProducts";
 import { trackProductView } from "../utils/userBehaviorTracker";
-import { debugProducts, testRelatedProductsQuery } from "../utils/debugProducts";
+import {
+  debugProducts,
+  testRelatedProductsQuery,
+} from "../utils/debugProducts";
 
 const ProductPage = () => {
   const { id } = useParams();
