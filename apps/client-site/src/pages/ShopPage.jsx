@@ -23,6 +23,8 @@ import Footer from "../components/footer";
 import Header from "../components/header";
 import { useCart } from "../context/CartContext";
 import { supabase } from "../supabase/supabaseClient";
+import Sofa from "../assets/sofa.png";
+import Cabinet from "../assets/cabinet.jpg";
 
 const ProductCard = ({ product, index }) => {
   const { addToCart } = useCart();
@@ -217,43 +219,15 @@ const ShopPage = () => {
   const observer = useRef();
 
   const loadCategories = async () => {
-    console.log("🏷️ Loading categories and subcategories...");
-    try {
-      const { data: catData, error: catError } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name");
-
-      const { data: subData, error: subError } = await supabase
-        .from("subcategories")
-        .select("*")
-        .order("name");
-
-      if (catError) {
-        console.error("Error loading categories:", catError);
-        return;
-      }
-
-      if (subError) {
-        console.error("Error loading subcategories:", subError);
-        return;
-      }
-
-      const groupedSub = subData.reduce((acc, curr) => {
-        acc[curr.category_id] = acc[curr.category_id] || [];
-        acc[curr.category_id].push(curr);
-        return acc;
-      }, {});
-
-      console.log("📊 Categories loaded:", catData?.length || 0);
-      console.log("📊 Subcategories loaded:", subData?.length || 0);
-      console.log("🗂️ Grouped subcategories:", groupedSub);
-
-      setCategories(catData || []);
-      setSubcategories(groupedSub);
-    } catch (error) {
-      console.error("Error in loadCategories:", error);
-    }
+    const { data: catData } = await supabase.from("categories").select("*");
+    const { data: subData } = await supabase.from("subcategories").select("*");
+    const groupedSub = subData.reduce((acc, curr) => {
+      acc[curr.category_id] = acc[curr.category_id] || [];
+      acc[curr.category_id].push(curr);
+      return acc;
+    }, {});
+    setCategories(catData || []);
+    setSubcategories(groupedSub);
   };
 
   const loadFilterOptions = async () => {
@@ -850,7 +824,7 @@ const ShopPage = () => {
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mr-3"></div>
                   <span className="text-gray-600 font-medium">
                     Loading more products...
-                  </span>
+                  </span>///./.
                 </div>
               </div>
             )}

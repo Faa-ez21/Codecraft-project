@@ -15,7 +15,12 @@ import {
 } from "lucide-react";
 import Header from "../components/header";
 import Footer from "../components/footer";
-import RelatedProducts from "../components/RelatedProducts";
+
+const suggestions = [
+  { id: 1, name: "Modern Desk Lamp", image: "/lamp.png" },
+  { id: 2, name: "Ergonomic Keyboard", image: "/keyboard.png" },
+  { id: 3, name: "Wireless Mouse", image: "/mouse.png" },
+];
 
 export default function CartPage() {
   const { cartItems, updateQuantity, clearCart } = useCart();
