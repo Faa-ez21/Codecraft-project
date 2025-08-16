@@ -301,16 +301,6 @@ export default function AddProduct({ productId = null }) {
     }
   };
 
-  const handleMultiSelectChange = (name, values) => {
-    setForm((prev) => ({
-      ...prev,
-      [name]: values
-        .split(",")
-        .map((v) => v.trim())
-        .filter((v) => v.length > 0),
-    }));
-  };
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -543,35 +533,115 @@ export default function AddProduct({ productId = null }) {
               </h2>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Materials Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Materials (comma-separated)
+                  Materials
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Wood, Metal, Fabric"
-                  value={form.materials.join(", ")}
-                  onChange={(e) =>
-                    handleMultiSelectChange("materials", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700"
-                />
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Add material and press Enter (e.g., Wood, Metal, Fabric)"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const value = e.target.value.trim();
+                        if (value && !form.materials.includes(value)) {
+                          setForm((prev) => ({
+                            ...prev,
+                            materials: [...prev.materials, value],
+                          }));
+                          e.target.value = "";
+                        }
+                      }
+                    }}
+                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {form.materials.map((material, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm rounded-full"
+                      >
+                        {material}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setForm((prev) => ({
+                              ...prev,
+                              materials: prev.materials.filter(
+                                (_, i) => i !== index
+                              ),
+                            }));
+                          }}
+                          className="ml-1 hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  {form.materials.length === 0 && (
+                    <p className="text-xs text-gray-500">
+                      Type material name and press Enter to add
+                    </p>
+                  )}
+                </div>
               </div>
 
+              {/* Colors Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Colors (comma-separated)
+                  Colors
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g., Black, White, Brown"
-                  value={form.colors.join(", ")}
-                  onChange={(e) =>
-                    handleMultiSelectChange("colors", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700"
-                />
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Add color and press Enter (e.g., Black, White, Brown)"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const value = e.target.value.trim();
+                        if (value && !form.colors.includes(value)) {
+                          setForm((prev) => ({
+                            ...prev,
+                            colors: [...prev.colors, value],
+                          }));
+                          e.target.value = "";
+                        }
+                      }
+                    }}
+                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-gray-700"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {form.colors.map((color, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm rounded-full"
+                      >
+                        {color}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setForm((prev) => ({
+                              ...prev,
+                              colors: prev.colors.filter((_, i) => i !== index),
+                            }));
+                          }}
+                          className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  {form.colors.length === 0 && (
+                    <p className="text-xs text-gray-500">
+                      Type color name and press Enter to add
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>

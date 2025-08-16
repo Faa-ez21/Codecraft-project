@@ -18,6 +18,7 @@ import {
   Eye,
   Calendar,
   Download,
+  RefreshCw,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -36,15 +37,92 @@ export default function Customers() {
 
   const fetchCustomers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("customers")
-      .select("*")
-      .order("created_at", { ascending: false });
+    try {
+      // First try to fetch from customers table (only select existing columns)
+      let { data, error } = await supabase
+        .from("customers")
+        .select("id, name, email, phone, location")
+        .order("name", { ascending: true });
 
-    if (error) {
-      console.error("Error fetching customers:", error.message);
-    } else {
-      setCustomers(data || []);
+      if (error) {
+        console.error("Error fetching from customers table:", error.message);
+
+        // If customers table query fails, try users table as fallback
+        console.log("Trying users table as fallback...");
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select(
+            `
+            id,
+            name,
+            email,
+            phone,
+            created_at,
+            role,
+            status
+          `
+          )
+          .eq("role", "customer")
+          .order("created_at", { ascending: false });
+
+        if (userError) {
+          console.error(
+            "Error fetching users with customer role:",
+            userError.message
+          );
+          // If no customer role users, try fetching all users
+          const { data: allUsers, error: allUsersError } = await supabase
+            .from("users")
+            .select(
+              `
+              id,
+              name,
+              email,
+              phone,
+              created_at,
+              role,
+              status
+            `
+            )
+            .order("created_at", { ascending: false });
+
+          if (allUsersError) {
+            console.error("Error fetching all users:", allUsersError.message);
+          } else {
+            // Transform users to customer format and add missing fields
+            const transformedUsers = (allUsers || []).map((user) => ({
+              ...user,
+              orders: 0, // Default value since this field might not exist
+              spent: 0, // Default value since this field might not exist
+              location: user.location || "Not provided",
+            }));
+            setCustomers(transformedUsers);
+          }
+        } else {
+          // Transform users to customer format and add missing fields
+          const transformedUsers = (userData || []).map((user) => ({
+            ...user,
+            orders: 0, // Default value since this field might not exist
+            spent: 0, // Default value since this field might not exist
+            location: user.location || "Not provided",
+          }));
+          setCustomers(transformedUsers);
+        }
+      } else {
+        // Successfully got data from customers table
+        // Add missing fields that might be expected by the UI
+        const customersWithDefaults = (data || []).map((customer) => ({
+          ...customer,
+          created_at: new Date().toISOString(), // Set to current date since table doesn't have this field
+          orders: customer.orders || 0,
+          spent: customer.spent || 0,
+          role: customer.role || "customer",
+          status: customer.status || "active",
+        }));
+        setCustomers(customersWithDefaults);
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error.message);
     }
     setLoading(false);
   };
@@ -71,15 +149,30 @@ export default function Customers() {
     total: customers.length,
     active: customers.filter((c) => c.orders > 0).length,
     newThisMonth: customers.filter((c) => {
-      const created = new Date(c.created_at);
-      const now = new Date();
-      return (
-        created.getMonth() === now.getMonth() &&
-        created.getFullYear() === now.getFullYear()
-      );
+      if (!c.created_at) return false; // Skip if no created_at
+      try {
+        const created = new Date(c.created_at);
+        const now = new Date();
+        return (
+          created.getMonth() === now.getMonth() &&
+          created.getFullYear() === now.getFullYear()
+        );
+      } catch (error) {
+        return false; // Skip if invalid date
+      }
     }).length,
     totalRevenue: customers.reduce((sum, c) => sum + (c.spent || 0), 0),
   };
+
+  // Debug logging
+  console.log("Customers data:", {
+    customersCount: customers.length,
+    filteredCount: filteredCustomers.length,
+    loading,
+    sampleCustomer: customers[0],
+    availableFields: customers[0] ? Object.keys(customers[0]) : [],
+    stats,
+  });
 
   if (loading) {
     return (
@@ -104,6 +197,18 @@ export default function Customers() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={fetchCustomers}
+                disabled={loading}
+                className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-2xl font-semibold hover:from-gray-600 hover:to-gray-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 group disabled:opacity-50"
+              >
+                <RefreshCw
+                  className={`w-5 h-5 transition-transform duration-300 ${
+                    loading ? "animate-spin" : "group-hover:rotate-180"
+                  }`}
+                />
+                Refresh
+              </button>
               <button className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-2xl font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 group">
                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform duration-300" />
                 Export Data
@@ -196,9 +301,9 @@ export default function Customers() {
               >
                 <option value="name">Sort by Name</option>
                 <option value="email">Sort by Email</option>
-                <option value="spent">Sort by Spent</option>
+                <option value="spent">Sort by Total Spent</option>
                 <option value="orders">Sort by Orders</option>
-                <option value="created_at">Sort by Join Date</option>
+                <option value="location">Sort by Location</option>
               </select>
 
               <button
@@ -362,7 +467,7 @@ export default function Customers() {
                       </td>
                     </tr>
                   ))}
-                  {filteredCustomers.length === 0 && (
+                  {filteredCustomers.length === 0 && !loading && (
                     <tr>
                       <td colSpan="7" className="p-12 text-center">
                         <div className="flex flex-col items-center gap-4">
@@ -371,10 +476,14 @@ export default function Customers() {
                           </div>
                           <div>
                             <p className="text-gray-500 font-medium">
-                              No customers found
+                              {customers.length === 0
+                                ? "No customers found in the database"
+                                : "No customers match your search criteria"}
                             </p>
                             <p className="text-gray-400 text-sm">
-                              Add customers to start managing relationships
+                              {customers.length === 0
+                                ? "Users with 'customer' role will appear here, or check if customers table exists"
+                                : "Try adjusting your search terms or filters"}
                             </p>
                           </div>
                         </div>

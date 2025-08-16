@@ -119,7 +119,7 @@ export default function Homepage() {
             created_at,
             image_url,
             tags,
-            users!blog_posts_author_id_fkey(name, email)
+            author_id
           `
           )
           .eq("status", "Published")
@@ -604,14 +604,12 @@ export default function Homepage() {
                               }
                             )}
                           </div>
-                          {post.users && (
-                            <div className="flex items-center">
-                              <User className="w-4 h-4 mr-1" />
-                              <span className="text-xs">
-                                {post.users.name || post.users.email}
-                              </span>
-                            </div>
-                          )}
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-1" />
+                            <span className="text-xs">
+                              Expert Office Furnish
+                            </span>
+                          </div>
                         </div>
 
                         {/* Title */}

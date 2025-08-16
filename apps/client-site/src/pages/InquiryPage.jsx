@@ -57,9 +57,25 @@ export default function ProductInquiry() {
     setSubmitError(null);
 
     try {
+      // Validate required fields
+      if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+        setSubmitError("Please fill in all required fields.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        setSubmitError("Please enter a valid email address.");
+        setIsLoading(false);
+        return;
+      }
+
       // Prepare inquiry data
       const inquiryData = {
         name: form.name.trim(),
+        email: form.email.trim(),
         contact: form.email.trim(),
         message: form.message.trim(),
       };
@@ -78,6 +94,9 @@ export default function ProductInquiry() {
       if (fromService && serviceName) {
         inquiryData.message = `Service Inquiry: ${serviceName}\n\n${inquiryData.message}`;
       }
+
+      // Debug: Log the data being submitted
+      console.log("Submitting inquiry data:", inquiryData);
 
       // Submit to Supabase
       const { data, error } = await supabase

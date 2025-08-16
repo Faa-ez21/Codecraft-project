@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import RelatedProducts from "../components/RelatedProducts";
 
 const suggestions = [
   { id: 1, name: "Modern Desk Lamp", image: "/lamp.png" },

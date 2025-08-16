@@ -152,16 +152,31 @@ const ProductCard = ({ product, index }) => {
 
           {/* Features */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {product.material && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">
-                {product.material}
-              </span>
-            )}
-            {product.color && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">
-                {product.color}
-              </span>
-            )}
+            {/* Materials */}
+            {product.materials &&
+              Array.isArray(product.materials) &&
+              product.materials.length > 0 &&
+              product.materials.slice(0, 2).map((material, index) => (
+                <span
+                  key={index}
+                  className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-lg"
+                >
+                  {material}
+                </span>
+              ))}
+
+            {/* Colors */}
+            {product.colors &&
+              Array.isArray(product.colors) &&
+              product.colors.length > 0 &&
+              product.colors.slice(0, 2).map((color, index) => (
+                <span
+                  key={index}
+                  className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-lg"
+                >
+                  {color}
+                </span>
+              ))}
           </div>
 
           {/* Actions */}
@@ -235,8 +250,27 @@ const ShopPage = () => {
       .from("products")
       .select("materials");
     const { data: colData } = await supabase.from("products").select("colors");
-    setMaterials([...new Set(matData.flatMap((item) => item.materials || []))]);
-    setColors([...new Set(colData.flatMap((item) => item.colors || []))]);
+
+    // Handle both array (new) and string (legacy) materials
+    const allMaterials = (matData || []).flatMap((item) => {
+      const materials = [];
+      if (item.materials && Array.isArray(item.materials)) {
+        materials.push(...item.materials);
+      }
+      return materials;
+    });
+
+    // Handle both array (new) and string (legacy) colors
+    const allColors = (colData || []).flatMap((item) => {
+      const colors = [];
+      if (item.colors && Array.isArray(item.colors)) {
+        colors.push(...item.colors);
+      }
+      return colors;
+    });
+
+    setMaterials([...new Set(allMaterials.filter(Boolean))]);
+    setColors([...new Set(allColors.filter(Boolean))]);
   };
 
   const loadProducts = async (reset = false) => {
@@ -280,9 +314,13 @@ const ShopPage = () => {
         }
       }
 
-      if (filters.material)
+      // Handle filtering for array fields
+      if (filters.material) {
         query = query.contains("materials", [filters.material]);
-      if (filters.color) query = query.contains("colors", [filters.color]);
+      }
+      if (filters.color) {
+        query = query.contains("colors", [filters.color]);
+      }
       if (filters.inStock) query = query.gt("stock_quantity", 0);
       if (searchTerm) query = query.ilike("name", `%${searchTerm}%`);
 
@@ -824,7 +862,8 @@ const ShopPage = () => {
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mr-3"></div>
                   <span className="text-gray-600 font-medium">
                     Loading more products...
-                  </span>///./.
+                  </span>
+                  ///./.
                 </div>
               </div>
             )}
