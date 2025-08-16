@@ -52,7 +52,7 @@ const ProductCard = ({ product, index }) => {
 
   return (
     <Link
-      to={`/product/${product.id}`}
+      to={`/products/${product.id}`}
       className={`group cursor-pointer transform transition-all duration-700 ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
       }`}
@@ -127,14 +127,16 @@ const ProductCard = ({ product, index }) => {
         {/* Product Info */}
         <div className="p-6">
           <div className="mb-4">
-            <h3 className="font-bold text-gray-800 group-hover:text-green-600 transition-colors duration-300 text-lg mb-2 line-clamp-2">
+            <h3 className="font-bold text-gray-800 group-hover:text-green-600 transition-colors duration-300 text-xl mb-3 line-clamp-2">
               {product.name}
             </h3>
 
             {/* Category Tag */}
             <div className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-green-100 to-yellow-100 text-green-700 rounded-full text-xs font-medium">
               <Package className="w-3 h-3 mr-1" />
-              Office Furniture
+              {product.categories?.name ||
+                product.subcategories?.name ||
+                "Office Furniture"}
             </div>
           </div>
 
@@ -144,16 +146,6 @@ const ProductCard = ({ product, index }) => {
               {product.description}
             </p>
           )}
-
-          {/* Rating */}
-          <div className="flex items-center mb-4">
-            <div className="flex text-yellow-400">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-current" />
-              ))}
-            </div>
-            <span className="text-sm text-gray-500 ml-2">(4.8)</span>
-          </div>
 
           {/* Features */}
           <div className="flex flex-wrap gap-2 mb-4">
@@ -275,7 +267,11 @@ const ShopPage = () => {
 
   const loadProducts = async (reset = false) => {
     setIsLoading(true);
-    let query = supabase.from("products").select("*");
+    let query = supabase.from("products").select(`
+        *,
+        categories(name),
+        subcategories(name)
+      `);
 
     if (selectedCategory !== "All") {
       const matchedCategory = categories.find(
@@ -344,7 +340,7 @@ const ShopPage = () => {
   };
 
   const handleGetConsultation = () => {
-    navigate('/inquiry');
+    navigate("/inquiry");
   };
 
   return (
@@ -389,7 +385,7 @@ const ShopPage = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
 
-            <button 
+            <button
               onClick={handleGetConsultation}
               className="group px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-green-200 text-green-700 rounded-2xl font-semibold hover:bg-white hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >

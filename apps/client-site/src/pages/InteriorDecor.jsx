@@ -61,9 +61,9 @@ const InteriorDecor = () => {
 
   const handleViewPortfolio = () => {
     // Scroll to the portfolio section on the same page
-    const portfolioSection = document.getElementById('portfolio-section');
+    const portfolioSection = document.getElementById("portfolio-section");
     if (portfolioSection) {
-      portfolioSection.scrollIntoView({ behavior: 'smooth' });
+      portfolioSection.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -163,7 +163,7 @@ const InteriorDecor = () => {
               </button>
             </Link>
 
-            <button 
+            <button
               onClick={handleViewPortfolio}
               className="group px-8 py-4 bg-white/80 backdrop-blur-sm border-2 border-green-200 text-green-700 rounded-2xl font-semibold hover:bg-white hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >

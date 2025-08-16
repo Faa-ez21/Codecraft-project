@@ -18,6 +18,9 @@ import EditProduct from "./pages/EditProduct";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
 
+// Inquiries
+import Inquiries from "./pages/Inquiries";
+
 // Customers
 import Customers from "./pages/Customers";
 import CustomerDetails from "./pages/CustomerDetails";
@@ -81,6 +84,9 @@ export default function App() {
           {/* Orders */}
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
+
+          {/* Inquiries */}
+          <Route path="/inquiries" element={<Inquiries />} />
 
           {/* Customers */}
           <Route path="/customers" element={<Customers />} />

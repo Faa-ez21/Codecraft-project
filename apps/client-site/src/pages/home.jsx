@@ -110,13 +110,25 @@ export default function Homepage() {
       try {
         const { data, error } = await supabase
           .from("blog_posts")
-          .select("*")
+          .select(
+            `
+            id,
+            title,
+            excerpt,
+            content,
+            created_at,
+            image_url,
+            tags,
+            users!blog_posts_author_id_fkey(name, email)
+          `
+          )
+          .eq("status", "Published")
           .order("created_at", { ascending: false })
           .limit(3);
 
         if (error) {
           console.error("Failed to fetch blog posts:", error);
-          // Set dummy blog posts if table doesn't exist
+          // Set dummy blog posts if table doesn't exist or no published posts
           setBlogPosts([
             {
               id: 1,
@@ -579,16 +591,26 @@ export default function Homepage() {
                       </div>
 
                       <div className="p-6">
-                        {/* Date */}
-                        <div className="flex items-center text-sm text-gray-500 mb-3">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          {new Date(post.created_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            }
+                        {/* Date and Author */}
+                        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {new Date(post.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )}
+                          </div>
+                          {post.users && (
+                            <div className="flex items-center">
+                              <User className="w-4 h-4 mr-1" />
+                              <span className="text-xs">
+                                {post.users.name || post.users.email}
+                              </span>
+                            </div>
                           )}
                         </div>
 
@@ -601,6 +623,20 @@ export default function Homepage() {
                         <p className="text-gray-600 leading-relaxed mb-4 line-clamp-3">
                           {post.excerpt}
                         </p>
+
+                        {/* Tags */}
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {post.tags.slice(0, 3).map((tag, tagIdx) => (
+                              <span
+                                key={tagIdx}
+                                className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
 
                         {/* Read More Button */}
                         <Link

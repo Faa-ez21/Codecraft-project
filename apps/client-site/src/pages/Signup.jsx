@@ -170,7 +170,7 @@ export default function SignupPage() {
                 <UserPlus className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent mb-2">
-                Join Expert Office
+                Join Expert Office Furnish
               </h2>
               <p className="text-gray-600">
                 Create your account and get started
