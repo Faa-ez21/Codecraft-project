@@ -15,11 +15,14 @@ import {
 } from "lucide-react";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import Sofa from "../assets/sofa1.png";
+import Swivel from "../assets/swivel.jpg";
+import ExecutiveDesk from "../assets/Executivedesk3.jpg";
 
 const suggestions = [
-  { id: 1, name: "Modern Desk Lamp", image: "/lamp.png" },
-  { id: 2, name: "Ergonomic Keyboard", image: "/keyboard.png" },
-  { id: 3, name: "Wireless Mouse", image: "/mouse.png" },
+  { id: 1, name: "Luxury Sofa", image: Sofa },
+  { id: 2, name: "Ergonomic Swivel Chair", image: Swivel },
+  { id: 3, name: "Executive Desk", image: ExecutiveDesk },
 ];
 
 export default function CartPage() {

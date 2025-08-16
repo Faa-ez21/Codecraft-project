@@ -167,7 +167,9 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800">Call Us</p>
-                    <p className="text-green-600">+233 123 456 789</p>
+                    <p className="text-green-600">+233 57 1386600</p>
+                    <p className="text-green-600">+233 24 4371593</p>
+                    <p className="text-green-600">+233 24 4280532</p>
                   </div>
                 </div>
 
@@ -177,7 +179,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800">Email Us</p>
-                    <p className="text-yellow-600">info@expertoffice.com</p>
+                    <p className="text-yellow-600">sales@expertofficefurnish.com</p>
+                    <p className="text-yellow-600">expertofficefurnish@yahoo.com</p>
                   </div>
                 </div>
 
@@ -188,9 +191,9 @@ export default function ContactPage() {
                   <div>
                     <p className="font-semibold text-gray-800">Visit Us</p>
                     <p className="text-green-600">
-                      123 Business Avenue
+                      P.O.BOX WY 1253. Kwabenya-Accra. GPS Address: GE-231-4636
                       <br />
-                      Accra, Ghana
+                      Atomic Hills Estate Road, Near ASI PLAZA
                     </p>
                   </div>
                 </div>
@@ -204,9 +207,9 @@ export default function ContactPage() {
                       Business Hours
                     </p>
                     <p className="text-yellow-600">
-                      Mon-Fri: 8AM-6PM
+                      Mon-Fri: 8AM-5PM
                       <br />
-                      Sat: 9AM-4PM
+                      Sat: 9AM-2PM
                     </p>
                   </div>
                 </div>
@@ -410,9 +413,9 @@ export default function ContactPage() {
                     <p className="text-gray-600">
                       Expert Office Furnish
                       <br />
-                      123 Business Avenue, Suite 456
+                      P.O.BOX WY 1253. Kwabenya-Accra. GPS Address: GE-231-4636
                       <br />
-                      Accra, Ghana
+                      Atomic Hills Estate Road, Near ASI PLAZA
                     </p>
                   </div>
                 </div>
@@ -424,9 +427,9 @@ export default function ContactPage() {
                   <div>
                     <p className="font-semibold text-gray-800">Hours</p>
                     <p className="text-gray-600">
-                      Monday - Friday: 8:00 AM - 6:00 PM
+                      Monday - Friday: 8:00 AM - 5:00 PM
                       <br />
-                      Saturday: 9:00 AM - 4:00 PM
+                      Saturday: 9:00 AM - 2:00 PM
                       <br />
                       Sunday: Closed
                     </p>

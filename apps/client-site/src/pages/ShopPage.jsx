@@ -226,12 +226,41 @@ const ShopPage = () => {
   const loadCategories = async () => {
     const { data: catData } = await supabase.from("categories").select("*");
     const { data: subData } = await supabase.from("subcategories").select("*");
+    const groupedSub = subData?.reduce((acc, curr) => {
+      acc[curr.category_id] = acc[curr.category_id] || [];
+      acc[curr.category_id].push(curr);
+      return acc;
+    }, {});
+        const allCategories = [...(catData || []), ...extraCategories];
+        extraCategories.forEach((cat) => {
+      if (cat.subcategories?.length > 0) {
+        groupedSub[cat.id] = (groupedSub[cat.id] || []).concat(
+          cat.subcategories.map((name, idx) => ({
+            id: `${cat.id}-${idx}`, // fake id so React can key it
+            name,
+            category_id: cat.id,
+          }))
+        );
+      }
+    });
+
+    setCategories(allCategories);
+    setSubcategories(groupedSub);
+  };
+  // Example hardcoded categories
+  const extraCategories = [
+    { id: "1", name: "Cabinets" ,subcategories: ["Wooden Cabinets", "Metal Cabinets"]},
+    { id: "2", name: "Sofas", subcategories: [] },
+  ];
+
+  const loadSubcategories = async () => {
+    const { data: subData } = await supabase.from("subcategories").select("*");
     const groupedSub = subData.reduce((acc, curr) => {
       acc[curr.category_id] = acc[curr.category_id] || [];
       acc[curr.category_id].push(curr);
       return acc;
     }, {});
-    setCategories(catData || []);
+    setCategories([...(catData || []), ...extraCategories]);
     setSubcategories(groupedSub);
   };
 
@@ -708,7 +737,7 @@ const ShopPage = () => {
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mr-3"></div>
                   <span className="text-gray-600 font-medium">
                     Loading more products...
-                  </span>
+                  </span>///./.
                 </div>
               </div>
             )}

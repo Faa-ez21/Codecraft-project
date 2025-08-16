@@ -71,19 +71,22 @@ export default function Footer() {
                       <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
                         <Phone className="w-5 h-5 text-green-400" />
                       </div>
-                      <span>+233 24 123 4567</span>
+                      <span>+233 24 4371593</span>
+                      <span>+233 24 4280532</span>
+                      <span>+233 57 1386600</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors duration-300">
                       <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center">
                         <Mail className="w-5 h-5 text-yellow-400" />
                       </div>
-                      <span>info@expertofficefurnish.com</span>
+                      <span>sales@expertofficefurnish.com</span>
+                      <span>expertofficefurnish@yahoo.com</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors duration-300">
                       <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
                         <MapPin className="w-5 h-5 text-green-400" />
                       </div>
-                      <span>Accra, Ghana</span>
+                      <span>Atomic Hills Estate Road, Near ASI PLAZA</span>
                     </div>
                   </div>
                 </div>
