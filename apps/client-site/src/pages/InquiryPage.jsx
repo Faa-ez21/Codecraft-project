@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import { supabase } from "../supabase/supabaseClient";
 
 export default function ProductInquiry() {
   const location = useLocation();
@@ -39,6 +40,7 @@ export default function ProductInquiry() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -52,18 +54,58 @@ export default function ProductInquiry() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setSubmitError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Prepare inquiry data
+      const inquiryData = {
+        name: form.name.trim(),
+        contact: form.email.trim(),
+        message: form.message.trim(),
+      };
 
-    setIsLoading(false);
-    setIsSubmitted(true);
+      // Add product information if this is a product inquiry
+      if (includeProducts && itemsToShow.length > 0) {
+        // For now, just use the first product if multiple items
+        inquiryData.product_id = itemsToShow[0].id;
+        
+        // Enhance message with product details
+        const productNames = itemsToShow.map(item => item.name).join(", ");
+        inquiryData.message += `\n\nProducts of interest: ${productNames}`;
+      }
 
-    // Reset form after success animation
-    setTimeout(() => {
-      setForm({ name: "", email: "", message: "" });
-      setIsSubmitted(false);
-    }, 3000);
+      // Add service information if this is a service inquiry
+      if (fromService && serviceName) {
+        inquiryData.message = `Service Inquiry: ${serviceName}\n\n${inquiryData.message}`;
+      }
+
+      // Submit to Supabase
+      const { data, error } = await supabase
+        .from('inquiries')
+        .insert([inquiryData])
+        .select();
+
+      if (error) {
+        console.error('Error submitting inquiry:', error);
+        setSubmitError('Failed to submit inquiry. Please try again.');
+        return;
+      }
+
+      console.log('Inquiry submitted successfully:', data);
+      setIsSubmitted(true);
+
+      // Reset form after success animation
+      setTimeout(() => {
+        setForm({ name: "", email: "", message: "" });
+        setIsSubmitted(false);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error submitting inquiry:', error);
+      setSubmitError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -327,6 +369,13 @@ export default function ProductInquiry() {
                     <p className="text-gray-600">
                       Fill out the form below and we'll respond promptly
                     </p>
+                    
+                    {/* Error Message */}
+                    {submitError && (
+                      <div className="mt-4 p-4 bg-red-100 border border-red-300 rounded-lg">
+                        <p className="text-red-700 text-sm">{submitError}</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">

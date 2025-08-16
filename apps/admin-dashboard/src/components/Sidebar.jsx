@@ -28,6 +28,7 @@ import {
   Award,
   Target,
   Clock,
+  MessageSquare,
 } from "lucide-react";
 
 export default function Sidebar({ collapsed, onToggle }) {
@@ -73,6 +74,12 @@ export default function Sidebar({ collapsed, onToggle }) {
       icon: ShoppingCart,
       path: "/orders",
       color: "text-orange-500",
+    },
+    {
+      title: "Inquiries",
+      icon: MessageSquare,
+      path: "/inquiries",
+      color: "text-cyan-500",
     },
     {
       title: "Users",
