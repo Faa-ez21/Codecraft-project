@@ -22,6 +22,8 @@ import Footer from "../components/footer";
 import Header from "../components/header";
 import { useCart } from "../context/CartContext";
 import { supabase } from "../supabase/supabaseClient";
+import Sofa from "../assets/sofa.png";
+import Cabinet from "../assets/cabinet.jpg";
 
 const ProductCard = ({ product, index }) => {
   const { addToCart } = useCart();
@@ -241,8 +243,8 @@ const ShopPage = () => {
   };
   // Example hardcoded categories
   const extraCategories = [
-    { id: "1", name: "Cabinets" ,subcategories: ["Wooden Cabinets", "Metal Cabinets"]},
-    { id: "2", name: "Sofas", subcategories: [] },
+    { id: "1", name: "Cabinets" ,image: Cabinet, subcategories: ["Wooden Cabinets", "Metal Cabinets"]},
+    { id: "2", name: "Sofas", image: Sofa, subcategories: [] },
   ];
 
   const loadSubcategories = async () => {
