@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postinstall": "npm rebuild sharp",
     "preview": "vite preview",
     "optimize-images": "node vite-plugin-sharp.js"
   },
@@ -22,6 +23,7 @@
     "react-router-dom": "^6.20.0",
     "react-select": "^5.10.2",
     "react-toastify": "^11.0.5",
+    "sharp": "^0.34.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
