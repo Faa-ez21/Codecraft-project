@@ -232,6 +232,7 @@ const ShopPage = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const observer = useRef();
+  
 
   const loadCategories = async () => {
     const { data: catData } = await supabase.from("categories").select("*");
