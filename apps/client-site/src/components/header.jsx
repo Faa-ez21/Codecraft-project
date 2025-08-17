@@ -23,6 +23,7 @@ export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [user, setUser] = useState(null);
+  const [userName, setUserName] = useState("");
   const [role, setRole] = useState("");
   const [emailConfirmed, setEmailConfirmed] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -46,14 +47,90 @@ export default function Header() {
       setUser(currentUser);
       setEmailConfirmed(currentUser?.email_confirmed_at !== null);
       setRole(currentUser?.user_metadata?.role || "Customer");
+
+      // Fetch user's name from the database
+      if (currentUser) {
+        // First try to get from users table (admin)
+        const { data: adminData } = await supabase
+          .from("users")
+          .select("name, role")
+          .eq("id", currentUser.id)
+          .single();
+
+        if (adminData) {
+          setUserName(
+            adminData.name || currentUser.email?.split("@")[0] || "User"
+          );
+          setRole(adminData.role || "Admin");
+        } else {
+          // Try customers table
+          const { data: customerData } = await supabase
+            .from("customers")
+            .select("name")
+            .eq("id", currentUser.id)
+            .single();
+
+          setUserName(
+            customerData?.name || currentUser.email?.split("@")[0] || "User"
+          );
+          setRole("Customer");
+        }
+      }
     };
     getUser();
+
+    // Listen for auth state changes
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          setEmailConfirmed(session.user?.email_confirmed_at !== null);
+          setRole(session.user?.user_metadata?.role || "Customer");
+
+          // Fetch updated user name
+          // First try to get from users table (admin)
+          const { data: adminData } = await supabase
+            .from("users")
+            .select("name, role")
+            .eq("id", session.user.id)
+            .single();
+
+          if (adminData) {
+            setUserName(
+              adminData.name || session.user.email?.split("@")[0] || "User"
+            );
+            setRole(adminData.role || "Admin");
+          } else {
+            // Try customers table
+            const { data: customerData } = await supabase
+              .from("customers")
+              .select("name")
+              .eq("id", session.user.id)
+              .single();
+
+            setUserName(
+              customerData?.name || session.user.email?.split("@")[0] || "User"
+            );
+            setRole("Customer");
+          }
+        } else {
+          setUser(null);
+          setUserName("");
+          setRole("");
+        }
+      }
+    );
+
+    return () => {
+      subscription?.subscription?.unsubscribe();
+    };
   }, []);
 
   // Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setUserName("");
     navigate("/login");
   };
 
@@ -280,15 +357,29 @@ export default function Header() {
                 <div className="absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl border border-green-100 overflow-hidden animate-fadeIn">
                   {user ? (
                     <>
+                      {/* Username Section */}
                       <div className="px-4 py-4 border-b border-green-100 bg-gradient-to-r from-green-50 to-yellow-50">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm font-medium text-gray-700">
-                            {user.email}
-                          </span>
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="relative">
+                            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-yellow-500 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-lg">
+                              {userName.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                              <Sparkles size={8} className="text-white" />
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-semibold text-gray-800">
+                              {userName}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              {user.email}
+                            </div>
+                          </div>
                           {emailConfirmed && (
                             <CheckCircle2
                               className="text-green-500"
-                              size={16}
+                              size={18}
                             />
                           )}
                         </div>
@@ -299,25 +390,30 @@ export default function Header() {
                           </span>
                         </div>
                       </div>
+
+                      {/* Profile Link */}
+                      <Link
+                        to="/profile"
+                        className="w-full block px-4 py-3 hover:bg-green-50 transition-colors duration-200"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <User size={18} className="text-green-600" />
+                          <span className="text-gray-700 font-medium">
+                            Profile
+                          </span>
+                        </div>
+                      </Link>
+
+                      {/* Logout Button */}
                       <button
-                        className="w-full text-left px-4 py-3 hover:bg-green-50 transition-colors duration-200 flex items-center gap-2"
                         onClick={() => {
+                          handleLogout();
                           setShowDropdown(false);
-                          navigate(
-                            role === "Admin" ? "/dashboard" : "/profile"
-                          );
                         }}
+                        className="w-full text-left px-4 py-3 hover:bg-red-50 transition-colors duration-200 flex items-center gap-3 text-red-600 border-t border-gray-100"
                       >
-                        <User size={16} className="text-green-600" />
-                        <span className="text-gray-700 font-medium">
-                          Profile
-                        </span>
-                      </button>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-3 hover:bg-red-50 transition-colors duration-200 flex items-center gap-2 text-red-600"
-                      >
-                        <LogOut size={16} />
+                        <LogOut size={18} />
                         <span className="font-medium">Logout</span>
                       </button>
                     </>
@@ -407,6 +503,20 @@ export default function Header() {
               >
                 Our Services
               </Link>
+
+              {/* Profile Link for Mobile - only show if user is logged in */}
+              {user && (
+                <Link
+                  to="/profile"
+                  className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200 font-medium rounded-xl mx-2 border-t border-gray-200 mt-2 pt-4"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  <div className="flex items-center gap-2">
+                    <User size={16} className="text-green-600" />
+                    Profile ({userName})
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
         )}

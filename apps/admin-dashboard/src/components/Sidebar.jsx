@@ -137,6 +137,12 @@ export default function Sidebar({ collapsed, onToggle }) {
       path: "/discounts",
       color: "text-red-500",
     },
+    {
+      title: "Profile",
+      icon: Settings,
+      path: "/profile",
+      color: "text-gray-500",
+    },
   ];
 
   const renderNavItem = (item) => {

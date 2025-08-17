@@ -179,8 +179,12 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800">Email Us</p>
-                    <p className="text-yellow-600">sales@expertofficefurnish.com</p>
-                    <p className="text-yellow-600">expertofficefurnish@yahoo.com</p>
+                    <p className="text-yellow-600">
+                      sales@expertofficefurnish.com
+                    </p>
+                    <p className="text-yellow-600">
+                      expertofficefurnish@yahoo.com
+                    </p>
                   </div>
                 </div>
 
@@ -448,14 +452,34 @@ export default function ContactPage() {
 
             {/* Enhanced Map Section */}
             <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-4 overflow-hidden">
+              <div className="mb-4">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                  <MapPin className="w-5 h-5 text-green-600 mr-2" />
+                  Find Us Here
+                </h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  Expert Office Furnish Location
+                </p>
+              </div>
               <div className="rounded-2xl overflow-hidden shadow-lg">
                 <iframe
-                  title="Company Location"
-                  src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=Accra+Ghana"
+                  title="Expert Office Furnish Location - Kwabenya, Accra"
+                  src="https://www.google.com/maps?q=Kwabenya,+Accra,+Ghana&output=embed"
                   className="w-full h-80 border-0"
                   allowFullScreen
-                  style={{ filter: "grayscale(0.3)" }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  style={{ filter: "grayscale(0.1)" }}
                 ></iframe>
+              </div>
+              <div className="mt-4 p-3 bg-green-50 rounded-xl">
+                <p className="text-sm text-green-700">
+                  <strong>📍 Address:</strong> P.O.BOX WY 1253. Kwabenya-Accra
+                </p>
+                <p className="text-xs text-green-600 mt-1">
+                  <strong>GPS:</strong> GE-231-4636 | Click on the map to get
+                  directions
+                </p>
               </div>
             </div>
           </div>

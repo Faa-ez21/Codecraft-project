@@ -55,6 +55,9 @@ import AdminRoles from "./pages/Adminroles";
 import AddRole from "./pages/AddRole";
 import EditAdminRole from "./pages/EditAdminRole";
 
+// Profile
+import AdminProfile from "./pages/AdminProfile";
+
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
 
@@ -120,6 +123,8 @@ export default function App() {
           <Route path="/admin-roles" element={<AdminRoles />} />
           <Route path="/add-role" element={<AddRole />} />
           <Route path="/edit-role/:id" element={<EditAdminRole />} />
+          {/* Profile */}
+          <Route path="/profile" element={<AdminProfile />} />
         </Routes>
       </AdminLayout>
     </div>

@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   UserPlus,
+  LogIn,
   ArrowRight,
   Sparkles,
   CheckCircle2,
@@ -33,6 +34,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [showLoginOption, setShowLoginOption] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,13 +54,47 @@ export default function SignupPage() {
     setInfoMessage("");
     setLoading(true);
 
+    // First check if user exists in auth but not in database
+    const { data: existingUser } = await supabase.auth.getUser();
+
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
     });
 
     if (error) {
-      setErrorMessage(error.message || "Signup failed.");
+      // Check if it's a "user already registered" error
+      if (
+        error.message.includes("already registered") ||
+        error.message.includes("already exists")
+      ) {
+        // Check if user exists in our database tables
+        const { data: customerData } = await supabase
+          .from("customers")
+          .select("id")
+          .eq("email", form.email)
+          .single();
+
+        const { data: adminData } = await supabase
+          .from("users")
+          .select("id")
+          .eq("email", form.email)
+          .single();
+
+        if (!customerData && !adminData) {
+          setErrorMessage(
+            "This email is registered but missing profile data. Please use the 'Recover Account' option on the login page."
+          );
+          setShowLoginOption(true);
+        } else {
+          setErrorMessage(
+            "This email is already registered. Please try logging in instead."
+          );
+          setShowLoginOption(true);
+        }
+      } else {
+        setErrorMessage(error.message || "Signup failed.");
+      }
       console.error("Signup error:", error.message);
       setLoading(false);
       return;
@@ -134,16 +170,20 @@ export default function SignupPage() {
         setInfoMessage(
           "Account created! Please check your email to confirm your address."
         );
+        setLoading(false); // Add this line
       } else {
         // Auto-login and redirect only if email is already confirmed (dev mode)
-        navigate("/login");
+        setInfoMessage("Account created successfully! Redirecting to login...");
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
       }
     } catch (e) {
       console.error("Unexpected signup error:", e);
       setErrorMessage("Unexpected error occurred. Please try again.");
     }
 
-    setLoading(false);
+    setLoading(false); // Ensure loading is always set to false
   };
 
   return (
@@ -182,6 +222,19 @@ export default function SignupPage() {
               <div className="mb-6 flex items-center gap-3 text-red-600 font-medium p-4 bg-red-50 rounded-2xl border border-red-200 animate-fadeIn">
                 <AlertCircle className="w-5 h-5" />
                 {errorMessage}
+              </div>
+            )}
+
+            {/* Go to Login Option */}
+            {showLoginOption && (
+              <div className="mb-6 text-center">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Go to Login Page
+                </Link>
               </div>
             )}
 

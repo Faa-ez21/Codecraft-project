@@ -13,9 +13,11 @@ import {
   AlertCircle,
   User,
   Shield,
+  RefreshCw,
 } from "lucide-react";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import { createMissingCustomerRecord } from "../utils/authUtils";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -23,6 +25,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,6 +42,9 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
+    setShowRecovery(false);
+
+    const startTime = Date.now();
 
     try {
       // Sign in with Supabase
@@ -47,45 +54,81 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        console.error("Login error:", error);
+
+        // Check if it's an invalid credentials error
+        if (error.message.includes("Invalid login credentials")) {
+          setErrorMessage(
+            "Invalid email or password. Please check your credentials and try again."
+          );
+        } else {
+          setErrorMessage(error.message);
+        }
+
         return;
       }
 
-      // Get user ID from the session
-      const userId = data.user?.id;
+      const loginTime = Date.now() - startTime;
+      console.log(`Login completed in ${loginTime}ms`);
 
-      // Check if user is an admin
-      const { data: adminUser } = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", userId)
-        .maybeSingle();
+      // Show success message briefly before redirect
+      setErrorMessage("");
 
-      if (adminUser) {
-        // ✅ Redirect to admin dashboard app (adjust to your port or deployment domain)
-        window.location.href = "http://localhost:5173/";
-        return;
-      }
-
-      // Check if user is a customer
-      const { data: customerUser } = await supabase
-        .from("customers")
-        .select("id")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (customerUser) {
-        // ✅ Stay on client site
+      // Navigate immediately - AuthContext will handle user type detection
+      setTimeout(() => {
         navigate("/");
-        return;
-      }
-
-      setErrorMessage("User not found in users or customers table.");
+      }, 200); // Small delay to show success state
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Unexpected login error:", err);
       setErrorMessage("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRecoverAccount = async () => {
+    if (!form.email) {
+      setErrorMessage("Please enter your email first");
+      return;
+    }
+
+    setRecoveryLoading(true);
+    setErrorMessage("");
+
+    try {
+      // Try to sign in first to verify auth record exists
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+
+      if (authError) {
+        setErrorMessage(
+          "Invalid credentials. Please check your email and password."
+        );
+        return;
+      }
+
+      // Auth successful, now create missing customer record
+      const success = await createMissingCustomerRecord(authData.user);
+
+      if (success) {
+        setErrorMessage("");
+        setShowRecovery(false);
+
+        // Navigate after successful recovery
+        setTimeout(() => {
+          navigate("/");
+        }, 200);
+      } else {
+        setErrorMessage("Failed to recover account. Please contact support.");
+      }
+    } catch (err) {
+      console.error("Recovery error:", err);
+      setErrorMessage("Recovery failed. Please try again or contact support.");
+    } finally {
+      setRecoveryLoading(false);
     }
   };
 
@@ -125,6 +168,34 @@ export default function LoginPage() {
               <div className="mb-6 flex items-center gap-3 text-red-600 font-medium p-4 bg-red-50 rounded-2xl border border-red-200 animate-fadeIn">
                 <AlertCircle className="w-5 h-5" />
                 {errorMessage}
+              </div>
+            )}
+
+            {/* Recovery Option */}
+            {showRecovery && (
+              <div className="mb-6 p-4 bg-blue-50 rounded-2xl border border-blue-200">
+                <p className="text-sm text-blue-700 mb-3">
+                  Your account exists but is missing profile data. Click below
+                  to recover your account:
+                </p>
+                <button
+                  type="button"
+                  onClick={handleRecoverAccount}
+                  disabled={recoveryLoading}
+                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {recoveryLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Recovering Account...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4" />
+                      Recover Account
+                    </>
+                  )}
+                </button>
               </div>
             )}
 
