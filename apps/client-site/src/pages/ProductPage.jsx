@@ -23,6 +23,7 @@ import {
   Zap,
   Award,
   Clock,
+  Star,
 } from "lucide-react";
 import { supabase } from "../supabase/supabaseClient";
 import { useCart } from "../context/CartContext";
@@ -617,104 +618,8 @@ const ProductPage = () => {
 
         {/* Additional Sections */}
         <div className="max-w-7xl mx-auto px-4 py-12 space-y-16">
-          {/* Customer Reviews */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <MessageCircle className="w-6 h-6 mr-3 text-green-600" />
-              Customer Reviews
-            </h2>
-
-            {/* Overall Rating */}
-            <div className="bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl p-6 mb-8 border-2 border-dashed border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl font-bold text-green-600">
-                      Excellent
-                    </span>
-                    <span className="text-gray-600">Quality Rating</span>
-                  </div>
-                  <p className="text-gray-600">Based on 124 verified reviews</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-600 mb-1">
-                    97% would recommend
-                  </p>
-                  <div className="flex items-center text-green-600">
-                    <ThumbsUp className="w-4 h-4 mr-1" />
-                    <span className="font-medium">Highly Rated</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Individual Reviews */}
-            <div className="space-y-6">
-              {[
-                {
-                  name: "Sarah Johnson",
-                  date: "2 weeks ago",
-                  review:
-                    "Exceptional quality and comfort! This chair has completely transformed my work-from-home experience. The lumbar support is perfect and the build quality is outstanding.",
-                  verified: true,
-                  recommendation: "Highly Recommended",
-                },
-                {
-                  name: "Mike Chen",
-                  date: "1 month ago",
-                  review:
-                    "Great chair overall. Very comfortable for long hours. Assembly was straightforward and the customer service team was helpful when I had questions.",
-                  verified: true,
-                  recommendation: "Recommended",
-                },
-                {
-                  name: "Emily Rodriguez",
-                  date: "1 month ago",
-                  review:
-                    "Worth every penny! The ergonomic design has helped with my back pain issues. Highly recommend for anyone spending long hours at a desk.",
-                  verified: true,
-                  recommendation: "Highly Recommended",
-                },
-              ].map((review, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-50 rounded-2xl p-6 border border-gray-200"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-gray-800">
-                          {review.name}
-                        </h4>
-                        {review.verified && (
-                          <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                            Verified Purchase
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`text-sm font-medium px-3 py-1 rounded-full ${
-                            review.recommendation === "Highly Recommended"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                          }`}
-                        >
-                          {review.recommendation}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {review.date}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-700 leading-relaxed">
-                    {review.review}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Customer Reviews - Real Reviews Only */}
+          <CustomerReviews productId={product?.id} />
 
           {/* Related Products - Enhanced */}
           <RelatedProducts
@@ -738,6 +643,240 @@ const ProductPage = () => {
         </div>
 
         <Footer />
+      </div>
+    </div>
+  );
+};
+
+// Customer Reviews Component - Only shows real reviews from database
+const CustomerReviews = ({ productId }) => {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [reviewStats, setReviewStats] = useState({
+    totalReviews: 0,
+    averageRating: 0,
+    recommendationRate: 0,
+  });
+
+  useEffect(() => {
+    if (productId) {
+      fetchRealReviews();
+    }
+  }, [productId]);
+
+  const fetchRealReviews = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch reviews from orders where the product was purchased and reviewed
+      const { data: reviewData, error } = await supabase
+        .from("orders")
+        .select(
+          `
+          id,
+          customer_email,
+          customer_name,
+          created_at,
+          review_text,
+          rating,
+          recommendation,
+          review_verified,
+          order_items!inner (
+            product_id,
+            products (
+              id,
+              name
+            )
+          )
+        `
+        )
+        .eq("order_items.product_id", productId)
+        .not("review_text", "is", null)
+        .not("rating", "is", null)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching reviews:", error);
+        setReviews([]);
+        return;
+      }
+
+      const processedReviews = (reviewData || []).map((review) => ({
+        id: review.id,
+        customerName: review.customer_name || "Anonymous Customer",
+        email: review.customer_email,
+        reviewText: review.review_text,
+        rating: review.rating,
+        recommendation: review.recommendation || "Good",
+        verified: review.review_verified || true, // All purchase-based reviews are verified
+        date: new Date(review.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        createdAt: review.created_at,
+      }));
+
+      setReviews(processedReviews);
+
+      // Calculate review statistics
+      if (processedReviews.length > 0) {
+        const avgRating =
+          processedReviews.reduce((sum, review) => sum + review.rating, 0) /
+          processedReviews.length;
+        const recommendCount = processedReviews.filter(
+          (review) =>
+            review.recommendation === "Highly Recommended" || review.rating >= 4
+        ).length;
+        const recommendationRate =
+          (recommendCount / processedReviews.length) * 100;
+
+        setReviewStats({
+          totalReviews: processedReviews.length,
+          averageRating: avgRating,
+          recommendationRate: recommendationRate,
+        });
+      }
+    } catch (error) {
+      console.error("Error in fetchRealReviews:", error);
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderStars = (rating) => {
+    return [...Array(5)].map((_, i) => (
+      <Star
+        key={i}
+        className={`w-4 h-4 ${
+          i < rating ? "text-yellow-400 fill-current" : "text-gray-300"
+        }`}
+      />
+    ));
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-200">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+          <span className="ml-3 text-gray-600">
+            Loading customer reviews...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (reviews.length === 0) {
+    return (
+      <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+          <MessageCircle className="w-6 h-6 mr-3 text-green-600" />
+          Customer Reviews
+        </h2>
+        <div className="text-center py-12 bg-gray-50 rounded-2xl">
+          <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-600 mb-2">
+            No Reviews Yet
+          </h3>
+          <p className="text-gray-500">
+            Be the first to review this product after purchasing it!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-200">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <MessageCircle className="w-6 h-6 mr-3 text-green-600" />
+        Customer Reviews
+        <span className="ml-2 text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full">
+          {reviewStats.totalReviews} verified
+        </span>
+      </h2>
+
+      {/* Real Review Statistics */}
+      <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 mb-8 border-2 border-dashed border-green-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center">
+                {renderStars(Math.round(reviewStats.averageRating))}
+                <span className="ml-2 text-2xl font-bold text-green-600">
+                  {reviewStats.averageRating.toFixed(1)}
+                </span>
+              </div>
+              <span className="text-gray-600">Average Rating</span>
+            </div>
+            <p className="text-gray-600">
+              Based on {reviewStats.totalReviews} verified purchase
+              {reviewStats.totalReviews !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600 mb-1">
+              {Math.round(reviewStats.recommendationRate)}% would recommend
+            </p>
+            <div className="flex items-center text-green-600">
+              <ThumbsUp className="w-4 h-4 mr-1" />
+              <span className="font-medium">Verified Purchases</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Real Customer Reviews */}
+      <div className="space-y-6">
+        {reviews.map((review) => (
+          <div
+            key={review.id}
+            className="bg-gray-50 rounded-2xl p-6 border border-gray-200 hover:shadow-md transition-shadow duration-300"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h4 className="font-semibold text-gray-800">
+                    {review.customerName}
+                  </h4>
+                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                    Verified Purchase
+                  </span>
+                  <div className="flex items-center">
+                    {renderStars(review.rating)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`text-sm font-medium px-3 py-1 rounded-full ${
+                      review.recommendation === "Highly Recommended"
+                        ? "bg-green-100 text-green-700"
+                        : review.recommendation === "Recommended"
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {review.recommendation}
+                  </span>
+                  <span className="text-sm text-gray-500">{review.date}</span>
+                </div>
+              </div>
+            </div>
+            <p className="text-gray-700 leading-relaxed">{review.reviewText}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Review Disclaimer */}
+      <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-200">
+        <p className="text-sm text-blue-800 flex items-center">
+          <Shield className="w-4 h-4 mr-2" />
+          All reviews are from verified customers who have purchased this
+          product.
+        </p>
       </div>
     </div>
   );

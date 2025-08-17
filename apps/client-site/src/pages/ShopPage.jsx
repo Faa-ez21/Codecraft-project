@@ -17,6 +17,7 @@ import {
   Award,
   TrendingUp,
   RefreshCw,
+  Folder,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/footer";
@@ -62,9 +63,12 @@ const ProductCard = ({ product, index }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl overflow-hidden relative shadow-lg hover:shadow-2xl transition-all duration-500 transform group-hover:-translate-y-3 border border-gray-100 group-hover:border-green-200 h-full">
+      <div className="bg-white/95 backdrop-blur-md rounded-3xl overflow-hidden relative shadow-xl hover:shadow-2xl transition-all duration-500 transform group-hover:-translate-y-3 border border-gray-100 group-hover:border-green-300 h-full ring-1 ring-gray-100 group-hover:ring-green-200">
+        {/* Animated Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 via-yellow-50/30 to-green-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
         {/* Product Image */}
-        <div className="relative overflow-hidden h-56 bg-gradient-to-br from-green-50 to-yellow-50">
+        <div className="relative overflow-hidden h-56 bg-gradient-to-br from-gray-50 to-gray-100">
           {!imageLoaded && (
             <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-yellow-100 animate-pulse flex items-center justify-center">
               <Package className="w-12 h-12 text-gray-400" />
@@ -103,17 +107,11 @@ const ProductCard = ({ product, index }) => {
             </div>
           </div>
 
-          {/* Stock Badge */}
+          {/* Quality Badge */}
           <div className="absolute top-4 right-4">
-            {product.stock_quantity > 0 ? (
-              <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-lg">
-                In Stock
-              </span>
-            ) : (
-              <span className="bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-lg">
-                Out of Stock
-              </span>
-            )}
+            <span className="bg-gradient-to-r from-green-500 to-yellow-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-lg">
+              Premium Quality
+            </span>
           </div>
 
           {/* Featured Badge */}
@@ -150,7 +148,7 @@ const ProductCard = ({ product, index }) => {
             </p>
           )}
 
-          {/* Features */}
+          {/* Enhanced Features */}
           <div className="flex flex-wrap gap-2 mb-4">
             {/* Materials */}
             {product.materials &&
@@ -159,7 +157,7 @@ const ProductCard = ({ product, index }) => {
               product.materials.slice(0, 2).map((material, index) => (
                 <span
                   key={index}
-                  className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-lg"
+                  className="text-xs bg-gradient-to-r from-green-100 to-green-200 text-green-800 px-3 py-1.5 rounded-full font-medium shadow-sm border border-green-200"
                 >
                   {material}
                 </span>
@@ -172,32 +170,42 @@ const ProductCard = ({ product, index }) => {
               product.colors.slice(0, 2).map((color, index) => (
                 <span
                   key={index}
-                  className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-lg"
+                  className="text-xs bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 px-3 py-1.5 rounded-full font-medium shadow-sm border border-yellow-200"
                 >
                   {color}
                 </span>
               ))}
+
+            {/* Premium Badge if no materials/colors */}
+            {(!product.materials || product.materials.length === 0) &&
+              (!product.colors || product.colors.length === 0) && (
+                <span className="text-xs bg-gradient-to-r from-green-100 to-yellow-100 text-green-800 px-3 py-1.5 rounded-full font-medium shadow-sm border border-green-200">
+                  Premium Design
+                </span>
+              )}
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">
-                Stock: {product.stock_quantity || 0}
-              </p>
+          {/* Call to Action */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-green-600" />
+                <span className="text-sm text-green-600 font-medium">
+                  Verified Quality
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <TrendingUp className="w-4 h-4 text-yellow-600" />
+                <span className="text-xs text-yellow-600">Popular</span>
+              </div>
             </div>
 
             <button
               onClick={handleAddToCart}
-              disabled={product.stock_quantity === 0}
-              className={`px-4 py-2 rounded-2xl text-sm font-semibold shadow-lg transform transition-all duration-300 flex items-center ${
-                product.stock_quantity > 0
-                  ? "bg-gradient-to-r from-green-500 to-yellow-500 hover:from-green-600 hover:to-yellow-600 text-white hover:scale-105 hover:shadow-xl"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+              className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-yellow-500 hover:from-green-600 hover:to-yellow-600 text-white rounded-2xl text-sm font-semibold shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center"
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
-              {product.stock_quantity > 0 ? "Add to Cart" : "Out of Stock"}
+              Add to Cart
             </button>
           </div>
         </div>
@@ -223,7 +231,6 @@ const ShopPage = () => {
   const [filters, setFilters] = useState({
     material: "",
     color: "",
-    inStock: false,
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
@@ -254,8 +261,13 @@ const ShopPage = () => {
     // Handle both array (new) and string (legacy) materials
     const allMaterials = (matData || []).flatMap((item) => {
       const materials = [];
-      if (item.materials && Array.isArray(item.materials)) {
-        materials.push(...item.materials);
+      if (item.materials) {
+        if (Array.isArray(item.materials)) {
+          materials.push(...item.materials);
+        } else if (typeof item.materials === "string") {
+          // Handle comma-separated string format
+          materials.push(...item.materials.split(",").map((m) => m.trim()));
+        }
       }
       return materials;
     });
@@ -263,14 +275,47 @@ const ShopPage = () => {
     // Handle both array (new) and string (legacy) colors
     const allColors = (colData || []).flatMap((item) => {
       const colors = [];
-      if (item.colors && Array.isArray(item.colors)) {
-        colors.push(...item.colors);
+      if (item.colors) {
+        if (Array.isArray(item.colors)) {
+          colors.push(...item.colors);
+        } else if (typeof item.colors === "string") {
+          // Handle comma-separated string format
+          colors.push(...item.colors.split(",").map((c) => c.trim()));
+        }
       }
       return colors;
     });
 
-    setMaterials([...new Set(allMaterials.filter(Boolean))]);
-    setColors([...new Set(allColors.filter(Boolean))]);
+    const uniqueMaterials = [...new Set(allMaterials.filter(Boolean))];
+    const uniqueColors = [...new Set(allColors.filter(Boolean))];
+
+    console.log("🎨 Materials found:", uniqueMaterials);
+    console.log("🌈 Colors found:", uniqueColors);
+
+    // Fallback data if database has no materials/colors
+    const fallbackMaterials = [
+      "Wood",
+      "Metal",
+      "Fabric",
+      "Leather",
+      "Plastic",
+      "Glass",
+    ];
+    const fallbackColors = [
+      "Black",
+      "White",
+      "Brown",
+      "Gray",
+      "Blue",
+      "Green",
+      "Red",
+      "Yellow",
+    ];
+
+    setMaterials(
+      uniqueMaterials.length > 0 ? uniqueMaterials : fallbackMaterials
+    );
+    setColors(uniqueColors.length > 0 ? uniqueColors : fallbackColors);
   };
 
   const loadProducts = async (reset = false) => {
@@ -321,7 +366,6 @@ const ShopPage = () => {
       if (filters.color) {
         query = query.contains("colors", [filters.color]);
       }
-      if (filters.inStock) query = query.gt("stock_quantity", 0);
       if (searchTerm) query = query.ilike("name", `%${searchTerm}%`);
 
       // Add pagination
@@ -552,338 +596,340 @@ const ShopPage = () => {
           </button>
         </div>
 
-        {/* Enhanced Sidebar */}
-        <aside
-          className={`w-full lg:w-[300px] bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 text-sm transition-all duration-500 ${
-            showMobileFilters ? "block" : "hidden"
-          } lg:block sticky top-8 h-fit`}
-        >
-          <div className="flex items-center mb-8">
-            <div className="p-2 bg-gradient-to-r from-green-100 to-yellow-100 rounded-2xl mr-3">
-              <Filter className="w-5 h-5 text-green-600" />
-            </div>
-            <h2 className="font-bold text-xl bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
-              Shop Filters
-            </h2>
-          </div>
+        <div className="flex flex-col lg:flex-row gap-10 flex-1">
+          {/* Ultra-Stylish Sidebar */}
+          <aside
+            className={`w-full lg:w-[320px] relative transition-all duration-500 ${
+              showMobileFilters ? "block" : "hidden"
+            } lg:block sticky top-8 h-fit`}
+          >
+            {/* Backdrop with glassmorphism effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/95 via-green-50/90 to-yellow-50/85 backdrop-blur-xl rounded-3xl border border-white/30 shadow-2xl"></div>
 
-          {/* Enhanced Search */}
-          <div className="relative mb-8">
-            <Search className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 focus:border-green-400 rounded-2xl bg-white/70 backdrop-blur-sm transition-all duration-300 focus:outline-none focus:shadow-lg focus:bg-white/90"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+            {/* Decorative gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-green-400/10 via-transparent to-yellow-400/10 rounded-3xl"></div>
 
-          {/* Categories */}
-          <div className="mb-10">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-gray-700 flex items-center text-lg">
-                <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-yellow-400 rounded-full mr-3"></div>
-                Categories
-              </h3>
-              <button
-                onClick={() => {
-                  console.log("🔄 Manual refresh triggered");
-                  loadCategories();
-                  loadProducts(true);
-                  loadFilterOptions();
-                }}
-                className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                title="Refresh products"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
-            </div>
-            <ul className="space-y-3">
-              <li
-                onClick={() => {
-                  setSelectedCategory("All");
-                  setShowMobileFilters(false);
-                }}
-                className={`cursor-pointer px-4 py-3 rounded-2xl transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${
-                  selectedCategory === "All"
-                    ? "font-bold text-white bg-gradient-to-r from-green-500 to-yellow-500 shadow-2xl scale-105"
-                    : "text-gray-700 hover:text-green-700 bg-white/60 hover:bg-white/80"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  All Products
-                  {selectedCategory === "All" && (
-                    <Sparkles className="w-5 h-5 animate-pulse" />
-                  )}
+            {/* Main content */}
+            <div className="relative z-10 p-8 text-sm">
+              {/* Header with animated icon */}
+              <div className="flex items-center mb-8">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-yellow-400 rounded-2xl blur-md opacity-50 animate-pulse"></div>
+                  <div className="relative p-3 bg-gradient-to-r from-green-500 to-yellow-500 rounded-2xl shadow-lg">
+                    <Filter className="w-6 h-6 text-white" />
+                  </div>
                 </div>
-              </li>
-              {categories.map((cat) => (
-                <li key={cat.id}>
+                <div className="ml-4">
+                  <h2 className="font-bold text-2xl bg-gradient-to-r from-green-600 via-green-500 to-yellow-500 bg-clip-text text-transparent">
+                    Shop Filters
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Find your perfect furniture
+                  </p>
+                </div>
+              </div>
+
+              {/* Enhanced Search with floating label effect */}
+              <div className="relative mb-10">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl blur-sm"></div>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500 z-10" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    className="w-full pl-12 pr-4 py-4 border-2 border-green-200/50 focus:border-green-400 rounded-2xl bg-white/80 backdrop-blur-sm transition-all duration-300 focus:outline-none focus:shadow-xl focus:bg-white/95 placeholder:text-gray-400"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Ultra-Stylish Categories */}
+              <div className="mb-10">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-yellow-500 rounded-full mr-4"></div>
+                    <div>
+                      <h3 className="font-bold text-xl text-gray-800">
+                        Categories
+                      </h3>
+                      <div className="flex items-center mt-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></div>
+                        <div className="w-2 h-2 bg-yellow-400 rounded-full mr-1 animate-pulse animation-delay-200"></div>
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse animation-delay-400"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      console.log("🔄 Manual refresh triggered");
+                      loadCategories();
+                      loadProducts(true);
+                      loadFilterOptions();
+                    }}
+                    className="group p-3 text-gray-600 hover:text-white bg-white/50 hover:bg-gradient-to-r hover:from-green-500 hover:to-yellow-500 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-110"
+                    title="Refresh categories"
+                  >
+                    <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {/* All Products Option - Simplified */}
                   <div
                     onClick={() => {
-                      setSelectedCategory(cat.name);
-                      toggleCategoryExpand(cat.id);
+                      setSelectedCategory("All");
                       setShowMobileFilters(false);
                     }}
-                    className={`flex items-center justify-between cursor-pointer px-4 py-3 rounded-2xl transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${
-                      selectedCategory === cat.name
-                        ? "font-bold text-white bg-gradient-to-r from-green-500 to-yellow-500 shadow-2xl scale-105"
-                        : "text-gray-700 hover:text-green-700 bg-white/60 hover:bg-white/80"
+                    className={`cursor-pointer rounded-xl p-4 transition-all duration-300 ${
+                      selectedCategory === "All"
+                        ? "bg-gradient-to-r from-green-500 to-yellow-500 text-white shadow-lg"
+                        : "bg-white/80 hover:bg-green-50 border border-gray-200 hover:border-green-300"
                     }`}
                   >
-                    <span>{cat.name}</span>
-                    <div className="flex items-center">
-                      {selectedCategory === cat.name && (
-                        <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
-                      )}
-                      {subcategories[cat.id]?.length > 0 &&
-                        (expandedCats[cat.id] ? (
-                          <ChevronUp
-                            size={16}
-                            className="transform rotate-180 transition-transform duration-300"
-                          />
-                        ) : (
-                          <ChevronDown
-                            size={16}
-                            className="transition-transform duration-300"
-                          />
-                        ))}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Package className="w-5 h-5 mr-3" />
+                        <span className="font-semibold">All Products</span>
+                      </div>
                     </div>
                   </div>
-                  {expandedCats[cat.id] &&
-                    subcategories[cat.id]?.length > 0 && (
-                      <ul className="pl-6 mt-3 space-y-2 text-sm">
-                        {subcategories[cat.id].map((sub) => (
-                          <li
-                            key={sub.id}
-                            onClick={() => {
-                              setSelectedCategory(sub.name);
-                              setShowMobileFilters(false);
-                            }}
-                            className={`cursor-pointer px-3 py-2 rounded-xl transition-all duration-300 hover:shadow-md transform hover:-translate-y-0.5 ${
-                              selectedCategory === sub.name
-                                ? "text-green-700 font-semibold bg-gradient-to-r from-green-50 to-yellow-50 border border-green-200"
-                                : "text-gray-600 hover:text-green-700 bg-white/50 hover:bg-white/70"
-                            }`}
-                          >
-                            {sub.name}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                </li>
-              ))}
-            </ul>
-          </div>
 
-          {/* Enhanced Filters */}
-          <div className="space-y-8">
-            <div>
-              <label className="block mb-4 text-sm font-semibold text-gray-700 flex items-center">
-                <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-yellow-400 rounded-full mr-3"></div>
-                Material
-              </label>
-              <select
-                className="w-full p-4 border-2 border-gray-200 focus:border-green-400 rounded-2xl bg-white/70 backdrop-blur-sm transition-all duration-300 focus:outline-none focus:shadow-lg hover:bg-white/90"
-                value={filters.material}
-                onChange={(e) =>
-                  setFilters({ ...filters, material: e.target.value })
-                }
-              >
-                <option value="">All Materials</option>
-                {materials.map((mat) => (
-                  <option key={mat} value={mat}>
-                    {mat}
-                  </option>
-                ))}
-              </select>
-            </div>
+                  {/* Category Items - Simplified */}
+                  {categories.map((cat) => (
+                    <div key={cat.id} className="space-y-1">
+                      <div
+                        onClick={() => {
+                          setSelectedCategory(cat.name);
+                          toggleCategoryExpand(cat.id);
+                          setShowMobileFilters(false);
+                        }}
+                        className={`cursor-pointer rounded-xl p-4 transition-all duration-300 ${
+                          selectedCategory === cat.name
+                            ? "bg-gradient-to-r from-green-500 to-yellow-500 text-white shadow-lg"
+                            : "bg-white/80 hover:bg-green-50 border border-gray-200 hover:border-green-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Folder className="w-5 h-5 mr-3" />
+                            <div>
+                              <span className="font-semibold">{cat.name}</span>
+                              <div
+                                className={`text-sm ${
+                                  selectedCategory === cat.name
+                                    ? "text-white/80"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {subcategories[cat.id]?.length || 0} items
+                              </div>
+                            </div>
+                          </div>
+                          {subcategories[cat.id]?.length > 0 && (
+                            <ChevronDown
+                              className={`w-5 h-5 transition-transform duration-300 ${
+                                expandedCats[cat.id] ? "rotate-180" : ""
+                              }`}
+                            />
+                          )}
+                        </div>
+                      </div>
 
-            <div>
-              <label className="block mb-4 text-sm font-semibold text-gray-700 flex items-center">
-                <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-yellow-400 rounded-full mr-3"></div>
-                Color
-              </label>
-              <select
-                className="w-full p-4 border-2 border-gray-200 focus:border-green-400 rounded-2xl bg-white/70 backdrop-blur-sm transition-all duration-300 focus:outline-none focus:shadow-lg hover:bg-white/90"
-                value={filters.color}
-                onChange={(e) =>
-                  setFilters({ ...filters, color: e.target.value })
-                }
-              >
-                <option value="">All Colors</option>
-                {colors.map((col) => (
-                  <option key={col} value={col}>
-                    {col}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl border border-green-100 hover:shadow-lg transition-all duration-300">
-              <input
-                type="checkbox"
-                id="stock"
-                checked={filters.inStock}
-                onChange={(e) =>
-                  setFilters({ ...filters, inStock: e.target.checked })
-                }
-                className="w-5 h-5 text-green-600 border-2 border-green-300 rounded focus:ring-green-500 focus:ring-2"
-              />
-              <label
-                htmlFor="stock"
-                className="text-sm font-medium text-gray-700 cursor-pointer"
-              >
-                Only show in-stock items
-              </label>
-            </div>
-          </div>
-        </aside>
-
-        {/* Enhanced Product Grid */}
-        <main className="flex-1">
-          {/* Enhanced Header with View Mode Toggle */}
-          <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 mb-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <h2 className="text-4xl font-bold mb-3 capitalize bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
-                  {selectedCategory}
-                </h2>
-                <p className="text-gray-600 text-lg">
-                  {products.length > 0
-                    ? `Showing ${products.length} products in our premium collection`
-                    : "Explore our quality office furniture collection"}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center bg-gray-100 rounded-2xl p-1">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
-                      viewMode === "grid"
-                        ? "bg-gradient-to-r from-green-500 to-yellow-500 text-white shadow-lg"
-                        : "text-gray-600 hover:text-green-600 hover:bg-white"
-                    }`}
-                  >
-                    <Grid className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
-                      viewMode === "list"
-                        ? "bg-gradient-to-r from-green-500 to-yellow-500 text-white shadow-lg"
-                        : "text-gray-600 hover:text-green-600 hover:bg-white"
-                    }`}
-                  >
-                    <List className="w-5 h-5" />
-                  </button>
+                      {/* Subcategories - Simplified */}
+                      {expandedCats[cat.id] &&
+                        subcategories[cat.id]?.length > 0 && (
+                          <div className="ml-6 space-y-1 mt-2">
+                            {subcategories[cat.id].map((sub) => (
+                              <div
+                                key={sub.id}
+                                onClick={() => {
+                                  setSelectedCategory(sub.name);
+                                  setShowMobileFilters(false);
+                                }}
+                                className={`cursor-pointer rounded-lg p-3 transition-all duration-300 ${
+                                  selectedCategory === sub.name
+                                    ? "bg-green-100 border-l-4 border-green-500 text-green-800"
+                                    : "bg-gray-50 hover:bg-green-50 text-gray-700 hover:text-green-700"
+                                }`}
+                              >
+                                <div className="flex items-center">
+                                  <div
+                                    className={`w-2 h-2 rounded-full mr-3 ${
+                                      selectedCategory === sub.name
+                                        ? "bg-green-500"
+                                        : "bg-gray-400"
+                                    }`}
+                                  ></div>
+                                  <span className="text-sm font-medium">
+                                    {sub.name}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Products Section */}
-          <section>
-            {isLoading && products.length === 0 ? (
-              // Loading Skeletons
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
-                {[...Array(12)].map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white rounded-2xl p-4 shadow-lg animate-pulse"
-                  >
-                    <div className="w-full h-48 bg-gray-200 rounded-xl mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
-                    <div className="flex space-x-1 mb-3">
-                      {[...Array(5)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-3 h-3 bg-gray-200 rounded"
-                        ></div>
+              {/* Stylish Enhanced Filters */}
+              <div className="space-y-6">
+                <div>
+                  <label className="block mb-4 font-bold text-gray-800 flex items-center">
+                    <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-yellow-500 rounded-full mr-3"></div>
+                    Material
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl blur-sm"></div>
+                    <select
+                      className="relative w-full p-4 border-2 border-green-200/50 focus:border-green-400 rounded-2xl bg-white/80 backdrop-blur-sm transition-all duration-300 focus:outline-none focus:shadow-xl hover:bg-white/95 focus:bg-white/95"
+                      value={filters.material}
+                      onChange={(e) =>
+                        setFilters({ ...filters, material: e.target.value })
+                      }
+                    >
+                      <option value="">All Materials</option>
+                      {materials.map((mat) => (
+                        <option key={mat} value={mat}>
+                          {mat}
+                        </option>
                       ))}
-                    </div>
-                    <div className="h-8 bg-gray-200 rounded-full"></div>
+                    </select>
                   </div>
-                ))}
-              </div>
-            ) : products.length > 0 ? (
-              <div
-                className={`grid gap-6 ${
-                  viewMode === "grid"
-                    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5"
-                    : "grid-cols-1 md:grid-cols-2"
-                }`}
-              >
-                {products.map((item, index) =>
-                  index === products.length - 1 ? (
-                    <div ref={lastProductRef} key={item.id}>
-                      <ProductCard product={item} index={index} />
-                    </div>
-                  ) : (
-                    <ProductCard key={item.id} product={item} index={index} />
-                  )
-                )}
-              </div>
-            ) : (
-              // Empty State
-              <div className="text-center py-16">
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-gray-200 max-w-md mx-auto">
-                  <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Search className="w-12 h-12 text-white" />
+                </div>
+
+                <div>
+                  <label className="block mb-4 font-bold text-gray-800 flex items-center">
+                    <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-yellow-500 rounded-full mr-3"></div>
+                    Color
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl blur-sm"></div>
+                    <select
+                      className="relative w-full p-4 border-2 border-green-200/50 focus:border-green-400 rounded-2xl bg-white/80 backdrop-blur-sm transition-all duration-300 focus:outline-none focus:shadow-xl hover:bg-white/95 focus:bg-white/95"
+                      value={filters.color}
+                      onChange={(e) =>
+                        setFilters({ ...filters, color: e.target.value })
+                      }
+                    >
+                      <option value="">All Colors</option>
+                      {colors.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                    No Products Found
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    We couldn't find any products matching your criteria. Try
-                    adjusting your filters or search terms.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setSearchTerm("");
-                      setSelectedCategory("All");
-                      setFilters({ material: "", color: "", inStock: false });
-                    }}
-                    className="bg-gradient-to-r from-green-500 to-yellow-500 hover:from-green-600 hover:to-yellow-600 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
-                  >
-                    Clear All Filters
-                  </button>
                 </div>
               </div>
-            )}
+            </div>
+          </aside>
 
-            {/* Loading More Indicator */}
-            {isLoading && products.length > 0 && (
-              <div className="text-center mt-12">
-                <div className="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-gray-200">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mr-3"></div>
-                  <span className="text-gray-600 font-medium">
-                    Loading more products...
-                  </span>
-                  ///./.
+          {/* Main Content Area */}
+          <main className="flex-1">
+            {/* Products Section */}
+            <section>
+              {isLoading && products.length === 0 ? (
+                // Loading Skeletons
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {[...Array(12)].map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white rounded-2xl p-4 shadow-lg animate-pulse"
+                    >
+                      <div className="w-full h-48 bg-gray-200 rounded-xl mb-4"></div>
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+                      <div className="flex space-x-1 mb-3">
+                        {[...Array(5)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="w-3 h-3 bg-gray-200 rounded"
+                          ></div>
+                        ))}
+                      </div>
+                      <div className="h-8 bg-gray-200 rounded-full"></div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            )}
+              ) : products.length > 0 ? (
+                <div
+                  className={`grid gap-6 ${
+                    viewMode === "grid"
+                      ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5"
+                      : "grid-cols-1 md:grid-cols-2"
+                  }`}
+                >
+                  {products.map((item, index) =>
+                    index === products.length - 1 ? (
+                      <div ref={lastProductRef} key={item.id}>
+                        <ProductCard product={item} index={index} />
+                      </div>
+                    ) : (
+                      <ProductCard key={item.id} product={item} index={index} />
+                    )
+                  )}
+                </div>
+              ) : (
+                // Empty State
+                <div className="text-center py-16">
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-gray-200 max-w-md mx-auto">
+                    <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Search className="w-12 h-12 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                      No Products Found
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      We couldn't find any products matching your criteria. Try
+                      adjusting your filters or search terms.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearchTerm("");
+                        setSelectedCategory("All");
+                        setFilters({ material: "", color: "" });
+                      }}
+                      className="bg-gradient-to-r from-green-500 to-yellow-500 hover:from-green-600 hover:to-yellow-600 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
+                    >
+                      Clear All Filters
+                    </button>
+                  </div>
+                </div>
+              )}
 
-            {/* End Message */}
-            {!hasMore && products.length > 0 && (
-              <div className="text-center mt-12">
-                <div className="bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl p-8 border-2 border-dashed border-green-300">
-                  <Sparkles className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                  <p className="text-lg font-semibold text-gray-700 mb-2">
-                    You've seen it all! 🎉
-                  </p>
-                  <p className="text-gray-600">
-                    You've reached the end of our amazing collection.
-                  </p>
+              {/* Loading More Indicator */}
+              {isLoading && products.length > 0 && (
+                <div className="text-center mt-12">
+                  <div className="inline-flex items-center px-6 py-3 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-gray-200">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mr-3"></div>
+                    <span className="text-gray-600 font-medium">
+                      Loading more products...
+                    </span>
+                    ///./.
+                  </div>
                 </div>
-              </div>
-            )}
-          </section>
-        </main>
+              )}
+
+              {/* End Message */}
+              {!hasMore && products.length > 0 && (
+                <div className="text-center mt-12">
+                  <div className="bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl p-8 border-2 border-dashed border-green-300">
+                    <Sparkles className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                    <p className="text-lg font-semibold text-gray-700 mb-2">
+                      You've seen it all! 🎉
+                    </p>
+                    <p className="text-gray-600">
+                      You've reached the end of our amazing collection.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </section>
+          </main>
+        </div>
       </div>
 
       <Footer />

@@ -16,6 +16,8 @@ import {
   Eye,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { populateFromAssets } from "../utils/populateFromAssets";
+import { confirmAndCleanup, getDatabaseCounts } from "../utils/cleanupDatabase";
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -26,6 +28,8 @@ export default function Categories() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("cards");
   const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const [isPopulating, setIsPopulating] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -162,6 +166,71 @@ export default function Categories() {
     setExpandedCategories(newExpanded);
   };
 
+  const handlePopulateFromAssets = async () => {
+    setIsPopulating(true);
+    try {
+      const result = await populateFromAssets();
+      if (result.success) {
+        alert("Categories and products populated successfully!");
+        await fetchData(); // Refresh the data
+      } else {
+        alert(`Failed to populate: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error populating from assets:", error);
+      alert(`Error: ${error.message}`);
+    }
+    setIsPopulating(false);
+  };
+
+  const handleCleanupDatabase = async () => {
+    const counts = await getDatabaseCounts();
+    const totalRecords =
+      counts.orderItems +
+      counts.orders +
+      counts.cartItems +
+      counts.categories +
+      counts.subcategories +
+      counts.products;
+
+    if (totalRecords === 0) {
+      alert("Database is already empty!");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `⚠️ WARNING: This will permanently delete ALL data!\n\n` +
+        `Current Database:\n` +
+        `• Order Items: ${counts.orderItems}\n` +
+        `• Orders: ${counts.orders}\n` +
+        `• Cart Items: ${counts.cartItems}\n` +
+        `• Categories: ${counts.categories}\n` +
+        `• Subcategories: ${counts.subcategories}\n` +
+        `• Products: ${counts.products}\n` +
+        `• Total Records: ${totalRecords}\n\n` +
+        `This action cannot be undone. Are you sure?`
+    );
+
+    if (!confirmed) return;
+
+    setIsCleaning(true);
+    try {
+      const result = await confirmAndCleanup();
+      if (result.success) {
+        alert(
+          "Database cleaned successfully! You can now manually add categories and products."
+        );
+        await fetchData(); // Refresh the data
+      } else {
+        alert(`Failed to clean database: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error cleaning database:", error);
+      alert(`Error: ${error.message}`);
+    }
+    setIsCleaning(false);
+  };
+
   const filteredCategories = categories.filter(
     (cat) =>
       cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -263,9 +332,33 @@ export default function Categories() {
 
         {/* Add Category Form */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-lg border border-white/20">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Add New Category
-          </h2>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Category Management
+            </h2>
+            <div className="flex gap-3">
+              <button
+                onClick={handlePopulateFromAssets}
+                disabled={isPopulating}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold 
+                         hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 
+                         shadow-lg hover:shadow-xl flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+              >
+                <Package className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                {isPopulating ? "Populating..." : "Populate from Assets"}
+              </button>
+              <button
+                onClick={handleCleanupDatabase}
+                disabled={isCleaning}
+                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl font-semibold 
+                         hover:from-red-600 hover:to-red-700 transition-all duration-300 transform hover:scale-105 
+                         shadow-lg hover:shadow-xl flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+              >
+                <Trash2 className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                {isCleaning ? "Cleaning..." : "Clean Database"}
+              </button>
+            </div>
+          </div>
           <div className="flex gap-3">
             <div className="flex-1 relative">
               <Folder className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
