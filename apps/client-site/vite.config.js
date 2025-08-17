@@ -1,11 +1,15 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import sharpOptimizer from "./vite-plugin-sharp.js";
 
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': '/src', // Optional alias, only if you're using @/components etc.
-    },
-  },
+  plugins: [
+    react(),
+    sharpOptimizer({
+      inputDir: "src/assets",
+      outputDir: "public/optimized",
+      formats: ["webp", "jpeg"],
+      quality: 80,
+    }),
+  ],
 });
