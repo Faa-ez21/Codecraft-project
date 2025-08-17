@@ -707,25 +707,25 @@ export default function Homepage() {
             {[
               {
                 quote:
-                  "The ergonomic chair completely transformed my work experience. No more back pain after long hours!",
-                author: "Ama K.",
+                  "Thank you for the kind assistance with having the sofa delivered on Saturday. We are very pleased with it. Best regards",
+                author: "Jacob Agyei Twumasi",
                 location: "Accra",
-                rating: 5,
+                rating: 4.5,
                 delay: "delay-200",
               },
               {
                 quote:
-                  "Incredible quality and style. My office looks professional and feels comfortable. Highly recommended!",
-                author: "Kojo M.",
-                location: "Kumasi",
+                  "Thank you! I don't think I've already said but just to let you know we are very pleased with the furniture. The clients are so happy they want to order a new sofa for their London home! Thank you for all your help.",
+                author: "Ann Pokua",
+                location: "London",
                 rating: 5,
                 delay: "delay-400",
               },
               {
                 quote:
-                  "Outstanding customer service and fast delivery. The furniture exceeded my expectations in every way.",
-                author: "Sarah A.",
-                location: "Takoradi",
+                  "Many thanks for the wonderful service. I am so happy with my new bench, also I purchased the 6 dining tables, those ones from the display showroom. Thanks again for the amazing service. Kind Regards",
+                author: "Sophia Johnson",
+                location: "Accra",
                 rating: 5,
                 delay: "delay-600",
               },
