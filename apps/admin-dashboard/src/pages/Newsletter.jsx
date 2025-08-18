@@ -5,8 +5,6 @@ import {
   Send,
   Users,
   Plus,
-  Eye,
-  Edit3,
   Trash2,
   CheckCircle2,
   AlertCircle,
@@ -14,10 +12,17 @@ import {
   Target,
   FileText,
   Download,
-  Filter,
   Search,
   Calendar,
   BarChart3,
+  Check,
+  X,
+  Filter,
+  RotateCcw,
+  UserCheck,
+  UserX,
+  User,
+  PlusCircle,
 } from "lucide-react";
 
 export default function Newsletter() {
@@ -28,6 +33,8 @@ export default function Newsletter() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [selectedSubscribers, setSelectedSubscribers] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("all");
   const [stats, setStats] = useState({
     totalSubscribers: 0,
     activeSubscribers: 0,
@@ -42,6 +49,46 @@ export default function Newsletter() {
     targetAudience: "all",
     recipientEmails: [],
   });
+
+  // Handle subscriber selection
+  const handleSelectSubscriber = (subscriberId) => {
+    setSelectedSubscribers(prev => {
+      if (prev.includes(subscriberId)) {
+        return prev.filter(id => id !== subscriberId);
+      } else {
+        return [...prev, subscriberId];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedSubscribers([]);
+    } else {
+      setSelectedSubscribers(filteredSubscribers.map(sub => sub.id));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const clearSelection = () => {
+    setSelectedSubscribers([]);
+    setSelectAll(false);
+  };
+
+  const filteredSubscribers = subscribers.filter(subscriber => {
+    const matchesSearch = subscriber.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === "all" || 
+      (filterStatus === "active" && subscriber.status !== "unsubscribed") ||
+      (filterStatus === "inactive" && subscriber.status === "unsubscribed");
+    return matchesSearch && matchesStatus;
+  });
+
+  // Update select all state when filtered subscribers change
+  useEffect(() => {
+    const allSelected = filteredSubscribers.length > 0 && 
+      filteredSubscribers.every(sub => selectedSubscribers.includes(sub.id));
+    setSelectAll(allSelected);
+  }, [filteredSubscribers, selectedSubscribers]);
 
   useEffect(() => {
     fetchSubscribers();
@@ -303,18 +350,14 @@ For now, you can manually copy and send the campaign content to your subscribers
     window.URL.revokeObjectURL(url);
   };
 
-  const filteredSubscribers = subscribers.filter((subscriber) =>
-    subscriber.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const StatCard = ({ icon: Icon, title, value, color }) => (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-200 backdrop-blur-sm">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-gray-500 text-sm font-medium">{title}</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
         </div>
-        <div className={`p-3 rounded-lg ${color}`}>
+        <div className={`p-3 rounded-lg bg-gradient-to-r ${color} shadow-lg`}>
           <Icon className="w-6 h-6 text-white" />
         </div>
       </div>
@@ -326,12 +369,48 @@ For now, you can manually copy and send the campaign content to your subscribers
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Newsletter Management
-          </h1>
-          <p className="text-gray-600">
-            Manage subscribers and send newsletters to your customers
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Newsletter Management</h1>
+              <p className="text-gray-600 mt-1">Manage subscribers and create targeted campaigns</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowNewCampaign(true)}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg backdrop-blur-sm"
+              >
+                <PlusCircle size={20} />
+                New Campaign
+              </button>
+              {selectedSubscribers.length > 0 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={clearSelection}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2"
+                  >
+                    <X size={16} />
+                    Clear ({selectedSubscribers.length})
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewCampaign(prev => ({
+                        ...prev,
+                        targetAudience: "selected",
+                        recipientEmails: selectedSubscribers.map(id => 
+                          subscribers.find(sub => sub.id === id)?.email
+                        ).filter(Boolean)
+                      }));
+                      setShowNewCampaign(true);
+                    }}
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg"
+                  >
+                    <Send size={16} />
+                    Send to Selected
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -340,25 +419,25 @@ For now, you can manually copy and send the campaign content to your subscribers
             icon={Users}
             title="Total Subscribers"
             value={stats.totalSubscribers}
-            color="bg-blue-500"
+            color="from-blue-500 to-blue-600"
           />
           <StatCard
             icon={CheckCircle2}
             title="Active Subscribers"
             value={stats.activeSubscribers}
-            color="bg-green-500"
+            color="from-green-500 to-green-600"
           />
           <StatCard
             icon={Mail}
             title="Total Campaigns"
             value={stats.totalCampaigns}
-            color="bg-purple-500"
+            color="from-purple-500 to-purple-600"
           />
           <StatCard
             icon={Send}
             title="Sent Campaigns"
             value={stats.sentCampaigns}
-            color="bg-orange-500"
+            color="from-orange-500 to-orange-600"
           />
         </div>
 
@@ -466,18 +545,24 @@ For now, you can manually copy and send the campaign content to your subscribers
             {activeTab === "subscribers" && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    Subscribers ({filteredSubscribers.length})
-                  </h3>
-                  <div className="flex items-center space-x-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Subscribers</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {selectedSubscribers.length > 0 
+                        ? `${selectedSubscribers.length} of ${filteredSubscribers.length} selected`
+                        : `${filteredSubscribers.length} total subscribers`
+                      }
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
                     <button
                       onClick={() => {
                         fetchSubscribers();
                         fetchStats();
                       }}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg backdrop-blur-sm"
                     >
-                      <Search className="w-4 h-4" />
+                      <RotateCcw className="w-4 h-4" />
                       <span>Refresh</span>
                     </button>
                     <div className="relative">
@@ -487,12 +572,21 @@ For now, you can manually copy and send the campaign content to your subscribers
                         placeholder="Search subscribers..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
                       />
                     </div>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
                     <button
                       onClick={exportSubscribers}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                      className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg"
                     >
                       <Download className="w-4 h-4" />
                       <span>Export</span>
@@ -500,63 +594,114 @@ For now, you can manually copy and send the campaign content to your subscribers
                   </div>
                 </div>
 
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={selectAll}
+                                onChange={handleSelectAll}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Select All
+                              </span>
+                            </div>
+                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Email
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Subscribed Date
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Source
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
+                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredSubscribers.map((subscriber) => (
-                          <tr key={subscriber.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {subscriber.email}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(
-                                subscriber.subscribed_at
-                              ).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {subscriber.source || "website"}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  subscriber.status === "active"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {subscriber.status || "active"}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                        {filteredSubscribers.length === 0 && (
+                        {filteredSubscribers.length === 0 ? (
                           <tr>
-                            <td
-                              colSpan="4"
-                              className="px-6 py-12 text-center text-gray-500"
-                            >
-                              {searchTerm
-                                ? "No subscribers found matching your search"
-                                : "No subscribers yet"}
+                            <td colSpan="6" className="px-6 py-8 text-center">
+                              <div className="flex flex-col items-center">
+                                <Users className="w-12 h-12 text-gray-400 mb-4" />
+                                <p className="text-gray-500 text-lg font-medium">No subscribers found</p>
+                                <p className="text-gray-400 text-sm">
+                                  {searchTerm 
+                                    ? "No subscribers found matching your search" 
+                                    : "Subscribers will appear here once people sign up for your newsletter"
+                                  }
+                                </p>
+                              </div>
                             </td>
                           </tr>
+                        ) : (
+                          filteredSubscribers.map((subscriber, index) => (
+                            <tr key={subscriber.id} className={`hover:bg-gray-50 transition-colors ${
+                              selectedSubscribers.includes(subscriber.id) ? 'bg-blue-50' : ''
+                            }`}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedSubscribers.includes(subscriber.id)}
+                                  onChange={() => handleSelectSubscriber(subscriber.id)}
+                                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="flex-shrink-0 h-8 w-8">
+                                    <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                                      <span className="text-white text-sm font-medium">
+                                        {subscriber.email?.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {subscriber.email}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {new Date(subscriber.subscribed_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {subscriber.source || "website"}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  subscriber.status === "unsubscribed" 
+                                    ? "bg-red-100 text-red-800" 
+                                    : "bg-green-100 text-green-800"
+                                }`}>
+                                  {subscriber.status === "unsubscribed" ? "Inactive" : "Active"}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div className="flex items-center gap-2">
+                                  {selectedSubscribers.includes(subscriber.id) ? (
+                                    <UserCheck className="w-4 h-4 text-blue-600" />
+                                  ) : (
+                                    <User className="w-4 h-4 text-gray-400" />
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))
                         )}
                       </tbody>
                     </table>
@@ -664,12 +809,25 @@ For now, you can manually copy and send the campaign content to your subscribers
 
         {/* New Campaign Modal */}
         {showNewCampaign && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-xl font-bold text-gray-900">
-                  Create New Campaign
-                </h3>
+              <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Create New Campaign</h3>
+                    {newCampaign.targetAudience === "selected" && (
+                      <p className="text-sm text-blue-600 mt-1">
+                        Sending to {newCampaign.recipientEmails.length} selected subscribers
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setShowNewCampaign(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
 
               <div className="p-6 space-y-6">
@@ -683,7 +841,7 @@ For now, you can manually copy and send the campaign content to your subscribers
                     onChange={(e) =>
                       setNewCampaign({ ...newCampaign, title: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="e.g., Summer Sale Newsletter"
                   />
                 </div>
@@ -701,7 +859,7 @@ For now, you can manually copy and send the campaign content to your subscribers
                         subject: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="e.g., 🎉 Summer Sale - Up to 50% Off Office Furniture!"
                   />
                 </div>
@@ -712,18 +870,49 @@ For now, you can manually copy and send the campaign content to your subscribers
                   </label>
                   <select
                     value={newCampaign.targetAudience}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const value = e.target.value;
                       setNewCampaign({
                         ...newCampaign,
-                        targetAudience: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        targetAudience: value,
+                        recipientEmails: value === "all" ? [] : newCampaign.recipientEmails,
+                      });
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
-                    <option value="all">All Subscribers</option>
-                    <option value="specific">Specific Emails</option>
+                    <option value="all">All Active Subscribers</option>
+                    <option value="selected">Selected Subscribers ({newCampaign.recipientEmails.length})</option>
+                    <option value="specific">Specific Email Addresses</option>
                   </select>
                 </div>
+
+                {newCampaign.targetAudience === "selected" && newCampaign.recipientEmails.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Selected Subscribers ({newCampaign.recipientEmails.length})
+                    </label>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-h-32 overflow-y-auto">
+                      <div className="flex flex-wrap gap-2">
+                        {newCampaign.recipientEmails.map((email, index) => (
+                          <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                            {email}
+                            <button
+                              onClick={() => {
+                                setNewCampaign(prev => ({
+                                  ...prev,
+                                  recipientEmails: prev.recipientEmails.filter((_, i) => i !== index)
+                                }));
+                              }}
+                              className="ml-2 text-blue-600 hover:text-blue-800"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {newCampaign.targetAudience === "specific" && (
                   <div>
@@ -741,7 +930,7 @@ For now, you can manually copy and send the campaign content to your subscribers
                         })
                       }
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       placeholder="email1@example.com&#10;email2@example.com"
                     />
                   </div>
@@ -760,7 +949,7 @@ For now, you can manually copy and send the campaign content to your subscribers
                       })
                     }
                     rows={10}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Write your newsletter content here...
 
 You can include:
@@ -775,17 +964,29 @@ The content will be formatted automatically in the email template."
                 </div>
               </div>
 
-              <div className="p-6 border-t border-gray-200 flex justify-end space-x-4">
+              <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end space-x-4">
                 <button
-                  onClick={() => setShowNewCampaign(false)}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  onClick={() => {
+                    setShowNewCampaign(false);
+                    // Reset campaign if it was created from selection
+                    if (newCampaign.targetAudience === "selected") {
+                      setNewCampaign({
+                        title: "",
+                        subject: "",
+                        content: "",
+                        targetAudience: "all",
+                        recipientEmails: [],
+                      });
+                    }
+                  }}
+                  className="px-6 py-2.5 text-gray-700 hover:text-gray-900 font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={createCampaign}
-                  disabled={loading}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  disabled={loading || !newCampaign.title || !newCampaign.subject || !newCampaign.content}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-2.5 rounded-lg font-medium transition-all duration-200 shadow-lg backdrop-blur-sm disabled:cursor-not-allowed"
                 >
                   {loading ? "Creating..." : "Create Campaign"}
                 </button>
