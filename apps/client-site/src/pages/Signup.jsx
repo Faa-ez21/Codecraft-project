@@ -173,7 +173,15 @@ export default function SignupPage() {
         setLoading(false); // Add this line
       } else {
         // Auto-login and redirect only if email is already confirmed (dev mode)
-        setInfoMessage("Account created successfully! Redirecting to login...");
+        if (form.adminCode === ADMIN_CODE) {
+          setInfoMessage(
+            "Admin account created successfully! Redirecting to login page, then to admin dashboard..."
+          );
+        } else {
+          setInfoMessage(
+            "Account created successfully! Redirecting to login..."
+          );
+        }
         setTimeout(() => {
           navigate("/login");
         }, 1500);

@@ -29,6 +29,7 @@ import {
   Target,
   Clock,
   MessageSquare,
+  Mail,
 } from "lucide-react";
 
 export default function Sidebar({ collapsed, onToggle }) {
@@ -80,6 +81,12 @@ export default function Sidebar({ collapsed, onToggle }) {
       icon: MessageSquare,
       path: "/inquiries",
       color: "text-cyan-500",
+    },
+    {
+      title: "Newsletter",
+      icon: Mail,
+      path: "/newsletter",
+      color: "text-indigo-500",
     },
     {
       title: "Users",

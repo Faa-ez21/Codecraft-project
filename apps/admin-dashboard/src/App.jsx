@@ -1,6 +1,7 @@
 // src/App.jsx
 import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+import { supabase } from "./lib/supabaseClient";
 
 // Layout
 import AdminLayout from "./layouts/AdminLayout";
@@ -20,6 +21,9 @@ import OrderDetails from "./pages/OrderDetails";
 
 // Inquiries
 import Inquiries from "./pages/Inquiries";
+
+// Newsletter
+import Newsletter from "./pages/Newsletter";
 
 // Customers
 import Customers from "./pages/Customers";
@@ -63,6 +67,42 @@ export default function App() {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
+  // Auto-login from URL params when redirected from client site
+  useEffect(() => {
+    const handleAutoLogin = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const accessToken = urlParams.get("access_token");
+      const refreshToken = urlParams.get("refresh_token");
+      const type = urlParams.get("type");
+
+      if (accessToken && refreshToken && type === "admin_login") {
+        console.log("Auto-login detected, setting session...");
+
+        try {
+          // Set the session in admin dashboard
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (error) {
+            console.error("Error setting admin session:", error);
+          } else {
+            console.log("Admin session set successfully:", data);
+
+            // Clean up URL parameters
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+        } catch (err) {
+          console.error("Auto-login error:", err);
+        }
+      }
+    };
+
+    handleAutoLogin();
+  }, []);
+
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -91,6 +131,8 @@ export default function App() {
           <Route path="/orders/:id" element={<OrderDetails />} />
           {/* Inquiries */}
           <Route path="/inquiries" element={<Inquiries />} />
+          {/* Newsletter */}
+          <Route path="/newsletter" element={<Newsletter />} />
           {/* Customers */}
           <Route path="/customers" element={<Customers />} />
           <Route path="/customers/:id" element={<CustomerDetails />} />

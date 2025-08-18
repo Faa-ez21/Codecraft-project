@@ -12,4 +12,8 @@ export default defineConfig({
       quality: 80,
     }),
   ],
+  server: {
+    port: 5001,
+    host: true,
+  },
 });

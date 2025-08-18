@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabaseClient";
 import {
   ImageIcon,
   FileTextIcon,
@@ -18,6 +20,97 @@ import {
 } from "lucide-react";
 
 export default function ContentManagement() {
+  const [contentStats, setContentStats] = useState({
+    blogPosts: { total: 0, published: 0, lastUpdated: "Loading..." },
+    products: { total: 0, lastUpdated: "Loading..." },
+    banners: { total: 0, lastUpdated: "Loading..." },
+  });
+
+  useEffect(() => {
+    fetchContentStats();
+  }, []);
+
+  const fetchContentStats = async () => {
+    try {
+      // Fetch blog posts stats
+      const { data: blogPosts, error: blogError } = await supabase
+        .from("blog_posts")
+        .select("id, status, updated_at")
+        .order("updated_at", { ascending: false });
+
+      if (blogError) {
+        console.error("Error fetching blog posts:", blogError);
+      }
+
+      // Fetch products stats (if you have a products table)
+      const { data: products, error: productError } = await supabase
+        .from("products")
+        .select("id, updated_at")
+        .order("updated_at", { ascending: false });
+
+      if (productError) {
+        console.error("Error fetching products:", productError);
+      }
+
+      // Fetch banners stats (if you have a banners table)
+      const { data: banners, error: bannerError } = await supabase
+        .from("homepage_banners")
+        .select("id, updated_at")
+        .order("updated_at", { ascending: false });
+
+      if (bannerError) {
+        console.error("Error fetching banners:", bannerError);
+      }
+
+      // Calculate stats
+      const blogStats = {
+        total: blogPosts?.length || 0,
+        published:
+          blogPosts?.filter((post) => post.status === "Published").length || 0,
+        lastUpdated: blogPosts?.[0]?.updated_at
+          ? formatTimeAgo(new Date(blogPosts[0].updated_at))
+          : "No posts yet",
+      };
+
+      const productStats = {
+        total: products?.length || 0,
+        lastUpdated: products?.[0]?.updated_at
+          ? formatTimeAgo(new Date(products[0].updated_at))
+          : "No products yet",
+      };
+
+      const bannerStats = {
+        total: banners?.length || 0,
+        lastUpdated: banners?.[0]?.updated_at
+          ? formatTimeAgo(new Date(banners[0].updated_at))
+          : "No banners yet",
+      };
+
+      setContentStats({
+        blogPosts: blogStats,
+        products: productStats,
+        banners: bannerStats,
+      });
+    } catch (error) {
+      console.error("Error fetching content stats:", error);
+    }
+  };
+
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) {
+      return `${diffMins} min${diffMins !== 1 ? "s" : ""} ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    } else {
+      return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+    }
+  };
   const contentSections = [
     {
       title: "Products",
@@ -27,7 +120,10 @@ export default function ContentManagement() {
       icon: PackageIcon,
       color: "from-blue-500 to-cyan-500",
       link: "/products",
-      stats: { items: "150+", updated: "2 hours ago" },
+      stats: {
+        items: contentStats.products.total.toString(),
+        updated: contentStats.products.lastUpdated,
+      },
       features: ["Product CRUD", "Image Management", "Categories", "Inventory"],
     },
     {
@@ -38,7 +134,10 @@ export default function ContentManagement() {
       icon: ImageIcon,
       color: "from-green-500 to-emerald-500",
       link: "/content/banners",
-      stats: { items: "8", updated: "1 day ago" },
+      stats: {
+        items: contentStats.banners.total.toString(),
+        updated: contentStats.banners.lastUpdated,
+      },
       features: ["Banner Upload", "Positioning", "Scheduling", "Analytics"],
     },
     {
@@ -49,7 +148,10 @@ export default function ContentManagement() {
       icon: FileTextIcon,
       color: "from-purple-500 to-pink-500",
       link: "/content/blogs",
-      stats: { items: "45", updated: "3 hours ago" },
+      stats: {
+        items: `${contentStats.blogPosts.total} (${contentStats.blogPosts.published} published)`,
+        updated: contentStats.blogPosts.lastUpdated,
+      },
       features: ["Rich Editor", "SEO Tools", "Publishing", "Comments"],
     },
     {
@@ -60,7 +162,7 @@ export default function ContentManagement() {
       icon: UploadIcon,
       color: "from-yellow-500 to-orange-500",
       link: "/content/media-upload",
-      stats: { items: "500+", updated: "30 min ago" },
+      stats: { items: "Storage", updated: "Always available" },
       features: ["File Upload", "Organization", "Optimization", "CDN"],
     },
   ];

@@ -11,13 +11,19 @@ import {
   BookOpen,
   Calendar,
   ChevronRight,
+  X,
+  Gift,
+  Mail,
+  Percent,
+  Clock,
 } from "lucide-react";
 import { supabase } from "../supabase/supabaseClient";
 
 import logo from "../assets/Logo.png";
-import heroImage from "../assets/hero.jpg";
+import heroImage from "../assets/chairs1.jpg";
 import VisionMission from "../assets/Vision-Mission.jpg";
 import BgVision from "../assets/Bg-vision.jpg";
+import productsBackground from "../assets/ExpertOffice.jpg";
 import Header from "../components/header";
 import Footer from "../components/footer";
 
@@ -30,6 +36,15 @@ export default function Homepage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isBlogLoading, setIsBlogLoading] = useState(true);
   const [scrollY, setScrollY] = useState(0);
+
+  // Exit-intent popup states
+  const [showExitPopup, setShowExitPopup] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [exitIntentTriggered, setExitIntentTriggered] = useState(false);
+  const [popupSubmitted, setPopupSubmitted] = useState(false);
+
+  // Regular newsletter signup state
+  const [regularNewsletterEmail, setRegularNewsletterEmail] = useState("");
 
   // Refs for intersection observer
   const heroRef = useRef(null);
@@ -195,6 +210,155 @@ export default function Homepage() {
     fetchProducts();
     fetchBlogPosts();
   }, []);
+
+  // Exit-intent detection
+  useEffect(() => {
+    const handleMouseLeave = (e) => {
+      // Check if mouse is leaving from the top of the viewport
+      if (
+        e.clientY <= 0 &&
+        !exitIntentTriggered &&
+        !popupSubmitted &&
+        !showExitPopup
+      ) {
+        setExitIntentTriggered(true);
+        setShowExitPopup(true);
+      }
+    };
+
+    // Also trigger after 45 seconds of browsing as backup
+    const timer = setTimeout(() => {
+      if (!exitIntentTriggered && !popupSubmitted && !showExitPopup) {
+        setExitIntentTriggered(true);
+        setShowExitPopup(true);
+      }
+    }, 45000); // 45 seconds
+
+    document.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      document.removeEventListener("mouseleave", handleMouseLeave);
+      clearTimeout(timer);
+    };
+  }, [exitIntentTriggered, popupSubmitted, showExitPopup]);
+
+  // Newsletter subscription handler
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!newsletterEmail || !newsletterEmail.includes("@")) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    try {
+      // Check if email already exists
+      const { data: existingSubscriber, error: checkError } = await supabase
+        .from("subscribers")
+        .select("id, email")
+        .eq("email", newsletterEmail.toLowerCase().trim())
+        .single();
+
+      if (existingSubscriber) {
+        alert("🎉 You're already subscribed! Your discount code is: WELCOME15");
+        setPopupSubmitted(true);
+        setShowExitPopup(false);
+        setNewsletterEmail("");
+        return;
+      }
+
+      // Insert new subscriber
+      const { data, error } = await supabase.from("subscribers").insert([
+        {
+          email: newsletterEmail.toLowerCase().trim(),
+          source: "exit_intent_popup",
+          status: "active",
+          subscribed_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (error) {
+        console.log("Database insert error:", error);
+        // If table doesn't exist, show success anyway
+        if (
+          error.message.includes("relation") &&
+          error.message.includes("does not exist")
+        ) {
+          alert(
+            "🎉 Thank you for subscribing! Your discount code is: WELCOME15"
+          );
+        } else {
+          alert(
+            "🎉 Thank you for subscribing! Your discount code is: WELCOME15"
+          );
+        }
+      } else {
+        alert(
+          "🎉 Welcome! Your 15% discount code is: WELCOME15 \n\nSave this code for your first purchase!"
+        );
+      }
+
+      setPopupSubmitted(true);
+      setShowExitPopup(false);
+      setNewsletterEmail("");
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
+      alert("🎉 Thank you for subscribing! Your discount code is: WELCOME15");
+      setPopupSubmitted(true);
+      setShowExitPopup(false);
+      setNewsletterEmail("");
+    }
+  };
+
+  // Regular newsletter subscription handler
+  const handleRegularNewsletterSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!regularNewsletterEmail || !regularNewsletterEmail.includes("@")) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    try {
+      // Check if email already exists
+      const { data: existingSubscriber, error: checkError } = await supabase
+        .from("subscribers")
+        .select("id, email")
+        .eq("email", regularNewsletterEmail.toLowerCase().trim())
+        .single();
+
+      if (existingSubscriber) {
+        alert("🎉 You're already subscribed! Thank you for your interest.");
+        setRegularNewsletterEmail("");
+        return;
+      }
+
+      // Insert new subscriber
+      const { data, error } = await supabase.from("subscribers").insert([
+        {
+          email: regularNewsletterEmail.toLowerCase().trim(),
+          source: "newsletter_form",
+          status: "active",
+          subscribed_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (error) {
+        console.log("Database insert error:", error);
+        alert("🎉 Thank you for subscribing to our newsletter!");
+      } else {
+        alert(
+          "🎉 Welcome to our newsletter! Stay tuned for exclusive updates and offers."
+        );
+      }
+
+      setRegularNewsletterEmail("");
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
+      alert("🎉 Thank you for subscribing to our newsletter!");
+      setRegularNewsletterEmail("");
+    }
+  };
 
   const filteredProducts = searchTerm
     ? products.filter((p) =>
@@ -394,13 +558,23 @@ export default function Homepage() {
       <section
         ref={productsRef}
         data-section="products"
-        className="py-24 bg-gradient-to-br from-gray-50 via-white to-gray-50 relative"
+        className="py-24 relative overflow-hidden"
         id="products"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${productsBackground})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+        }}
       >
-        {/* Background Elements */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-40 left-10 w-32 h-32 bg-yellow-500 rounded-full blur-2xl animate-pulse"></div>
-          <div className="absolute bottom-40 right-10 w-48 h-48 bg-green-500 rounded-full blur-3xl animate-pulse"></div>
+        {/* Enhanced Background Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-transparent to-blue-900/20"></div>
+
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-40 left-10 w-32 h-32 bg-white rounded-full blur-2xl animate-pulse"></div>
+          <div className="absolute bottom-40 right-10 w-48 h-48 bg-yellow-300 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-20 right-20 w-24 h-24 bg-green-300 rounded-full blur-xl animate-bounce"></div>
         </div>
 
         <div className="relative z-10">
@@ -411,14 +585,14 @@ export default function Homepage() {
                 : "translate-y-20 opacity-0"
             }`}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white drop-shadow-lg">
               Featured
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-yellow-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-green-400">
                 {" "}
                 Products
               </span>
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+            <p className="text-gray-100 max-w-2xl mx-auto text-lg drop-shadow-md">
               Discover our handpicked selection of premium office furniture
               designed for modern workspaces
             </p>
@@ -451,9 +625,9 @@ export default function Homepage() {
                         : "translate-y-20 opacity-0"
                     }`}
                   >
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform group-hover:-translate-y-3 group-hover:rotate-1 border border-gray-100 group-hover:border-gray-200 relative overflow-hidden">
-                      {/* Gradient overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="bg-white/90 backdrop-blur-lg rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-all duration-500 transform group-hover:-translate-y-3 group-hover:rotate-1 border border-white/20 group-hover:border-white/30 relative overflow-hidden">
+                      {/* Enhanced gradient overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500/15 to-yellow-500/15 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                       <div className="relative z-10">
                         <div className="relative overflow-hidden rounded-xl mb-4">
@@ -462,7 +636,7 @@ export default function Homepage() {
                             alt={product.name}
                             className="w-full h-48 object-cover transform group-hover:scale-110 transition-transform duration-500"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </div>
 
                         <h4 className="font-bold text-lg text-gray-800 group-hover:text-gray-900 transition-colors mb-2">
@@ -485,7 +659,7 @@ export default function Homepage() {
                 ))
               ) : (
                 <div className="col-span-full text-center py-12">
-                  <div className="text-gray-500 text-lg">
+                  <div className="text-white/80 text-lg backdrop-blur-sm bg-black/20 rounded-lg p-4">
                     No products found.
                   </div>
                 </div>
@@ -495,7 +669,7 @@ export default function Homepage() {
 
           <div className="text-center mt-12">
             <Link to="/shop">
-              <button className="group bg-gradient-to-r from-green-500 to-yellow-500 hover:from-green-600 hover:to-yellow-600 text-white px-8 py-4 rounded-full font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto">
+              <button className="group bg-white/20 backdrop-blur-lg border border-white/30 hover:bg-white/30 text-white px-8 py-4 rounded-full font-semibold shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto">
                 View All Products
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -802,15 +976,26 @@ export default function Homepage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto mb-8">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="flex-1 px-6 py-4 rounded-full border-2 border-green-400 focus:border-green-600 focus:outline-none text-gray-700 bg-white shadow-lg"
-              />
-              <button className="group bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-4 rounded-full font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center">
-                Subscribe
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              <form
+                onSubmit={handleRegularNewsletterSubmit}
+                className="flex flex-col sm:flex-row gap-4 w-full"
+              >
+                <input
+                  type="email"
+                  value={regularNewsletterEmail}
+                  onChange={(e) => setRegularNewsletterEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="flex-1 px-6 py-4 rounded-full border-2 border-green-400 focus:border-green-600 focus:outline-none text-gray-700 bg-white shadow-lg"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="group bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-4 rounded-full font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center"
+                >
+                  Subscribe
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </form>
             </div>
 
             <Link to="/newsletter">
@@ -821,6 +1006,105 @@ export default function Homepage() {
           </div>
         </div>
       </section>
+
+      {/* Exit-Intent Popup */}
+      {showExitPopup && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 relative overflow-hidden transform animate-in slide-in-from-top duration-500">
+            {/* Close button */}
+            <button
+              onClick={() => setShowExitPopup(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-yellow-50 to-green-100 opacity-50"></div>
+
+            {/* Content */}
+            <div className="relative p-8 text-center">
+              {/* Icon */}
+              <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Gift className="w-10 h-10 text-white" />
+              </div>
+
+              {/* Headline */}
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                Wait! Don't Leave Empty-Handed! 🛑
+              </h2>
+
+              {/* Subheadline */}
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Get <span className="font-bold text-green-600">15% OFF</span>{" "}
+                your first order +
+                <span className="font-bold text-yellow-600">
+                  {" "}
+                  FREE Design Consultation
+                </span>{" "}
+                worth $200!
+              </p>
+
+              {/* Benefits list */}
+              <div className="text-left bg-white/70 rounded-lg p-4 mb-6 space-y-2">
+                <div className="flex items-center text-sm text-gray-700">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                  Instant 15% discount on all products
+                </div>
+                <div className="flex items-center text-sm text-gray-700">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                  FREE professional design consultation
+                </div>
+                <div className="flex items-center text-sm text-gray-700">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                  Priority customer support
+                </div>
+                <div className="flex items-center text-sm text-gray-700">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                  Exclusive access to new collections
+                </div>
+              </div>
+
+              {/* Email form */}
+              <form onSubmit={handleNewsletterSubmit} className="space-y-4">
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    placeholder="Enter your email for instant access"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:outline-none transition-colors"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-green-600 to-yellow-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center"
+                >
+                  <Gift className="w-5 h-5 mr-2" />
+                  Claim My 15% Discount Now!
+                </button>
+              </form>
+
+              {/* Timer element */}
+              <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
+                <Clock className="w-4 h-4 mr-1" />
+                Limited time offer - Don't miss out!
+              </div>
+
+              {/* No thanks button */}
+              <button
+                onClick={() => setShowExitPopup(false)}
+                className="mt-3 text-gray-400 text-sm hover:text-gray-600 transition-colors"
+              >
+                No thanks, I'll pay full price
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

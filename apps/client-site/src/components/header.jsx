@@ -267,6 +267,23 @@ export default function Header() {
                 }`}
               ></div>
             </Link>
+            <Link
+              to="/blog"
+              className={`relative font-semibold text-sm transition-all duration-300 hover:scale-105 group ${
+                isScrolled
+                  ? "text-gray-700 hover:text-green-600"
+                  : "text-white drop-shadow-lg hover:text-yellow-200"
+              }`}
+            >
+              Blog
+              <div
+                className={`absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ${
+                  isScrolled
+                    ? "bg-gradient-to-r from-green-500 to-yellow-500"
+                    : "bg-yellow-400"
+                }`}
+              ></div>
+            </Link>
           </nav>
 
           {/* Right-side icons */}
@@ -502,6 +519,13 @@ export default function Header() {
                 onClick={() => setShowMobileMenu(false)}
               >
                 Our Services
+              </Link>
+              <Link
+                to="/blog"
+                className="block px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors duration-200 font-medium rounded-xl mx-2"
+                onClick={() => setShowMobileMenu(false)}
+              >
+                Blog
               </Link>
 
               {/* Profile Link for Mobile - only show if user is logged in */}

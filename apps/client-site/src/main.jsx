@@ -22,6 +22,8 @@ import { CartProvider } from "./context/CartContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProductPage from "./pages/ProductPage";
 import NewsletterForm from "./pages/NewsletterForm";
+import BlogList from "./pages/BlogList";
+import BlogDetail from "./pages/BlogDetail";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children, showLoginPage = false }) => {
@@ -143,6 +145,8 @@ root.render(
             <Route path="/newsletter" element={<NewsletterForm />} />
             <Route path="/debug" element={<DebugAuth />} />
             <Route path="/simple-auth" element={<SimpleAuth />} />
+            <Route path="/blog" element={<BlogList />} />
+            <Route path="/blog/:id" element={<BlogDetail />} />
             <Route
               path="/admin/users"
               element={

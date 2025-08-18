@@ -74,10 +74,48 @@ export default function LoginPage() {
       // Show success message briefly before redirect
       setErrorMessage("");
 
-      // Navigate immediately - AuthContext will handle user type detection
-      setTimeout(() => {
-        navigate("/");
-      }, 200); // Small delay to show success state
+      // Check user role and redirect accordingly
+      try {
+        console.log("Checking user role for redirect...");
+
+        // Check if user is an admin
+        const { data: adminData, error: adminError } = await supabase
+          .from("users")
+          .select("role, name")
+          .eq("id", data.user.id)
+          .single();
+
+        if (adminData && adminData.role === "admin") {
+          console.log("Admin user detected, redirecting to admin dashboard...");
+          setErrorMessage("Welcome Admin! Redirecting to dashboard...");
+
+          // Get the current session
+          const { data: sessionData } = await supabase.auth.getSession();
+          const accessToken = sessionData?.session?.access_token;
+          const refreshToken = sessionData?.session?.refresh_token;
+
+          setTimeout(() => {
+            // Pass tokens as URL parameters for auto-login
+            const adminUrl = `http://localhost:5000/?access_token=${encodeURIComponent(
+              accessToken
+            )}&refresh_token=${encodeURIComponent(
+              refreshToken
+            )}&type=admin_login`;
+            window.location.href = adminUrl;
+          }, 1000);
+        } else {
+          console.log("Customer user detected, redirecting to client site...");
+          setTimeout(() => {
+            navigate("/"); // Client site
+          }, 200);
+        }
+      } catch (roleCheckError) {
+        console.error("Error checking user role:", roleCheckError);
+        // Fallback to client site if role check fails
+        setTimeout(() => {
+          navigate("/");
+        }, 200);
+      }
     } catch (err) {
       console.error("Unexpected login error:", err);
       setErrorMessage("Something went wrong. Please try again.");
@@ -117,10 +155,39 @@ export default function LoginPage() {
         setErrorMessage("");
         setShowRecovery(false);
 
-        // Navigate after successful recovery
-        setTimeout(() => {
-          navigate("/");
-        }, 200);
+        // Check user role and redirect accordingly (same logic as main login)
+        try {
+          const { data: adminData } = await supabase
+            .from("users")
+            .select("role")
+            .eq("id", authData.user.id)
+            .single();
+
+          if (adminData && adminData.role === "admin") {
+            // Get session for admin redirect
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData?.session?.access_token;
+            const refreshToken = sessionData?.session?.refresh_token;
+
+            setTimeout(() => {
+              const adminUrl = `http://localhost:5000/?access_token=${encodeURIComponent(
+                accessToken
+              )}&refresh_token=${encodeURIComponent(
+                refreshToken
+              )}&type=admin_login`;
+              window.location.href = adminUrl;
+            }, 500);
+          } else {
+            setTimeout(() => {
+              navigate("/"); // Client site
+            }, 200);
+          }
+        } catch (roleCheckError) {
+          // Fallback to client site
+          setTimeout(() => {
+            navigate("/");
+          }, 200);
+        }
       } else {
         setErrorMessage("Failed to recover account. Please contact support.");
       }
