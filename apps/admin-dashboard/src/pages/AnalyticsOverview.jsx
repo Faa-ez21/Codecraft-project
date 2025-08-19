@@ -89,7 +89,7 @@ export default function AnalyticsOverview() {
     {
       title: "Sales Performance",
       description:
-        "Track sales trends, revenue, and order metrics with detailed breakdowns.",
+        "Track sales trends, revenue, and inquiry metrics with detailed breakdowns.",
       link: "/analytics/sales-performance",
       icon: <BarChart3 className="w-6 h-6" />,
       color: "from-blue-500 to-cyan-500",
@@ -160,7 +160,7 @@ export default function AnalyticsOverview() {
           bgColor: "bg-green-100 dark:bg-green-900/30",
         },
         {
-          label: "Orders Placed",
+          label: "Inquiries Received",
           value: stats.orders_placed?.toLocaleString() || "0",
           change: `${stats.orders_growth || 0}%`,
           changeType: stats.orders_growth >= 0 ? "positive" : "negative",
@@ -169,7 +169,7 @@ export default function AnalyticsOverview() {
           bgColor: "bg-blue-100 dark:bg-blue-900/30",
         },
         {
-          label: "Average Order Value",
+          label: "Average Inquiry Value",
           value: `GH₵${stats.average_order_value?.toFixed(2) || "0.00"}`,
           change: `${stats.aov_growth || 0}%`,
           changeType: stats.aov_growth >= 0 ? "positive" : "negative",
@@ -205,7 +205,7 @@ export default function AnalyticsOverview() {
         pointRadius: 6,
       },
       {
-        label: "Orders",
+        label: "Inquiries",
         data: monthlyData.map((d) => d.orders_placed || 0),
         borderColor: "rgb(16, 185, 129)",
         backgroundColor: "rgba(16, 185, 129, 0.1)",

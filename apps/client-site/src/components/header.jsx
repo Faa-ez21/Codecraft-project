@@ -11,7 +11,6 @@ import {
   Star,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../assets/Logo.png";
 import { useCart } from "../context/CartContext";
 import { supabase } from "../supabase/supabaseClient";
 import debounce from "lodash.debounce";
@@ -197,7 +196,7 @@ export default function Header() {
           <Link to="/" className="flex items-center group">
             <div className="relative">
               <img
-                src={logo}
+                src="/Logo.png"
                 alt="Expert Office Logo"
                 className="h-10 sm:h-12 transition-all duration-300 group-hover:scale-105 drop-shadow-lg"
               />

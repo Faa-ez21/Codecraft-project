@@ -92,7 +92,7 @@ export default function Customers() {
             // Transform users to customer format and add missing fields
             const transformedUsers = (allUsers || []).map((user) => ({
               ...user,
-              orders: 0, // Default value since this field might not exist
+              inquiries: 0, // Default value since this field might not exist
               spent: 0, // Default value since this field might not exist
               location: user.location || "Not provided",
             }));
@@ -102,7 +102,7 @@ export default function Customers() {
           // Transform users to customer format and add missing fields
           const transformedUsers = (userData || []).map((user) => ({
             ...user,
-            orders: 0, // Default value since this field might not exist
+            inquiries: 0, // Default value since this field might not exist
             spent: 0, // Default value since this field might not exist
             location: user.location || "Not provided",
           }));

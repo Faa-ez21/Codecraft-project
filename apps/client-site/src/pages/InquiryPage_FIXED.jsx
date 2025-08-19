@@ -1,43 +1,39 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Send,
   ArrowLeft,
-  CheckCircle2,
   User,
   Mail,
   MessageSquare,
-  ShoppingBag,
-  Star,
-  Sparkles,
-  Phone,
-  MapPin,
-  Clock,
-  ArrowRight,
-  Heart,
-  Award,
-  Users,
   Package,
+  Phone,
   Building,
   DollarSign,
-  MessageCircle,
+  Clock,
+  MapPin,
+  Heart,
 } from "lucide-react";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import { useCart } from "../context/CartContext";
 import { supabase } from "../supabase/supabaseClient";
 
-export default function ProductInquiry() {
+export default function InquiryPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { cartItems } = useCart();
 
-  // Get state from navigation
-  const fromCart = location?.state?.fromCart || false;
-  const includeProducts = location?.state?.includeProducts || false;
-  const fromService = location?.state?.fromService || false;
-  const serviceName = location?.state?.serviceName || "";
-  const itemsToShow = location?.state?.cartItems || cartItems || [];
+  // Extract state from navigation
+  const fromCart = location.state?.fromCart || false;
+  const fromService = location.state?.fromService || false;
+  const serviceName = location.state?.serviceName || "";
+  const includeProducts = location.state?.includeProducts || false;
+
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -51,11 +47,13 @@ export default function ProductInquiry() {
     requirements: "",
     preferred_contact_method: "email",
   });
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
-  const formRef = useRef(null);
+
+  // Determine items to show based on context
+  const itemsToShow = fromCart
+    ? cartItems.filter((item) => item.selected)
+    : includeProducts
+    ? cartItems
+    : [];
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -118,14 +116,14 @@ export default function ProductInquiry() {
 
       // Determine if this is a service inquiry
       if (fromService && serviceName) {
-        // Handle service inquiry with new schema
+        // Handle service inquiry - submit to service_inquiries table
         const serviceInquiryData = {
           name: form.name.trim(),
           email: form.email.trim(),
-          phone: form.phone.trim() || null,
-          company: form.company.trim() || null,
+          phone: form.phone.trim(),
+          company: form.company.trim(),
           service_type: serviceName.toLowerCase().replace(/\s+/g, "_"),
-          description: form.message.trim(),
+          message: form.message.trim(),
           requirements: form.requirements.trim() || null,
           budget_range: form.budget_range || null,
           timeline: form.timeline || null,
@@ -151,15 +149,6 @@ export default function ProductInquiry() {
         }
 
         console.log("Service inquiry submitted successfully:", data);
-
-        // Show success message
-        setIsSubmitted(true);
-
-        // Optional: Navigate to thank you page or show custom success message
-        setTimeout(() => {
-          // You could navigate to a thank you page here if needed
-          // navigate('/thank-you');
-        }, 2000);
       } else {
         // Handle regular product inquiry
         const inquiryData = {
@@ -195,10 +184,9 @@ export default function ProductInquiry() {
         }
 
         console.log("Product inquiry submitted successfully:", data);
-
-        // Show success message
-        setIsSubmitted(true);
       }
+
+      setIsSubmitted(true);
 
       // Reset form after success animation
       setTimeout(() => {
@@ -240,208 +228,108 @@ export default function ProductInquiry() {
         <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-yellow-600/10"></div>
         <div className="relative max-w-4xl mx-auto text-center">
           <div
-            className={`inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-6 transition-all duration-700 ${
+            className={`transition-all duration-1000 ${
               isVisible
                 ? "translate-y-0 opacity-100"
                 : "translate-y-10 opacity-0"
             }`}
           >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            {fromCart ? "Product Inquiry" : "Get In Touch"}
+            <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-100 to-yellow-100 rounded-full mb-8 border border-green-200">
+              {fromService ? (
+                <>
+                  <Package className="w-5 h-5 text-green-600 mr-2" />
+                  <span className="text-green-700 font-semibold">
+                    {serviceName} Service Inquiry
+                  </span>
+                </>
+              ) : fromCart ? (
+                <>
+                  <Heart className="w-5 h-5 text-green-600 mr-2" />
+                  <span className="text-green-700 font-semibold">
+                    Selected Items Inquiry
+                  </span>
+                </>
+              ) : (
+                <>
+                  <MessageSquare className="w-5 h-5 text-green-600 mr-2" />
+                  <span className="text-green-700 font-semibold">
+                    General Inquiry
+                  </span>
+                </>
+              )}
+            </div>
+
+            <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-green-700 to-yellow-600 bg-clip-text text-transparent">
+              {fromService
+                ? "Request Service Quote"
+                : fromCart
+                ? "Inquire About Selected Items"
+                : "Get In Touch"}
+            </h1>
+
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+              {fromService
+                ? `Tell us about your ${serviceName.toLowerCase()} needs and we'll provide a customized solution for your workspace.`
+                : fromCart
+                ? "Share your requirements for the selected items and our team will assist you with pricing, customization, and delivery options."
+                : "Whether you're looking for premium office furniture, workspace design, or custom solutions, we're here to help transform your office into a space of excellence."}
+            </p>
           </div>
-
-          <h1
-            className={`text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-800 mb-6 transition-all duration-700 delay-200 ${
-              isVisible
-                ? "translate-y-0 opacity-100"
-                : "translate-y-10 opacity-0"
-            }`}
-          >
-            {fromService ? (
-              <>
-                Service{" "}
-                <span className="bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
-                  Consultation
-                </span>
-              </>
-            ) : includeProducts ? (
-              <>
-                Let's Discuss Your{" "}
-                <span className="bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
-                  Product Selection
-                </span>
-              </>
-            ) : (
-              <>
-                Ready to Transform{" "}
-                <span className="bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent">
-                  Your Workspace?
-                </span>
-              </>
-            )}
-          </h1>
-
-          <p
-            className={`text-xl text-gray-600 mb-8 max-w-2xl mx-auto transition-all duration-700 delay-400 ${
-              isVisible
-                ? "translate-y-0 opacity-100"
-                : "translate-y-10 opacity-0"
-            }`}
-          >
-            {fromService
-              ? `Get expert consultation for ${serviceName.toLowerCase()} and receive a customized solution for your business needs.`
-              : includeProducts
-              ? "Share your requirements and let our experts help you create the perfect office setup."
-              : "Connect with our furniture experts for personalized consultations and custom solutions."}
-          </p>
         </div>
       </section>
 
-      {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-3 gap-12">
-          {/* Contact Information Sidebar */}
-          <div
-            className={`lg:col-span-1 transition-all duration-700 delay-600 ${
-              isVisible
-                ? "translate-x-0 opacity-100"
-                : "-translate-x-10 opacity-0"
-            }`}
-          >
-            <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 sticky top-8">
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-yellow-500 rounded-2xl mb-4">
-                  <Phone className="w-8 h-8 text-white" />
+      {/* Enhanced Form Section */}
+      <div className="relative py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-green-100 overflow-hidden">
+            {/* Success Message */}
+            {isSubmitted && (
+              <div className="p-8 bg-gradient-to-r from-green-500 to-yellow-500 text-white text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+                  <Package className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent mb-2">
-                  Get In Touch
+                <h3 className="text-2xl font-bold mb-2">
+                  Inquiry Submitted Successfully!
                 </h3>
-                <p className="text-gray-600">
-                  We're here to help you create amazing spaces
+                <p className="text-green-100">
+                  Thank you for your inquiry. Our team will get back to you
+                  within 24 hours.
                 </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-2xl">
-                  <div className="p-2 bg-green-100 rounded-xl">
-                    <Phone className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">Call Us</p>
-                    <p className="text-green-600">+233 123 456 789</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4 p-4 bg-yellow-50 rounded-2xl">
-                  <div className="p-2 bg-yellow-100 rounded-xl">
-                    <Mail className="w-5 h-5 text-yellow-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">Email Us</p>
-                    <p className="text-yellow-600">info@expertoffice.com</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-2xl">
-                  <div className="p-2 bg-green-100 rounded-xl">
-                    <MapPin className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">Visit Us</p>
-                    <p className="text-green-600">Accra, Ghana</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4 p-4 bg-yellow-50 rounded-2xl">
-                  <div className="p-2 bg-yellow-100 rounded-xl">
-                    <Clock className="w-5 h-5 text-yellow-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      Business Hours
-                    </p>
-                    <p className="text-yellow-600">Mon-Fri: 8AM-6PM</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl border border-green-100">
-                <div className="flex items-center mb-4">
-                  <Award className="w-6 h-6 text-green-600 mr-2" />
-                  <h4 className="font-bold text-gray-800">Why Choose Us?</h4>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li className="flex items-center">
-                    <Star className="w-4 h-4 text-yellow-500 mr-2" />
-                    15+ Years Experience
-                  </li>
-                  <li className="flex items-center">
-                    <Users className="w-4 h-4 text-green-500 mr-2" />
-                    50K+ Happy Clients
-                  </li>
-                  <li className="flex items-center">
-                    <Package className="w-4 h-4 text-yellow-500 mr-2" />
-                    Premium Quality
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Form Section */}
-          <div
-            className={`lg:col-span-2 transition-all duration-700 delay-800 ${
-              isVisible
-                ? "translate-x-0 opacity-100"
-                : "translate-x-10 opacity-0"
-            }`}
-          >
-            {/* Service Information Display */}
-            {fromService && serviceName && (
-              <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 mb-8">
-                <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent flex items-center">
-                  <Award className="w-6 h-6 mr-3 text-green-600" />
-                  Service Inquiry
-                </h2>
-                <div className="bg-green-50 rounded-2xl border border-green-100 p-6">
-                  <h3 className="font-semibold text-gray-800 text-xl mb-2">
-                    {serviceName}
-                  </h3>
-                  <p className="text-green-600 font-medium">
-                    Requesting consultation and quote for this service
-                  </p>
-                </div>
               </div>
             )}
 
-            {/* Cart Items Display */}
-            {includeProducts && itemsToShow.length > 0 && (
-              <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8 mb-8">
-                <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent flex items-center">
-                  <ShoppingBag className="w-6 h-6 mr-3 text-green-600" />
-                  Selected Products
-                </h2>
-                <div className="grid gap-4">
+            {/* Error Message */}
+            {submitError && (
+              <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-700 m-8 rounded-lg">
+                <p className="font-medium">{submitError}</p>
+              </div>
+            )}
+
+            {/* Selected Items Display */}
+            {itemsToShow.length > 0 && (
+              <div className="p-8 bg-gradient-to-r from-green-50 to-yellow-50 border-b border-green-100">
+                <h3 className="text-lg font-semibold text-green-700 mb-4 flex items-center">
+                  <Package className="w-5 h-5 mr-2" />
+                  {fromCart ? "Selected Items" : "Products of Interest"}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {itemsToShow.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center gap-4 p-4 bg-green-50 rounded-2xl border border-green-100"
+                      className="flex items-center p-3 bg-white rounded-xl border border-green-200 shadow-sm"
                     >
                       <img
                         src={item.image_url}
                         alt={item.name}
-                        className="w-20 h-20 object-cover rounded-xl"
+                        className="w-12 h-12 object-cover rounded-lg mr-3"
                       />
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-800 text-lg">
+                        <h4 className="font-medium text-gray-900 text-sm">
                           {item.name}
+                        </h4>
+                        <p className="text-green-600 text-sm font-semibold">
+                          ${item.price}
                         </p>
-                        <p className="text-green-600 font-medium">
-                          Quantity: {item.qty}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <Heart className="w-5 h-5 text-red-500 mb-2" />
                       </div>
                     </div>
                   ))}
@@ -449,52 +337,12 @@ export default function ProductInquiry() {
               </div>
             )}
 
-            {/* Main Form */}
-            <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl border border-green-100 p-8">
-              {isSubmitted ? (
-                <div className="text-center py-12 animate-fadeIn">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-                    <CheckCircle2 className="w-10 h-10 text-green-600" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
-                    Thank You!
-                  </h3>
-                  <p className="text-gray-600 text-lg mb-8">
-                    Your inquiry has been submitted successfully. We'll get back
-                    to you within 24 hours.
-                  </p>
-                  <div className="flex justify-center gap-4">
-                    <button
-                      onClick={() => navigate("/shop")}
-                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-yellow-600 text-white rounded-2xl font-semibold hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                    >
-                      Continue Shopping
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <form
-                  ref={formRef}
-                  onSubmit={handleSubmit}
-                  className="space-y-8"
-                >
-                  <div className="text-center mb-8">
-                    <h3 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-yellow-600 bg-clip-text text-transparent mb-2">
-                      Send Us Your Inquiry
-                    </h3>
-                    <p className="text-gray-600">
-                      Fill out the form below and we'll respond promptly
-                    </p>
-
-                    {/* Error Message */}
-                    {submitError && (
-                      <div className="mt-4 p-4 bg-red-100 border border-red-300 rounded-lg">
-                        <p className="text-red-700 text-sm">{submitError}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
+            {/* Form */}
+            <div className="p-8">
+              {!isSubmitted && (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Basic Information */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
                         <User className="w-4 h-4 mr-2 text-green-600" />
@@ -528,17 +376,18 @@ export default function ProductInquiry() {
                     </div>
                   </div>
 
-                  {/* Additional fields for service inquiries */}
+                  {/* Service-specific fields */}
                   {fromService && serviceName && (
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gradient-to-r from-green-50 to-yellow-50 rounded-2xl border border-green-200">
                       <div>
                         <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
                           <Phone className="w-4 h-4 mr-2 text-green-600" />
-                          Phone Number
+                          Phone Number *
                         </label>
                         <input
                           type="tel"
                           name="phone"
+                          required
                           value={form.phone}
                           onChange={handleChange}
                           className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
@@ -549,11 +398,12 @@ export default function ProductInquiry() {
                       <div>
                         <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
                           <Building className="w-4 h-4 mr-2 text-green-600" />
-                          Company Name
+                          Company Name *
                         </label>
                         <input
                           type="text"
                           name="company"
+                          required
                           value={form.company}
                           onChange={handleChange}
                           className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
@@ -573,18 +423,20 @@ export default function ProductInquiry() {
                           className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
                         >
                           <option value="">Select budget range</option>
-                          <option value="under_1000">Under $1,000</option>
-                          <option value="1000_5000">$1,000 - $5,000</option>
-                          <option value="5000_10000">$5,000 - $10,000</option>
-                          <option value="10000_25000">$10,000 - $25,000</option>
-                          <option value="above_25000">Above $25,000</option>
+                          <option value="under_5000">Under $5,000</option>
+                          <option value="5000_15000">$5,000 - $15,000</option>
+                          <option value="15000_50000">$15,000 - $50,000</option>
+                          <option value="50000_100000">
+                            $50,000 - $100,000
+                          </option>
+                          <option value="over_100000">Over $100,000</option>
                         </select>
                       </div>
 
                       <div>
                         <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
                           <Clock className="w-4 h-4 mr-2 text-green-600" />
-                          Timeline
+                          Project Timeline
                         </label>
                         <select
                           name="timeline"
@@ -593,33 +445,41 @@ export default function ProductInquiry() {
                           className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
                         >
                           <option value="">Select timeline</option>
-                          <option value="asap">ASAP</option>
-                          <option value="within_month">Within a month</option>
-                          <option value="within_quarter">
-                            Within 3 months
+                          <option value="immediate">
+                            Immediate (1-2 weeks)
                           </option>
-                          <option value="flexible">Flexible timeline</option>
+                          <option value="short_term">
+                            Short term (1 month)
+                          </option>
+                          <option value="medium_term">
+                            Medium term (2-3 months)
+                          </option>
+                          <option value="long_term">
+                            Long term (3+ months)
+                          </option>
+                          <option value="planning">Just planning</option>
                         </select>
                       </div>
 
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
                           <MapPin className="w-4 h-4 mr-2 text-green-600" />
-                          Project Location
+                          Project Location *
                         </label>
                         <input
                           type="text"
                           name="location"
+                          required
                           value={form.location}
                           onChange={handleChange}
                           className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
-                          placeholder="City, Region"
+                          placeholder="Enter project location (city, state)"
                         />
                       </div>
 
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                          <MessageCircle className="w-4 h-4 mr-2 text-green-600" />
+                          <Mail className="w-4 h-4 mr-2 text-green-600" />
                           Preferred Contact Method
                         </label>
                         <select
@@ -630,12 +490,13 @@ export default function ProductInquiry() {
                         >
                           <option value="email">Email</option>
                           <option value="phone">Phone</option>
-                          <option value="both">Both</option>
+                          <option value="both">Both Email and Phone</option>
                         </select>
                       </div>
                     </div>
                   )}
 
+                  {/* Message */}
                   <div>
                     <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
                       <MessageSquare className="w-4 h-4 mr-2 text-green-600" />

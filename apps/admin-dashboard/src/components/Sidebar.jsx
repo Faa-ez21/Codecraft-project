@@ -37,6 +37,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   const [productsOpen, setProductsOpen] = useState(false);
   const [contentOpen, setContentOpen] = useState(false);
   const [usersOpen, setUsersOpen] = useState(false);
+  const [inquiriesOpen, setInquiriesOpen] = useState(false);
   const location = useLocation();
 
   // Close dropdowns when sidebar collapses
@@ -46,6 +47,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       setProductsOpen(false);
       setContentOpen(false);
       setUsersOpen(false);
+      setInquiriesOpen(false);
     }
   }, [collapsed]);
 
@@ -71,16 +73,20 @@ export default function Sidebar({ collapsed, onToggle }) {
       ],
     },
     {
-      title: "Orders",
-      icon: ShoppingCart,
-      path: "/orders",
-      color: "text-orange-500",
-    },
-    {
       title: "Inquiries",
       icon: MessageSquare,
-      path: "/inquiries",
       color: "text-cyan-500",
+      isDropdown: true,
+      isOpen: inquiriesOpen,
+      setIsOpen: setInquiriesOpen,
+      subItems: [
+        { title: "Product Inquiries", path: "/inquiries", icon: Package },
+        {
+          title: "Service Inquiries",
+          path: "/service-inquiries",
+          icon: Target,
+        },
+      ],
     },
     {
       title: "Newsletter",

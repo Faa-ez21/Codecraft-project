@@ -15,12 +15,9 @@ import ProductList from "./pages/ProductList";
 import AddProduct from "./pages/AddProduct";
 import EditProduct from "./pages/EditProduct";
 
-// Orders
-import Orders from "./pages/Orders";
-import OrderDetails from "./pages/OrderDetails";
-
 // Inquiries
 import Inquiries from "./pages/Inquiries";
+import ServiceInquiries from "./pages/ServiceInquiries";
 
 // Newsletter
 import Newsletter from "./pages/Newsletter";
@@ -126,11 +123,9 @@ export default function App() {
           <Route path="/product-list" element={<ProductList />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/edit-product/:id" element={<EditProduct />} />
-          {/* Orders */}
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/orders/:id" element={<OrderDetails />} />
           {/* Inquiries */}
           <Route path="/inquiries" element={<Inquiries />} />
+          <Route path="/service-inquiries" element={<ServiceInquiries />} />
           {/* Newsletter */}
           <Route path="/newsletter" element={<Newsletter />} />
           {/* Customers */}

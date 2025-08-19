@@ -28,6 +28,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
+  MessageSquare,
   CheckCircle,
   XCircle,
   AlertCircle,
@@ -50,19 +51,19 @@ ChartJS.register(
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const [ordersCount, setOrdersCount] = useState(0);
+  const [inquiriesCount, setInquiriesCount] = useState(0);
   const [productsCount, setProductsCount] = useState(0);
   const [customersCount, setCustomersCount] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [recentOrders, setRecentOrders] = useState([]);
+  const [recentInquiries, setRecentInquiries] = useState([]);
   const [lowStockItems, setLowStockItems] = useState([]);
   const [monthlySales, setMonthlySales] = useState([]);
   const [categorySales, setCategorySales] = useState({});
   const [salesGrowth, setSalesGrowth] = useState(0);
-  const [orderStats, setOrderStats] = useState({
+  const [inquiryStats, setInquiryStats] = useState({
     pending: 0,
     processing: 0,
-    delivered: 0,
+    resolved: 0,
     cancelled: 0,
   });
 
@@ -71,18 +72,20 @@ export default function Dashboard() {
       setLoading(true);
       try {
         const [
-          ordersRes,
+          inquiriesRes,
+          serviceInquiriesRes,
           productsRes,
           customersRes,
-          recentOrdersRes,
+          recentInquiriesRes,
           lowStockRes,
         ] = await Promise.all([
-          supabase.from("orders").select("*"),
+          supabase.from("inquiries").select("*"),
+          supabase.from("service_inquiries").select("*"),
           supabase.from("products").select("*"),
           supabase.from("customers").select("*"),
           supabase
-            .from("orders")
-            .select("id, customer_name, total, status, created_at")
+            .from("inquiries")
+            .select("id, name, email, message, created_at")
             .order("created_at", { ascending: false })
             .limit(8),
           supabase
@@ -91,27 +94,31 @@ export default function Dashboard() {
             .lt("stock_quantity", 10),
         ]);
 
-        if (!ordersRes.error) {
-          setOrdersCount(ordersRes.data.length);
-          const salesByMonth = groupSalesByMonth(ordersRes.data);
+        // Combine both inquiry types
+        const allInquiries = [
+          ...(inquiriesRes.data || []),
+          ...(serviceInquiriesRes.data || []),
+        ];
+
+        if (!inquiriesRes.error && !serviceInquiriesRes.error) {
+          setInquiriesCount(allInquiries.length);
+          const salesByMonth = groupSalesByMonth(allInquiries);
           setMonthlySales(salesByMonth);
 
-          const revenue = ordersRes.data.reduce(
-            (sum, order) => sum + (parseFloat(order.total) || 0),
-            0
-          );
+          // Mock revenue calculation based on inquiries
+          const revenue = allInquiries.length * 2500; // Average project value
           setTotalRevenue(revenue);
 
           // Calculate growth (mock calculation)
           setSalesGrowth(12.5);
 
-          // Calculate order status distribution
-          const stats = ordersRes.data.reduce((acc, order) => {
-            const status = order.status?.toLowerCase() || "pending";
+          // Calculate inquiry status distribution
+          const stats = allInquiries.reduce((acc, inquiry) => {
+            const status = inquiry.status?.toLowerCase() || "pending";
             acc[status] = (acc[status] || 0) + 1;
             return acc;
           }, {});
-          setOrderStats(stats);
+          setInquiryStats(stats);
         }
 
         if (!productsRes.error) {
@@ -121,7 +128,8 @@ export default function Dashboard() {
         }
 
         if (!customersRes.error) setCustomersCount(customersRes.data.length);
-        if (!recentOrdersRes.error) setRecentOrders(recentOrdersRes.data);
+        if (!recentInquiriesRes.error)
+          setRecentInquiries(recentInquiriesRes.data);
         if (!lowStockRes.error) setLowStockItems(lowStockRes.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -133,12 +141,13 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const groupSalesByMonth = (orders) => {
+  const groupSalesByMonth = (inquiries) => {
     const sales = {};
-    for (const order of orders) {
-      const date = new Date(order.created_at);
+    for (const inquiry of inquiries) {
+      const date = new Date(inquiry.created_at);
       const month = date.toLocaleString("default", { month: "short" });
-      sales[month] = (sales[month] || 0) + (parseFloat(order.total) || 0);
+      // Mock revenue calculation: each inquiry represents potential business value
+      sales[month] = (sales[month] || 0) + 2500; // Average project value
     }
     const orderedMonths = [
       "Jan",
@@ -227,14 +236,14 @@ export default function Dashboard() {
   };
 
   const doughnutData = {
-    labels: ["Delivered", "Processing", "Pending", "Cancelled"],
+    labels: ["Resolved", "Processing", "Pending", "Cancelled"],
     datasets: [
       {
         data: [
-          orderStats.delivered || 0,
-          orderStats.processing || 0,
-          orderStats.pending || 0,
-          orderStats.cancelled || 0,
+          inquiryStats.resolved || 0,
+          inquiryStats.processing || 0,
+          inquiryStats.pending || 0,
+          inquiryStats.cancelled || 0,
         ],
         backgroundColor: [
           "rgba(34, 197, 94, 0.8)",
@@ -326,9 +335,9 @@ export default function Dashboard() {
           isLoading={loading}
         />
         <StatCard
-          title="Total Orders"
-          value={ordersCount.toLocaleString()}
-          icon={<ShoppingCart className="w-6 h-6" />}
+          title="Total Inquiries"
+          value={inquiriesCount.toLocaleString()}
+          icon={<MessageSquare className="w-6 h-6" />}
           color="blue"
           change="+8.2%"
           changeType="increase"
@@ -371,10 +380,10 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Order Status Chart */}
+        {/* Inquiry Status Chart */}
         <ChartCard
-          title="Order Status"
-          subtitle="Current order distribution"
+          title="Inquiry Status"
+          subtitle="Current inquiry distribution"
           type="doughnut"
           data={doughnutData}
           options={{ ...chartOptions, scales: {} }}
@@ -384,7 +393,7 @@ export default function Dashboard() {
 
       {/* Tables Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentOrdersTable orders={recentOrders} isLoading={loading} />
+        <RecentInquiriesTable inquiries={recentInquiries} isLoading={loading} />
         <LowStockTable items={lowStockItems} isLoading={loading} />
       </div>
     </div>
@@ -431,11 +440,11 @@ function ChartCard({ title, subtitle, type, data, options, isLoading }) {
   );
 }
 
-// Enhanced Recent Orders Table
-function RecentOrdersTable({ orders, isLoading }) {
+// Enhanced Recent Inquiries Table
+function RecentInquiriesTable({ inquiries, isLoading }) {
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
-      case "delivered":
+      case "resolved":
         return <CheckCircle className="w-4 h-4 text-green-500" />;
       case "processing":
         return <Clock className="w-4 h-4 text-blue-500" />;
@@ -470,48 +479,51 @@ function RecentOrdersTable({ orders, isLoading }) {
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Recent Orders
+          Recent Inquiries
         </h3>
-        <button className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
+        <button
+          onClick={() => (window.location.href = "/inquiries")}
+          className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+        >
           View all <ArrowUpRight className="w-4 h-4" />
         </button>
       </div>
 
       <div className="overflow-hidden">
         <div className="space-y-3">
-          {orders.slice(0, 6).map((order) => (
+          {inquiries.slice(0, 6).map((inquiry) => (
             <div
-              key={order.id}
+              key={inquiry.id}
               className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl transition-colors"
             >
               <div className="flex items-center gap-3">
-                {getStatusIcon(order.status)}
+                {getStatusIcon(inquiry.status)}
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white text-sm">
-                    {order.customer_name || "Guest Customer"}
+                    {inquiry.name || "Anonymous"}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(order.created_at).toLocaleDateString()}
+                    {new Date(inquiry.created_at).toLocaleDateString()}
                   </p>
                 </div>
               </div>
 
               <div className="text-right">
                 <p className="font-semibold text-gray-900 dark:text-white text-sm">
-                  GH₵ {parseFloat(order.total || 0).toFixed(2)}
+                  {inquiry.email || "No email"}
                 </p>
                 <span
                   className={`inline-flex px-2 py-1 text-xs rounded-full font-medium ${
-                    order.status === "delivered"
+                    inquiry.status === "resolved"
                       ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                      : order.status === "pending"
+                      : inquiry.status === "pending"
                       ? "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400"
-                      : order.status === "processing"
+                      : inquiry.status === "processing"
                       ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
                       : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
                   }`}
                 >
-                  {order.status || "Unknown"}
+                  {inquiry.status || "New"}
                 </span>
               </div>
             </div>

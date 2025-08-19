@@ -34,7 +34,7 @@ const AddUser = () => {
 
   const permissionIcons = {
     "Manage Products": Package,
-    "Manage Orders": ShoppingCart,
+    "Manage Inquiries": ShoppingCart,
     "Manage Users": Users,
     "Manage Content Management": FileText,
     "Manage Categories": Layers,
@@ -44,7 +44,7 @@ const AddUser = () => {
 
   const permissionDescriptions = {
     "Manage Products": "Create, edit, and delete products in the inventory",
-    "Manage Orders": "View and manage customer orders and fulfillment",
+    "Manage Inquiries": "View and manage customer inquiries and requests",
     "Manage Users": "Add, edit, and manage user accounts and permissions",
     "Manage Content Management": "Edit website content, blogs, and pages",
     "Manage Categories":

@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { supabase } from "../supabase/supabaseClient";
 
-import logo from "../assets/Logo.png";
 import heroImage from "../assets/hero.jpg";
 import VisionMission from "../assets/Vision-Mission.jpg";
 import BgVision from "../assets/Bg-vision.jpg";

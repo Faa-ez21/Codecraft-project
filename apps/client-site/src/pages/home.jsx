@@ -20,7 +20,6 @@ import {
 import { supabase } from "../supabase/supabaseClient";
 import dataCache, { CACHE_KEYS } from "../utils/dataCache";
 
-import logo from "../assets/Logo.png";
 import heroImage from "../assets/chairs1.jpg";
 import VisionMission from "../assets/Vision-Mission.jpg";
 import BgVision from "../assets/Bg-vision.jpg";

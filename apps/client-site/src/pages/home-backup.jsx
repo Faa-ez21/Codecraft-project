@@ -33,7 +33,6 @@ import {
 } from "lucide-react";
 import { supabase } from "../supabase/supabaseClient";
 
-import logo from "../assets/Logo.png";
 import heroImage from "../assets/hero.jpg";
 import VisionMission from "../assets/Vision-Mission.jpg";
 import BgVision from "../assets/Bg-vision.jpg";
@@ -49,7 +48,7 @@ export default function Homepage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isBlogLoading, setIsBlogLoading] = useState(true);
   const [scrollY, setScrollY] = useState(0);
-  
+
   // New state for enhanced features
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
@@ -60,7 +59,7 @@ export default function Homepage() {
     customers: 1250,
     products: 500,
     reviews: 4.9,
-    yearsExperience: 15
+    yearsExperience: 15,
   });
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -94,9 +93,14 @@ export default function Homepage() {
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
-      
+
       // Track user engagement for smart newsletter popup
-      if (window.scrollY > 1000 && userInteractions > 3 && timeOnPage > 30 && !showSmartPopup) {
+      if (
+        window.scrollY > 1000 &&
+        userInteractions > 3 &&
+        timeOnPage > 30 &&
+        !showSmartPopup
+      ) {
         setTimeout(() => setShowSmartPopup(true), 2000);
       }
     };
@@ -106,7 +110,7 @@ export default function Homepage() {
     };
 
     const handleUserInteraction = () => {
-      setUserInteractions(prev => prev + 1);
+      setUserInteractions((prev) => prev + 1);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -116,7 +120,7 @@ export default function Homepage() {
 
     // Time on page tracker
     const timer = setInterval(() => {
-      setTimeOnPage(prev => prev + 1);
+      setTimeOnPage((prev) => prev + 1);
     }, 1000);
 
     return () => {
@@ -131,7 +135,7 @@ export default function Homepage() {
   // Auto-rotating testimonials
   useEffect(() => {
     const testimonialTimer = setInterval(() => {
-      setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
+      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
     }, 4000);
     return () => clearInterval(testimonialTimer);
   }, []);
@@ -140,11 +144,11 @@ export default function Homepage() {
   useEffect(() => {
     if (visibleSections.stats) {
       const animateStats = () => {
-        setStats(prev => ({
+        setStats((prev) => ({
           customers: Math.min(prev.customers + 25, 1250),
           products: Math.min(prev.products + 10, 500),
           reviews: Math.min(prev.reviews + 0.1, 4.9),
-          yearsExperience: Math.min(prev.yearsExperience + 1, 15)
+          yearsExperience: Math.min(prev.yearsExperience + 1, 15),
         }));
       };
       const statsTimer = setInterval(animateStats, 100);
@@ -189,74 +193,84 @@ export default function Homepage() {
       id: 1,
       name: "Sarah Johnson",
       position: "CEO at TechStart",
-      content: "Expert Office Furnish transformed our workspace completely. The ergonomic chairs have significantly improved our team's productivity and comfort.",
+      content:
+        "Expert Office Furnish transformed our workspace completely. The ergonomic chairs have significantly improved our team's productivity and comfort.",
       rating: 5,
-      image: "/api/placeholder/64/64"
+      image: "/api/placeholder/64/64",
     },
     {
       id: 2,
       name: "Michael Chen",
       position: "Operations Manager",
-      content: "Outstanding quality and service! The delivery was prompt and the installation team was professional. Highly recommend for any office setup.",
+      content:
+        "Outstanding quality and service! The delivery was prompt and the installation team was professional. Highly recommend for any office setup.",
       rating: 5,
-      image: "/api/placeholder/64/64"
+      image: "/api/placeholder/64/64",
     },
     {
       id: 3,
       name: "Emma Davis",
       position: "Creative Director",
-      content: "Beautiful designs that perfectly match our brand aesthetic. The furniture is not only stylish but incredibly functional for our creative team.",
+      content:
+        "Beautiful designs that perfectly match our brand aesthetic. The furniture is not only stylish but incredibly functional for our creative team.",
       rating: 5,
-      image: "/api/placeholder/64/64"
-    }
+      image: "/api/placeholder/64/64",
+    },
   ];
 
   const features = [
     {
       icon: <Zap className="w-8 h-8" />,
       title: "Lightning Fast Delivery",
-      description: "Get your furniture delivered within 24-48 hours in major cities",
-      color: "from-yellow-500 to-orange-500"
+      description:
+        "Get your furniture delivered within 24-48 hours in major cities",
+      color: "from-yellow-500 to-orange-500",
     },
     {
       icon: <Shield className="w-8 h-8" />,
       title: "Lifetime Warranty",
-      description: "Comprehensive warranty coverage on all premium furniture pieces",
-      color: "from-blue-500 to-purple-500"
+      description:
+        "Comprehensive warranty coverage on all premium furniture pieces",
+      color: "from-blue-500 to-purple-500",
     },
     {
       icon: <Award className="w-8 h-8" />,
       title: "Award-Winning Design",
-      description: "Internationally recognized designs that win industry awards",
-      color: "from-green-500 to-teal-500"
+      description:
+        "Internationally recognized designs that win industry awards",
+      color: "from-green-500 to-teal-500",
     },
     {
       icon: <Heart className="w-8 h-8" />,
       title: "Customer Love",
-      description: "99% customer satisfaction rate with thousands of happy clients",
-      color: "from-pink-500 to-red-500"
-    }
+      description:
+        "99% customer satisfaction rate with thousands of happy clients",
+      color: "from-pink-500 to-red-500",
+    },
   ];
 
   // Newsletter subscription handler
-  const handleNewsletterSubscribe = async (email, source = 'modal') => {
+  const handleNewsletterSubscribe = async (email, source = "modal") => {
     try {
       // Smart newsletter logic - different benefits based on source
-      const benefits = source === 'popup' 
-        ? { discount: 15, freeShipping: true, earlyAccess: true }
-        : { discount: 10, freeShipping: true };
+      const benefits =
+        source === "popup"
+          ? { discount: 15, freeShipping: true, earlyAccess: true }
+          : { discount: 10, freeShipping: true };
 
-      console.log('Newsletter subscription:', { email, source, benefits });
+      console.log("Newsletter subscription:", { email, source, benefits });
       // Here you would typically send to your backend/email service
-      
-      setNewsletterEmail('');
+
+      setNewsletterEmail("");
       setShowNewsletterModal(false);
       setShowSmartPopup(false);
-      
+
       // Show success message (you can replace with toast)
-      alert(`🎉 Welcome! Check your email for a ${benefits.discount}% discount code!`);
+      alert(
+        `🎉 Welcome! Check your email for a ${benefits.discount}% discount code!`
+      );
     } catch (error) {
-      console.error('Newsletter subscription error:', error);
+      console.error("Newsletter subscription error:", error);
     }
   };
 
@@ -381,25 +395,25 @@ export default function Homepage() {
 
       {/* Floating Interactive Elements */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div 
+        <div
           className="absolute w-4 h-4 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full shadow-lg animate-pulse opacity-70"
-          style={{ 
+          style={{
             left: `${Math.sin(scrollY * 0.001) * 100 + 100}px`,
-            top: `${Math.cos(scrollY * 0.001) * 50 + 200}px`
+            top: `${Math.cos(scrollY * 0.001) * 50 + 200}px`,
           }}
         ></div>
-        <div 
+        <div
           className="absolute w-6 h-6 bg-gradient-to-r from-green-500 to-blue-500 rounded-full shadow-lg animate-bounce opacity-50"
-          style={{ 
+          style={{
             right: `${Math.sin(scrollY * 0.002) * 80 + 150}px`,
-            top: `${Math.cos(scrollY * 0.002) * 60 + 300}px`
+            top: `${Math.cos(scrollY * 0.002) * 60 + 300}px`,
           }}
         ></div>
-        <div 
+        <div
           className="absolute w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-ping opacity-60"
-          style={{ 
+          style={{
             left: `${mousePosition.x * 0.05}px`,
-            top: `${mousePosition.y * 0.05 + 100}px`
+            top: `${mousePosition.y * 0.05 + 100}px`,
           }}
         ></div>
       </div>
@@ -416,7 +430,9 @@ export default function Homepage() {
                 Wait! Don't Miss Out! 🎉
               </h3>
               <p className="text-gray-600 mb-6">
-                You've been browsing for a while! Get <strong>15% OFF</strong> your first order + free shipping + early access to new collections!
+                You've been browsing for a while! Get <strong>15% OFF</strong>{" "}
+                your first order + free shipping + early access to new
+                collections!
               </p>
               <div className="space-y-4">
                 <input
@@ -427,7 +443,9 @@ export default function Homepage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 />
                 <button
-                  onClick={() => handleNewsletterSubscribe(newsletterEmail, 'popup')}
+                  onClick={() =>
+                    handleNewsletterSubscribe(newsletterEmail, "popup")
+                  }
                   className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300"
                 >
                   Claim My 15% Discount
@@ -502,8 +520,10 @@ export default function Homepage() {
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mb-10 leading-relaxed">
-              Premium ergonomic furniture designed for health, productivity, and modern aesthetics. 
-              Join <strong>1,250+ satisfied customers</strong> who transformed their offices with us.
+              Premium ergonomic furniture designed for health, productivity, and
+              modern aesthetics. Join{" "}
+              <strong>1,250+ satisfied customers</strong> who transformed their
+              offices with us.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 mb-8">
@@ -550,7 +570,9 @@ export default function Homepage() {
         {/* Animated Scroll Indicator */}
         <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2">
           <div className="flex flex-col items-center space-y-3">
-            <div className="text-white text-sm font-medium animate-bounce">Scroll to explore</div>
+            <div className="text-white text-sm font-medium animate-bounce">
+              Scroll to explore
+            </div>
             <div className="w-8 h-12 border-2 border-white/50 rounded-full flex justify-center relative">
               <div className="w-1 h-3 bg-white rounded-full mt-3 animate-ping"></div>
             </div>
@@ -580,7 +602,9 @@ export default function Homepage() {
           >
             <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-full mb-6 backdrop-blur-sm border border-yellow-500/30">
               <Award className="w-5 h-5 text-yellow-600 mr-2" />
-              <span className="text-yellow-700 font-semibold">Why Choose Expert Office Furnish</span>
+              <span className="text-yellow-700 font-semibold">
+                Why Choose Expert Office Furnish
+              </span>
             </div>
             <h2 className="text-5xl md:text-6xl font-extrabold mb-6 text-gray-900">
               Experience The
@@ -589,7 +613,8 @@ export default function Homepage() {
               </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Join thousands of satisfied customers who've transformed their workspaces with our premium solutions
+              Join thousands of satisfied customers who've transformed their
+              workspaces with our premium solutions
             </p>
           </div>
 
@@ -606,10 +631,12 @@ export default function Homepage() {
               >
                 <div className="relative p-8 bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 group-hover:border-gray-200 h-full">
                   {/* Icon */}
-                  <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                  <div
+                    className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                  >
                     {feature.icon}
                   </div>
-                  
+
                   {/* Content */}
                   <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-gray-700 transition-colors">
                     {feature.title}
@@ -641,82 +668,58 @@ export default function Homepage() {
 
         <div className="relative z-10 max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className={`text-center transform transition-all duration-1000 ${visibleSections.stats ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+            <div
+              className={`text-center transform transition-all duration-1000 ${
+                visibleSections.stats
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-20 opacity-0"
+              }`}
+            >
               <div className="text-4xl md:text-5xl font-bold text-yellow-400 mb-2 font-mono">
                 {Math.floor(stats.customers).toLocaleString()}+
               </div>
               <div className="text-gray-300 font-medium">Happy Customers</div>
               <div className="text-sm text-gray-500 mt-1">Worldwide</div>
             </div>
-            <div className={`text-center transform transition-all duration-1000 delay-100 ${visibleSections.stats ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+            <div
+              className={`text-center transform transition-all duration-1000 delay-100 ${
+                visibleSections.stats
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-20 opacity-0"
+              }`}
+            >
               <div className="text-4xl md:text-5xl font-bold text-green-400 mb-2 font-mono">
                 {Math.floor(stats.products)}+
               </div>
               <div className="text-gray-300 font-medium">Premium Products</div>
               <div className="text-sm text-gray-500 mt-1">In Stock</div>
             </div>
-            <div className={`text-center transform transition-all duration-1000 delay-200 ${visibleSections.stats ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+            <div
+              className={`text-center transform transition-all duration-1000 delay-200 ${
+                visibleSections.stats
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-20 opacity-0"
+              }`}
+            >
               <div className="text-4xl md:text-5xl font-bold text-blue-400 mb-2 font-mono">
                 {stats.reviews.toFixed(1)}★
               </div>
               <div className="text-gray-300 font-medium">Average Rating</div>
               <div className="text-sm text-gray-500 mt-1">From Reviews</div>
             </div>
-            <div className={`text-center transform transition-all duration-1000 delay-300 ${visibleSections.stats ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+            <div
+              className={`text-center transform transition-all duration-1000 delay-300 ${
+                visibleSections.stats
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-20 opacity-0"
+              }`}
+            >
               <div className="text-4xl md:text-5xl font-bold text-purple-400 mb-2 font-mono">
                 {Math.floor(stats.yearsExperience)}+
               </div>
               <div className="text-gray-300 font-medium">Years Experience</div>
               <div className="text-sm text-gray-500 mt-1">In Business</div>
             </div>
-          </div>
-        </div>
-      </section>
-              },
-              {
-                title: "Ergonomic Comfort",
-                desc: "Furniture designed to support posture and reduce strain for optimal productivity.",
-                color: "from-yellow-500 to-yellow-700",
-                delay: "delay-500",
-              },
-              {
-                title: "Flexible Policies",
-                desc: "Enjoy trial periods, comprehensive warranties, and hassle-free returns.",
-                color: "from-green-600 to-yellow-600",
-                delay: "delay-700",
-              },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className={`group transform transition-all duration-1000 ${
-                  item.delay
-                } ${
-                  visibleSections.commitments
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-20 opacity-0"
-                }`}
-              >
-                <div className="bg-white shadow-xl hover:shadow-2xl transition-all duration-500 p-8 rounded-2xl border border-gray-100 group-hover:border-gray-200 transform group-hover:-translate-y-2 relative overflow-hidden">
-                  {/* Background gradient on hover */}
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
-                  ></div>
-
-                  <div className="relative z-10">
-                    <div
-                      className={`w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      <CheckCircle2 className="text-white w-8 h-8" />
-                    </div>
-
-                    <h3 className="text-xl font-bold mb-4 text-gray-800 group-hover:text-gray-900 transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -759,17 +762,25 @@ export default function Homepage() {
           {/* Testimonial Carousel */}
           <div className="relative">
             <div className="overflow-hidden rounded-3xl">
-              <div 
+              <div
                 className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${currentTestimonial * 100}%)` }}
+                style={{
+                  transform: `translateX(-${currentTestimonial * 100}%)`,
+                }}
               >
                 {testimonials.map((testimonial, index) => (
-                  <div key={testimonial.id} className="w-full flex-shrink-0 px-4">
+                  <div
+                    key={testimonial.id}
+                    className="w-full flex-shrink-0 px-4"
+                  >
                     <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100 max-w-4xl mx-auto">
                       <div className="text-center">
                         <div className="flex justify-center mb-6">
                           {[...Array(testimonial.rating)].map((_, i) => (
-                            <Star key={i} className="w-6 h-6 text-yellow-500 fill-current" />
+                            <Star
+                              key={i}
+                              className="w-6 h-6 text-yellow-500 fill-current"
+                            />
                           ))}
                         </div>
                         <blockquote className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed italic">
@@ -782,8 +793,12 @@ export default function Homepage() {
                             className="w-16 h-16 rounded-full border-4 border-yellow-200"
                           />
                           <div className="text-left">
-                            <div className="font-bold text-gray-900 text-lg">{testimonial.name}</div>
-                            <div className="text-gray-600">{testimonial.position}</div>
+                            <div className="font-bold text-gray-900 text-lg">
+                              {testimonial.name}
+                            </div>
+                            <div className="text-gray-600">
+                              {testimonial.position}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -801,8 +816,8 @@ export default function Homepage() {
                   onClick={() => setCurrentTestimonial(index)}
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
                     index === currentTestimonial
-                      ? 'bg-yellow-500 scale-125'
-                      : 'bg-gray-300 hover:bg-gray-400'
+                      ? "bg-yellow-500 scale-125"
+                      : "bg-gray-300 hover:bg-gray-400"
                   }`}
                 />
               ))}

@@ -24,12 +24,21 @@ const suggestions = [
 ];
 
 export default function CartPage() {
-  const { cartItems, updateQuantity, clearCart } = useCart();
+  const {
+    cartItems,
+    updateQuantity,
+    clearCart,
+    applyCoupon,
+    clearCoupon,
+    coupon,
+    discountAmount,
+    errorMessage,
+  } = useCart();
   const navigate = useNavigate();
   const [couponCode, setCouponCode] = useState("");
   const [discountMessage, setDiscountMessage] = useState("");
   const [isAnimated, setIsAnimated] = useState(false);
-  const [discount, setDiscount] = useState(0);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   useEffect(() => {
     setIsAnimated(true);
@@ -52,32 +61,47 @@ export default function CartPage() {
     updateQuantity(id, type);
   };
 
-  const applyCoupon = async () => {
-    const code = couponCode.trim().toUpperCase();
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setDiscountMessage("Please enter a coupon code.");
+      return;
+    }
+
+    setIsApplyingCoupon(true);
+    setDiscountMessage("");
+
     try {
-      const res = await fetch(`/api/discounts?code=${code}`);
-      const data = await res.json();
+      // Check if coupon is valid and applies to cart items
+      const success = await applyCoupon(couponCode.trim());
 
-      if (res.ok && data && data.status === "active") {
-        const today = new Date();
-        const start = new Date(data.start_date);
-        const end = new Date(data.end_date);
-
-        if (today >= start && today <= end) {
-          setDiscountMessage(
-            `${data.name} (${data.discount_type}): ${data.discount_value}`
-          );
-        } else {
-          setDiscountMessage("Coupon is expired or not yet active.");
-        }
+      if (success) {
+        setDiscountMessage(
+          `Coupon "${couponCode.trim().toUpperCase()}" applied successfully!`
+        );
+        setCouponCode("");
       } else {
-        setDiscountMessage("Invalid or inactive coupon.");
+        setDiscountMessage(errorMessage || "Invalid or expired coupon code.");
       }
-    } catch (err) {
-      setDiscountMessage("Error validating coupon.");
-      console.error(err);
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      setDiscountMessage("Error applying coupon. Please try again.");
+    } finally {
+      setIsApplyingCoupon(false);
     }
   };
+
+  const handleRemoveCoupon = () => {
+    clearCoupon();
+    setDiscountMessage("");
+    setCouponCode("");
+  };
+
+  // Calculate totals
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0
+  );
+  const total = subtotal - discountAmount;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
@@ -366,19 +390,49 @@ export default function CartPage() {
                   />
                 </div>
                 <button
-                  onClick={applyCoupon}
-                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-yellow-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-yellow-600 transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center gap-2"
+                  onClick={handleApplyCoupon}
+                  disabled={isApplyingCoupon || !couponCode.trim()}
+                  className="px-8 py-4 bg-gradient-to-r from-green-500 to-yellow-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-yellow-600 transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Sparkles className="w-5 h-5" />
-                  Apply Code
+                  {isApplyingCoupon ? "Applying..." : "Apply Code"}
                 </button>
               </div>
+
+              {/* Current Coupon Display */}
+              {coupon && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-yellow-50 border border-green-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="font-semibold text-green-800">
+                          {coupon.name} ({coupon.code})
+                        </p>
+                        <p className="text-sm text-green-600">
+                          {coupon.discount_type === "percentage"
+                            ? `${coupon.discount_value}% off`
+                            : `₵${coupon.discount_value} off`}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleRemoveCoupon}
+                      className="text-red-600 hover:text-red-800 p-1"
+                      title="Remove coupon"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {discountMessage && (
                 <div
                   className={`mt-4 p-4 rounded-xl ${
                     discountMessage.includes("Invalid") ||
-                    discountMessage.includes("expired")
+                    discountMessage.includes("expired") ||
+                    discountMessage.includes("Error")
                       ? "bg-red-50 text-red-700 border border-red-200"
                       : "bg-green-50 text-green-700 border border-green-200"
                   }`}
@@ -386,6 +440,52 @@ export default function CartPage() {
                   <p className="font-medium">{discountMessage}</p>
                 </div>
               )}
+            </div>
+
+            {/* Cart Summary */}
+            <div
+              className={`bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-green-100 p-8 mb-8 transition-all duration-1000 delay-800 ${
+                isAnimated
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-10"
+              }`}
+            >
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <Package className="w-6 h-6 text-green-600" />
+                Order Summary
+              </h3>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">
+                    Subtotal ({cartItems.length} items):
+                  </span>
+                  <span className="font-semibold text-gray-800">
+                    ₵{subtotal.toFixed(2)}
+                  </span>
+                </div>
+
+                {coupon && discountAmount > 0 && (
+                  <div className="flex justify-between items-center text-green-600">
+                    <span className="flex items-center gap-2">
+                      <Gift className="w-4 h-4" />
+                      Discount ({coupon.code}):
+                    </span>
+                    <span className="font-semibold">
+                      -₵{discountAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 pt-4">
+                  <div className="flex justify-between items-center text-lg">
+                    <span className="font-bold text-gray-800">Total:</span>
+                    <span className="font-bold text-green-600">
+                      ₵{total.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons */}

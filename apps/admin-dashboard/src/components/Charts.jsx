@@ -41,13 +41,13 @@ export function RevenueChart() {
   useEffect(() => {
     const fetchRevenueData = async () => {
       try {
-        // Fetch orders from last 6 months
+        // Fetch inquiries from last 6 months (using service inquiries as revenue metric)
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-        const { data: orders, error } = await supabase
-          .from("orders")
-          .select("total_amount, created_at")
+        const { data: inquiries, error } = await supabase
+          .from("service_inquiries")
+          .select("created_at")
           .gte("created_at", sixMonthsAgo.toISOString())
           .order("created_at", { ascending: true });
 
@@ -56,8 +56,8 @@ export function RevenueChart() {
           return;
         }
 
-        // Group by month and calculate totals
-        const monthlyRevenue = {};
+        // Group by month and calculate inquiry counts (since we don't have order amounts)
+        const monthlyInquiries = {};
         const monthNames = [
           "Jan",
           "Feb",
@@ -73,21 +73,21 @@ export function RevenueChart() {
           "Dec",
         ];
 
-        orders?.forEach((order) => {
-          const date = new Date(order.created_at);
+        inquiries?.forEach((inquiry) => {
+          const date = new Date(inquiry.created_at);
           const monthKey = `${
             monthNames[date.getMonth()]
           } ${date.getFullYear()}`;
 
-          if (!monthlyRevenue[monthKey]) {
-            monthlyRevenue[monthKey] = 0;
+          if (!monthlyInquiries[monthKey]) {
+            monthlyInquiries[monthKey] = 0;
           }
-          monthlyRevenue[monthKey] += parseFloat(order.total_amount || 0);
+          monthlyInquiries[monthKey] += 1; // Count inquiries instead of revenue
         });
 
         // Convert to chart format
-        const labels = Object.keys(monthlyRevenue).slice(-6); // Last 6 months
-        const data = labels.map((month) => monthlyRevenue[month] || 0);
+        const labels = Object.keys(monthlyInquiries).slice(-6); // Last 6 months
+        const data = labels.map((month) => monthlyInquiries[month] || 0);
 
         setChartData({
           labels:

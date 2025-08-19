@@ -7,35 +7,38 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [coupon, setCoupon] = useState(null);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
   // ✅ Add to cart
   const addToCart = (product) => {
-    const exists = cartItems.find(item => item.id === product.id);
+    const exists = cartItems.find((item) => item.id === product.id);
     if (exists) {
-      setCartItems(prev =>
-        prev.map(item =>
+      setCartItems((prev) =>
+        prev.map((item) =>
           item.id === product.id ? { ...item, qty: item.qty + 1 } : item
         )
       );
     } else {
-      setCartItems(prev => [...prev, { ...product, qty: 1 }]);
+      setCartItems((prev) => [...prev, { ...product, qty: 1 }]);
     }
   };
 
   // ✅ Remove from cart
   const removeFromCart = (id) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   // ✅ Update quantity
   const updateQuantity = (id, action) => {
-    setCartItems(prev =>
-      prev.map(item =>
+    setCartItems((prev) =>
+      prev.map((item) =>
         item.id === id
           ? {
               ...item,
-              qty: action === 'increase' ? item.qty + 1 : Math.max(1, item.qty - 1),
+              qty:
+                action === "increase"
+                  ? item.qty + 1
+                  : Math.max(1, item.qty - 1),
             }
           : item
       )
@@ -50,38 +53,82 @@ export const CartProvider = ({ children }) => {
 
   // ✅ Apply coupon
   const applyCoupon = async (code) => {
-    const { data, error } = await supabase
-      .from('discounts')
-      .select('*')
-      .eq('code', code.trim().toUpperCase())
-      .eq('status', 'active')
+    setErrorMessage("");
+
+    // Get discount details with product mappings
+    const { data: discount, error } = await supabase
+      .from("discounts")
+      .select(
+        `
+        *,
+        discount_products (
+          product_id
+        )
+      `
+      )
+      .eq("code", code.trim().toUpperCase())
+      .eq("status", "Active")
       .maybeSingle();
 
-    if (error || !data) {
-      setErrorMessage('Invalid or expired coupon.');
+    if (error || !discount) {
+      setErrorMessage("Invalid or expired coupon code.");
       return false;
     }
 
-    const total = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
-    if (total < data.min_order_value) {
-      setErrorMessage(`Minimum order value is $${data.min_order_value}`);
+    // Check if discount is within date range
+    const today = new Date();
+    const startDate = new Date(discount.start_date);
+    const endDate = new Date(discount.end_date);
+
+    if (today < startDate || today > endDate) {
+      setErrorMessage("This coupon is not currently active.");
       return false;
     }
 
-    let discount = 0;
-    if (data.type === 'percentage') {
-      discount = (data.value / 100) * total;
-    } else if (data.type === 'fixed') {
-      discount = data.value;
+    // Check if discount applies to cart items
+    const productMappings = discount.discount_products || [];
+    const applicableCartItems = cartItems.filter((item) => {
+      // If no product mappings, discount applies to all products
+      if (productMappings.length === 0) return true;
+      // Otherwise, check if product is in the mapping
+      return productMappings.some((mapping) => mapping.product_id === item.id);
+    });
+
+    if (applicableCartItems.length === 0) {
+      setErrorMessage(
+        "This coupon is not applicable to any items in your cart."
+      );
+      return false;
     }
 
-    if (data.max_discount) {
-      discount = Math.min(discount, data.max_discount);
+    // Calculate total of applicable items
+    const applicableTotal = applicableCartItems.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0
+    );
+
+    // Check minimum order value
+    if (discount.minimum_order && applicableTotal < discount.minimum_order) {
+      setErrorMessage(
+        `Minimum order value is ₵${discount.minimum_order} for applicable items.`
+      );
+      return false;
     }
 
-    setCoupon(data);
-    setDiscountAmount(discount);
-    setErrorMessage('');
+    // Calculate discount amount
+    let discountAmt = 0;
+    if (discount.discount_type === "percentage") {
+      discountAmt = (discount.discount_value / 100) * applicableTotal;
+    } else if (discount.discount_type === "fixed") {
+      discountAmt = discount.discount_value;
+    }
+
+    // Ensure discount doesn't exceed total
+    discountAmt = Math.min(discountAmt, applicableTotal);
+
+    setCoupon(discount);
+    setDiscountAmount(discountAmt);
+    setErrorMessage("");
     return true;
   };
 
@@ -89,7 +136,7 @@ export const CartProvider = ({ children }) => {
   const clearCoupon = () => {
     setCoupon(null);
     setDiscountAmount(0);
-    setErrorMessage('');
+    setErrorMessage("");
   };
 
   return (

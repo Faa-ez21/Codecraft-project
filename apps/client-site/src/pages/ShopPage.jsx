@@ -34,6 +34,12 @@ const ProductCard = ({ product, index }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // Validate product data to prevent empty cards
+  if (!product || !product.id || !product.name) {
+    console.warn("Invalid product data:", product);
+    return null;
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -75,12 +81,16 @@ const ProductCard = ({ product, index }) => {
             </div>
           )}
           <img
-            src={product.image_url}
-            alt={product.name}
+            src={product.image_url || Sofa}
+            alt={product.name || "Office Furniture"}
             className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
               imageLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setImageLoaded(true)}
+            onError={() => {
+              // Fallback for broken images
+              setImageLoaded(true);
+            }}
           />
 
           {/* Overlay Actions */}
@@ -235,9 +245,10 @@ const ShopPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const [viewMode, setViewMode] = useState("grid");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const observer = useRef();
 
   const loadCategories = async () => {
@@ -319,14 +330,19 @@ const ShopPage = () => {
   };
 
   const loadProducts = async (reset = false) => {
-    // Prevent multiple simultaneous calls
-    if (isLoading && !reset) return;
+    // Prevent multiple simultaneous calls unless it's a reset
+    if (isLoading && !reset) {
+      console.log("⏳ Already loading products, skipping...");
+      return;
+    }
 
     console.log("📦 Loading products...", {
       selectedCategory,
       reset,
       page: reset ? 1 : page,
+      categoriesLoaded: categories.length > 0,
     });
+
     setIsLoading(true);
 
     try {
@@ -384,18 +400,28 @@ const ShopPage = () => {
 
       if (error) {
         console.error("❌ Error loading products:", error);
-        setIsLoading(false);
         return;
       }
 
       console.log("📦 Products loaded:", data?.length || 0);
       console.log("🔍 Sample product:", data?.[0]);
 
+      // Filter out invalid products
+      const validProducts = (data || []).filter((product) => {
+        if (!product || !product.id || !product.name) {
+          console.warn("Filtering out invalid product:", product);
+          return false;
+        }
+        return true;
+      });
+
+      console.log("✅ Valid products after filtering:", validProducts.length);
+
       if (reset) {
-        setProducts(data || []);
+        setProducts(validProducts);
         setPage(2);
       } else {
-        setProducts((prev) => [...prev, ...(data || [])]);
+        setProducts((prev) => [...prev, ...validProducts]);
         setPage((prev) => prev + 1);
       }
       setHasMore((data || []).length === 12);
@@ -405,7 +431,7 @@ const ShopPage = () => {
       // Add delay for smooth loading animation
       setTimeout(() => {
         setIsLoading(false);
-      }, 300);
+      }, 200);
     }
   };
 
@@ -425,12 +451,27 @@ const ShopPage = () => {
   useEffect(() => {
     const initializeShop = async () => {
       console.log("🚀 ShopPage initializing...");
-      await loadCategories();
-      await loadFilterOptions();
+      setIsLoading(true);
 
-      // Load initial products after categories are loaded
-      console.log("🏪 Loading initial products...");
-      loadProducts(true);
+      try {
+        // Load categories and filter options
+        await Promise.all([loadCategories(), loadFilterOptions()]);
+
+        console.log("🏪 Loading initial products...");
+        await loadProducts(true);
+      } catch (error) {
+        console.error("Error initializing shop:", error);
+        // Even if categories fail, try to load products
+        console.log("🔄 Attempting to load products without categories...");
+        try {
+          await loadProducts(true);
+        } catch (productError) {
+          console.error("Failed to load products:", productError);
+        }
+      } finally {
+        setInitialLoadComplete(true);
+        setIsLoading(false);
+      }
     };
 
     initializeShop();
@@ -502,8 +543,8 @@ const ShopPage = () => {
   }, []);
 
   useEffect(() => {
-    // Skip if categories haven't loaded yet (initial mount)
-    // This prevents duplicate loading since the first useEffect handles initial load
+    // Only trigger filter changes after initial load is complete
+    // We use a ref or state to track if initial load is done, but for now we check if we have categories
     if (categories.length === 0) {
       console.log("⏭️ Skipping filter effect - categories not loaded yet");
       return;
@@ -515,19 +556,17 @@ const ShopPage = () => {
       searchTerm,
     });
 
+    // Reset page to 1 when filters change
+    setPage(1);
+    setHasMore(true);
+
     // Add a small delay to debounce rapid filter changes
     const timeoutId = setTimeout(() => {
       loadProducts(true);
-    }, 100);
+    }, 200);
 
     return () => clearTimeout(timeoutId);
-  }, [
-    selectedCategory,
-    filters.material,
-    filters.color,
-    searchTerm,
-    categories.length,
-  ]);
+  }, [selectedCategory, filters.material, filters.color, searchTerm]);
 
   const toggleCategoryExpand = (catId) => {
     setExpandedCats((prev) => ({
@@ -915,25 +954,34 @@ const ShopPage = () => {
                 <div className="text-center py-16">
                   <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl border border-gray-200 max-w-md mx-auto">
                     <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Search className="w-12 h-12 text-white" />
+                      {initialLoadComplete ? (
+                        <Search className="w-12 h-12 text-white" />
+                      ) : (
+                        <Package className="w-12 h-12 text-white animate-pulse" />
+                      )}
                     </div>
                     <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                      No Products Found
+                      {initialLoadComplete
+                        ? "No Products Found"
+                        : "Loading Products..."}
                     </h3>
                     <p className="text-gray-600 mb-6">
-                      We couldn't find any products matching your criteria. Try
-                      adjusting your filters or search terms.
+                      {initialLoadComplete
+                        ? "We couldn't find any products matching your criteria. Try adjusting your filters or search terms."
+                        : "Please wait while we load the latest products for you."}
                     </p>
-                    <button
-                      onClick={() => {
-                        setSearchTerm("");
-                        setSelectedCategory("All");
-                        setFilters({ material: "", color: "" });
-                      }}
-                      className="bg-gradient-to-r from-green-500 to-yellow-500 hover:from-green-600 hover:to-yellow-600 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
-                    >
-                      Clear All Filters
-                    </button>
+                    {initialLoadComplete && (
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSelectedCategory("All");
+                          setFilters({ material: "", color: "" });
+                        }}
+                        className="bg-gradient-to-r from-green-500 to-yellow-500 hover:from-green-600 hover:to-yellow-600 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
+                      >
+                        Clear All Filters
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

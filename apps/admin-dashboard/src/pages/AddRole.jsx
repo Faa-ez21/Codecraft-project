@@ -24,7 +24,7 @@ const AddRole = () => {
   const [status, setStatus] = useState("Active");
   const [permissions, setPermissions] = useState({
     "Manage Products": false,
-    "Manage Orders": false,
+    "Manage Inquiries": false,
     "Manage Users": false,
     "Manage Content Management": false,
     "Manage Categories": false,
@@ -35,7 +35,7 @@ const AddRole = () => {
 
   const permissionIcons = {
     "Manage Products": Package,
-    "Manage Orders": ShoppingCart,
+    "Manage Inquiries": ShoppingCart,
     "Manage Users": Users,
     "Manage Content Management": FileText,
     "Manage Categories": Layers,
@@ -44,7 +44,7 @@ const AddRole = () => {
 
   const permissionDescriptions = {
     "Manage Products": "Create, edit, and delete products in the inventory",
-    "Manage Orders": "View and manage customer orders and fulfillment",
+    "Manage Inquiries": "View and manage customer inquiries and requests",
     "Manage Users": "Add, edit, and manage user accounts and permissions",
     "Manage Content Management": "Edit website content, blogs, and pages",
     "Manage Categories":

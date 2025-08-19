@@ -27,10 +27,10 @@ export default function Navbar({
   const notifications = [
     {
       id: 1,
-      title: "New Order Received",
-      message: "Order #12345 requires attention",
+      title: "New Inquiry Received",
+      message: "Inquiry #12345 requires attention",
       time: "2 min ago",
-      type: "order",
+      type: "inquiry",
     },
     {
       id: 2,
@@ -77,7 +77,7 @@ export default function Navbar({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search products, orders, users..."
+                placeholder="Search products, inquiries, users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
@@ -140,7 +140,7 @@ export default function Navbar({
                         <div className="flex items-start gap-3">
                           <div
                             className={`w-2 h-2 rounded-full mt-2 ${
-                              notification.type === "order"
+                              notification.type === "inquiry"
                                 ? "bg-green-500"
                                 : notification.type === "stock"
                                 ? "bg-red-500"
