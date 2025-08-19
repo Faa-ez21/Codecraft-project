@@ -62,7 +62,9 @@ export default function NewsletterForm() {
       // Insert new subscriber
       const { error: insertError } = await supabase.from("subscribers").insert([
         {
-          email,
+          email: email.toLowerCase().trim(),
+          source: "newsletter_page",
+          status: "active",
           subscribed_at: new Date().toISOString(),
         },
       ]);

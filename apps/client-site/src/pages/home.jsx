@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { supabase } from "../supabase/supabaseClient";
 import dataCache, { CACHE_KEYS } from "../utils/dataCache";
+import NewsletterToast from "../components/NewsletterToast";
 
 import heroImage from "../assets/chairs1.jpg";
 import VisionMission from "../assets/Vision-Mission.jpg";
@@ -45,6 +46,11 @@ export default function Homepage() {
 
   // Regular newsletter signup state
   const [regularNewsletterEmail, setRegularNewsletterEmail] = useState("");
+
+  // Toast notification state
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success");
 
   // Refs for intersection observer
   const heroRef = useRef(null);
@@ -329,7 +335,10 @@ export default function Homepage() {
         .single();
 
       if (existingSubscriber) {
-        alert("🎉 You're already subscribed! Your discount code is: WELCOME15");
+        showNewsletterConfirmation(
+          "You're already subscribed! Here's your 15% discount code: WELCOME15. Save this for your first purchase!",
+          "discount"
+        );
         setPopupSubmitted(true);
         setShowExitPopup(false);
         setNewsletterEmail("");
@@ -348,22 +357,16 @@ export default function Homepage() {
 
       if (error) {
         console.log("Database insert error:", error);
-        // If table doesn't exist, show success anyway
-        if (
-          error.message.includes("relation") &&
-          error.message.includes("does not exist")
-        ) {
-          alert(
-            "🎉 Thank you for subscribing! Your discount code is: WELCOME15"
-          );
-        } else {
-          alert(
-            "🎉 Thank you for subscribing! Your discount code is: WELCOME15"
-          );
-        }
+        // Show success message even if there's a database error
+        showNewsletterConfirmation(
+          "Thank you for subscribing! 🎉 Your 15% discount code is: WELCOME15. Use this code for your first purchase!",
+          "discount"
+        );
       } else {
-        alert(
-          "🎉 Welcome! Your 15% discount code is: WELCOME15 \n\nSave this code for your first purchase!"
+        // Show success message for successful subscription
+        showNewsletterConfirmation(
+          "Welcome to our newsletter! 🎉 Your exclusive 15% discount code is: WELCOME15. Save this code for your first purchase and enjoy free shipping!",
+          "discount"
         );
       }
 
@@ -372,7 +375,10 @@ export default function Homepage() {
       setNewsletterEmail("");
     } catch (error) {
       console.error("Newsletter subscription error:", error);
-      alert("🎉 Thank you for subscribing! Your discount code is: WELCOME15");
+      showNewsletterConfirmation(
+        "Thank you for subscribing! 🎉 Your 15% discount code is: WELCOME15. Use this code for your first purchase!",
+        "discount"
+      );
       setPopupSubmitted(true);
       setShowExitPopup(false);
       setNewsletterEmail("");
@@ -397,7 +403,10 @@ export default function Homepage() {
         .single();
 
       if (existingSubscriber) {
-        alert("🎉 You're already subscribed! Thank you for your interest.");
+        // Show success message for existing subscribers
+        showNewsletterConfirmation(
+          "You're already subscribed! Thank you for your continued interest in our updates."
+        );
         setRegularNewsletterEmail("");
         return;
       }
@@ -414,19 +423,33 @@ export default function Homepage() {
 
       if (error) {
         console.log("Database insert error:", error);
-        alert("🎉 Thank you for subscribing to our newsletter!");
+        // Show success message even if there's a database error
+        showNewsletterConfirmation(
+          "Thank you for subscribing! We'll keep you updated with our latest news and exclusive offers."
+        );
       } else {
-        alert(
-          "🎉 Welcome to our newsletter! Stay tuned for exclusive updates and offers."
+        // Show success message for successful subscription
+        showNewsletterConfirmation(
+          "Welcome to our newsletter! 🎉 You'll receive exclusive updates, special offers, and design tips directly in your inbox."
         );
       }
 
       setRegularNewsletterEmail("");
     } catch (error) {
       console.error("Newsletter subscription error:", error);
-      alert("🎉 Thank you for subscribing to our newsletter!");
+      // Show success message even if there's an error
+      showNewsletterConfirmation(
+        "Thank you for subscribing! We'll keep you updated with our latest news and exclusive offers."
+      );
       setRegularNewsletterEmail("");
     }
+  };
+
+  // Newsletter confirmation message function
+  const showNewsletterConfirmation = (message, type = "success") => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
   };
 
   const filteredProducts = searchTerm
@@ -1176,6 +1199,16 @@ export default function Homepage() {
       )}
 
       <Footer />
+
+      {/* Newsletter Toast Notification */}
+      {showToast && (
+        <NewsletterToast
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setShowToast(false)}
+          autoClose={6000}
+        />
+      )}
     </div>
   );
 }

@@ -44,6 +44,11 @@ export default function BlogList() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const blogsPerPage = viewMode === "grid" ? 9 : 6;
 
+  // Newsletter subscription state
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+
   useEffect(() => {
     fetchBlogs();
   }, []);
@@ -120,6 +125,62 @@ export default function BlogList() {
     } finally {
       // Remove artificial delay for instant loading
       setLoading(false);
+    }
+  };
+
+  // Newsletter subscription handler
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!newsletterEmail || !newsletterEmail.includes("@")) {
+      setNewsletterMessage("Please enter a valid email address");
+      return;
+    }
+
+    setNewsletterLoading(true);
+    setNewsletterMessage("");
+
+    try {
+      // Check if email already exists
+      const { data: existingSubscriber, error: checkError } = await supabase
+        .from("subscribers")
+        .select("id, email")
+        .eq("email", newsletterEmail.toLowerCase().trim())
+        .single();
+
+      if (existingSubscriber) {
+        setNewsletterMessage("You're already subscribed! Thank you for your interest.");
+        setNewsletterEmail("");
+        setNewsletterLoading(false);
+        return;
+      }
+
+      // Insert new subscriber
+      const { data, error } = await supabase.from("subscribers").insert([
+        {
+          email: newsletterEmail.toLowerCase().trim(),
+          source: "blog_newsletter",
+          status: "active",
+          subscribed_at: new Date().toISOString(),
+        },
+      ]);
+
+      if (error) {
+        console.log("Database insert error:", error);
+        setNewsletterMessage("Thank you for subscribing! We'll keep you updated with our latest content.");
+      } else {
+        setNewsletterMessage("Successfully subscribed! Get ready for amazing content in your inbox.");
+      }
+
+      setNewsletterEmail("");
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
+      setNewsletterMessage("Thank you for subscribing! We'll keep you updated with our latest content.");
+      setNewsletterEmail("");
+    } finally {
+      setNewsletterLoading(false);
+      // Clear message after 5 seconds
+      setTimeout(() => setNewsletterMessage(""), 5000);
     }
   };
 
@@ -1003,16 +1064,36 @@ export default function BlogList() {
               exclusive content delivered straight to your inbox every week.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto mb-6">
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto mb-6">
               <input
                 type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="flex-1 px-6 py-4 rounded-xl text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-white focus:outline-none border-0"
+                required
+                disabled={newsletterLoading}
+                className="flex-1 px-6 py-4 rounded-xl text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-white focus:outline-none border-0 disabled:opacity-60"
               />
-              <button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                Subscribe Now
+              <button 
+                type="submit"
+                disabled={newsletterLoading}
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-gray-900 px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-60 disabled:transform-none disabled:hover:scale-100"
+              >
+                {newsletterLoading ? "Subscribing..." : "Subscribe Now"}
               </button>
-            </div>
+            </form>
+
+            {newsletterMessage && (
+              <div className={`max-w-md mx-auto mb-4 p-3 rounded-lg text-sm font-medium ${
+                newsletterMessage.includes("already") || newsletterMessage.includes("Successfully") 
+                  ? "bg-green-100 text-green-800 border border-green-200" 
+                  : newsletterMessage.includes("valid") 
+                  ? "bg-red-100 text-red-800 border border-red-200"
+                  : "bg-blue-100 text-blue-800 border border-blue-200"
+              }`}>
+                {newsletterMessage}
+              </div>
+            )}
 
             <p className="text-sm opacity-70">
               Join 10,000+ professionals • No spam, unsubscribe anytime

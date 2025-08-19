@@ -96,13 +96,6 @@ export default function CartPage() {
     setCouponCode("");
   };
 
-  // Calculate totals
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.qty,
-    0
-  );
-  const total = subtotal - discountAmount;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-green-50/30">
       <Header />
@@ -442,7 +435,7 @@ export default function CartPage() {
               )}
             </div>
 
-            {/* Cart Summary */}
+            {/* Inquiry Summary */}
             <div
               className={`bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-green-100 p-8 mb-8 transition-all duration-1000 delay-800 ${
                 isAnimated
@@ -452,36 +445,47 @@ export default function CartPage() {
             >
               <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <Package className="w-6 h-6 text-green-600" />
-                Order Summary
+                Inquiry Summary
               </h3>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">
-                    Subtotal ({cartItems.length} items):
-                  </span>
+                  <span className="text-gray-600">Selected Items:</span>
                   <span className="font-semibold text-gray-800">
-                    ₵{subtotal.toFixed(2)}
+                    {cartItems.length}{" "}
+                    {cartItems.length === 1 ? "product" : "products"}
                   </span>
                 </div>
 
-                {coupon && discountAmount > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Total Quantity:</span>
+                  <span className="font-semibold text-gray-800">
+                    {cartItems.reduce((total, item) => total + item.qty, 0)}{" "}
+                    units
+                  </span>
+                </div>
+
+                {coupon && (
                   <div className="flex justify-between items-center text-green-600">
                     <span className="flex items-center gap-2">
                       <Gift className="w-4 h-4" />
-                      Discount ({coupon.code}):
+                      Applied Discount:
                     </span>
                     <span className="font-semibold">
-                      -₵{discountAmount.toFixed(2)}
+                      {coupon.code} (
+                      {coupon.discount_type === "percentage"
+                        ? `${coupon.discount_value}% off`
+                        : `₵${coupon.discount_value} off`}
+                      )
                     </span>
                   </div>
                 )}
 
                 <div className="border-t border-gray-200 pt-4">
                   <div className="flex justify-between items-center text-lg">
-                    <span className="font-bold text-gray-800">Total:</span>
+                    <span className="font-bold text-gray-800">Status:</span>
                     <span className="font-bold text-green-600">
-                      ₵{total.toFixed(2)}
+                      Ready for Inquiry
                     </span>
                   </div>
                 </div>
