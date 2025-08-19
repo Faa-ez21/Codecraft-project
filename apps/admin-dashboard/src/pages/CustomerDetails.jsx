@@ -26,12 +26,15 @@ export default function CustomerDetails() {
   const navigate = useNavigate();
   const [customer, setCustomer] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [contactMessages, setContactMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(true);
 
   useEffect(() => {
     fetchCustomer();
     fetchCustomerOrders();
+    fetchContactMessages();
   }, [id]);
 
   const fetchCustomer = async () => {
@@ -66,6 +69,32 @@ export default function CustomerDetails() {
     }
     setOrdersLoading(false);
   };
+
+  const fetchContactMessages = async () => {
+    if (!customer?.email) return;
+
+    setMessagesLoading(true);
+    const { data, error } = await supabase
+      .from("contact")
+      .select("*")
+      .eq("email", customer.email)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error("Error fetching contact messages:", error.message);
+    } else {
+      setContactMessages(data || []);
+    }
+    setMessagesLoading(false);
+  };
+
+  // Re-fetch contact messages when customer data is loaded
+  useEffect(() => {
+    if (customer?.email) {
+      fetchContactMessages();
+    }
+  }, [customer?.email]);
 
   if (loading) {
     return (
@@ -380,6 +409,102 @@ export default function CustomerDetails() {
                   <p className="text-gray-500 font-medium">No orders yet</p>
                   <p className="text-gray-400 text-sm">
                     This customer hasn't placed any orders
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Contact Messages */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden">
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5 text-purple-600" />
+                    Contact Messages
+                  </h3>
+                  <a
+                    href={`/contact-messages?search=${customer?.email}`}
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  >
+                    View All Messages
+                  </a>
+                </div>
+              </div>
+
+              {messagesLoading ? (
+                <div className="p-12 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+                  <p className="text-gray-500">Loading messages...</p>
+                </div>
+              ) : contactMessages.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {contactMessages.map((message, index) => (
+                    <div
+                      key={message.id}
+                      className="p-6 hover:bg-purple-50/50 transition-colors duration-200"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg">
+                            <Mail className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-800">
+                              {message.subject}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {new Date(
+                                message.created_at
+                              ).toLocaleDateString()}{" "}
+                              •
+                              <span
+                                className={`ml-1 px-2 py-1 rounded-full text-xs font-medium ${
+                                  message.status === "replied"
+                                    ? "bg-green-100 text-green-800"
+                                    : message.status === "resolved"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                                }`}
+                              >
+                                {message.status || "unread"}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <a
+                            href={`/contact-messages?messageId=${message.id}`}
+                            className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            title="View Message"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </a>
+                          <a
+                            href={`/contact-messages?reply=${message.id}`}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Reply to Message"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </a>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+                        <p className="line-clamp-2">
+                          {message.message?.substring(0, 150)}
+                          {message.message?.length > 150 && "..."}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center">
+                  <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <MessageCircle className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 font-medium">No messages yet</p>
+                  <p className="text-gray-400 text-sm">
+                    This customer hasn't sent any contact messages
                   </p>
                 </div>
               )}

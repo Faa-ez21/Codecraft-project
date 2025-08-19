@@ -86,6 +86,11 @@ export default function Sidebar({ collapsed, onToggle }) {
           path: "/service-inquiries",
           icon: Target,
         },
+        {
+          title: "Contact Messages",
+          path: "/contact-messages",
+          icon: Mail,
+        },
       ],
     },
     {

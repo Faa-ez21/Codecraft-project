@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Bell,
   Search,
@@ -12,7 +13,15 @@ import {
   MessageSquare,
   Zap,
   Calendar,
+  Mail,
+  Package,
+  AlertTriangle,
+  ShoppingBag,
+  Wrench,
+  CheckCheck,
+  Trash2,
 } from "lucide-react";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function Navbar({
   toggleDarkMode,
@@ -24,29 +33,45 @@ export default function Navbar({
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const notifications = [
-    {
-      id: 1,
-      title: "New Inquiry Received",
-      message: "Inquiry #12345 requires attention",
-      time: "2 min ago",
-      type: "inquiry",
-    },
-    {
-      id: 2,
-      title: "Low Stock Alert",
-      message: "Executive Desk - only 3 left",
-      time: "15 min ago",
-      type: "stock",
-    },
-    {
-      id: 3,
-      title: "New User Registration",
-      message: "John Doe joined the platform",
-      time: "1 hour ago",
-      type: "user",
-    },
-  ];
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    markAsRead,
+    markAllAsRead,
+    refreshNotifications,
+    getNotificationIcon,
+    getNotificationColor,
+  } = useNotifications();
+
+  const getIconComponent = (iconName) => {
+    switch (iconName) {
+      case "mail":
+        return <Mail className="w-3 h-3" />;
+      case "package":
+        return <Package className="w-3 h-3" />;
+      case "tool":
+        return <Wrench className="w-3 h-3" />;
+      case "alert-triangle":
+        return <AlertTriangle className="w-3 h-3" />;
+      case "shopping-bag":
+        return <ShoppingBag className="w-3 h-3" />;
+      default:
+        return <Bell className="w-3 h-3" />;
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
+    setShowNotifications(false);
+
+    // Navigate to the action URL if available
+    if (notification.actionUrl) {
+      window.location.href = notification.actionUrl;
+    }
+  };
 
   return (
     <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
@@ -119,49 +144,125 @@ export default function Navbar({
                 className="relative p-2 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
               >
                 <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {notifications.length}
-                </span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
-                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      Notifications
-                    </h3>
+                <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-700 dark:to-gray-800">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        Notifications
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={refreshNotifications}
+                          className="p-1 rounded-lg hover:bg-white/50 dark:hover:bg-gray-600/50 transition-colors"
+                          title="Refresh notifications"
+                        >
+                          <Bell className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                        </button>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllAsRead}
+                            className="p-1 rounded-lg hover:bg-white/50 dark:hover:bg-gray-600/50 transition-colors"
+                            title="Mark all as read"
+                          >
+                            <CheckCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {unreadCount > 0 && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        You have {unreadCount} unread notification
+                        {unreadCount !== 1 ? "s" : ""}
+                      </p>
+                    )}
                   </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={`w-2 h-2 rounded-full mt-2 ${
-                              notification.type === "inquiry"
-                                ? "bg-green-500"
-                                : notification.type === "stock"
-                                ? "bg-red-500"
-                                : "bg-blue-500"
-                            }`}
-                          ></div>
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-                              {notification.title}
-                            </h4>
-                            <p className="text-gray-600 dark:text-gray-400 text-xs mt-1">
-                              {notification.message}
-                            </p>
-                            <span className="text-gray-400 text-xs">
-                              {notification.time}
-                            </span>
+
+                  <div className="max-h-80 overflow-y-auto">
+                    {loading ? (
+                      <div className="p-8 text-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-green-500 border-t-transparent mx-auto mb-2"></div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Loading notifications...
+                        </p>
+                      </div>
+                    ) : notifications.length > 0 ? (
+                      notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          onClick={() => handleNotificationClick(notification)}
+                          className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0 cursor-pointer transition-colors ${
+                            !notification.read
+                              ? "bg-blue-50/50 dark:bg-blue-900/20"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center text-white ${getNotificationColor(
+                                notification.type
+                              )}`}
+                            >
+                              {getIconComponent(
+                                getNotificationIcon(notification.type)
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-1">
+                                <h4
+                                  className={`font-medium text-sm truncate ${
+                                    !notification.read
+                                      ? "text-gray-900 dark:text-white"
+                                      : "text-gray-700 dark:text-gray-300"
+                                  }`}
+                                >
+                                  {notification.title}
+                                </h4>
+                                {!notification.read && (
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 ml-2"></div>
+                                )}
+                              </div>
+                              <p className="text-gray-600 dark:text-gray-400 text-xs mb-1 line-clamp-2">
+                                {notification.message}
+                              </p>
+                              <span className="text-gray-400 dark:text-gray-500 text-xs">
+                                {notification.time}
+                              </span>
+                            </div>
                           </div>
                         </div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center">
+                        <Bell className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                        <p className="text-gray-500 dark:text-gray-400 font-medium">
+                          No notifications
+                        </p>
+                        <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                          You're all caught up!
+                        </p>
                       </div>
-                    ))}
+                    )}
                   </div>
+
+                  {notifications.length > 0 && (
+                    <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                      <Link
+                        to="/notifications"
+                        className="block text-center text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
+                        onClick={() => setShowNotifications(false)}
+                      >
+                        View all notifications
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

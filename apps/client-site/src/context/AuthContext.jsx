@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
         console.log("Auth loading timeout - setting loading to false");
         setLoading(false);
       }
-    }, 3000); // Maximum 3 seconds loading
+    }, 5000); // Increased to 5 seconds for better network tolerance
 
     return () => clearTimeout(maxLoadingTime);
   }, [loading]);
@@ -93,24 +93,47 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data, error } = await supabase.auth.getSession();
-      const sessionUser = data?.session?.user ?? null;
+      try {
+        // Add timeout protection for session retrieval
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session timeout")), 8000)
+        );
 
-      if (sessionUser) {
-        // Set user immediately with basic info to speed up login
-        setUser({
-          ...sessionUser,
-          role: "customer", // Default role
-          name:
-            sessionUser.user_metadata?.name ||
-            sessionUser.email?.split("@")[0] ||
-            "",
-        });
-        setLoading(false);
+        const { data, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise,
+        ]);
 
-        // Then fetch additional data in background without blocking
-        fetchUserDetails(sessionUser);
-      } else {
+        if (error) {
+          console.error("Session error:", error);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        const sessionUser = data?.session?.user ?? null;
+
+        if (sessionUser) {
+          // Set user immediately with basic info to speed up login
+          setUser({
+            ...sessionUser,
+            role: "customer", // Default role
+            name:
+              sessionUser.user_metadata?.name ||
+              sessionUser.email?.split("@")[0] ||
+              "",
+          });
+          setLoading(false);
+
+          // Then fetch additional data in background without blocking
+          fetchUserDetails(sessionUser);
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Session retrieval failed:", error);
         setUser(null);
         setLoading(false);
       }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Bar, Line, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -33,9 +34,14 @@ import {
   XCircle,
   AlertCircle,
   Plus,
+  Bell,
+  Mail,
+  Wrench,
+  ShoppingBag,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import StatCard from "../components/StatCard";
+import { useNotifications } from "../context/NotificationContext";
 
 ChartJS.register(
   CategoryScale,
@@ -366,6 +372,9 @@ export default function Dashboard() {
         />
       </div>
 
+      {/* Notifications Widget */}
+      <NotificationWidget />
+
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Monthly Sales Chart */}
@@ -609,6 +618,175 @@ function LowStockTable({ items, isLoading }) {
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+// Notification Widget Component
+function NotificationWidget() {
+  const { notifications, unreadCount, loading } = useNotifications();
+
+  const getIconComponent = (iconName) => {
+    switch (iconName) {
+      case "mail":
+        return <Mail className="w-4 h-4" />;
+      case "package":
+        return <Package className="w-4 h-4" />;
+      case "tool":
+        return <Wrench className="w-4 h-4" />;
+      case "alert-triangle":
+        return <AlertTriangle className="w-4 h-4" />;
+      case "shopping-bag":
+        return <ShoppingBag className="w-4 h-4" />;
+      default:
+        return <Bell className="w-4 h-4" />;
+    }
+  };
+
+  const getNotificationColor = (type) => {
+    switch (type) {
+      case "contact_message":
+        return "bg-blue-500";
+      case "product_inquiry":
+        return "bg-green-500";
+      case "service_inquiry":
+        return "bg-purple-500";
+      case "low_stock":
+        return "bg-red-500";
+      case "new_order":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case "contact_message":
+        return "mail";
+      case "product_inquiry":
+        return "package";
+      case "service_inquiry":
+        return "tool";
+      case "low_stock":
+        return "alert-triangle";
+      case "new_order":
+        return "shopping-bag";
+      default:
+        return "bell";
+    }
+  };
+
+  const recentNotifications = notifications.slice(0, 5);
+
+  if (loading) {
+    return (
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-lg"></div>
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded mb-1"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-2/3"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Bell className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+            {unreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </div>
+            )}
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Recent Notifications
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/notifications"
+          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm font-medium flex items-center gap-1"
+        >
+          View all
+          <ArrowUpRight className="w-4 h-4" />
+        </Link>
+      </div>
+
+      <div className="space-y-3">
+        {recentNotifications.length > 0 ? (
+          recentNotifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${
+                !notification.read ? "bg-blue-50/50 dark:bg-blue-900/20" : ""
+              }`}
+              onClick={() => {
+                if (notification.actionUrl) {
+                  window.location.href = notification.actionUrl;
+                }
+              }}
+            >
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center text-white ${getNotificationColor(
+                  notification.type
+                )}`}
+              >
+                {getIconComponent(getNotificationIcon(notification.type))}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p
+                  className={`font-medium text-sm truncate ${
+                    !notification.read
+                      ? "text-gray-900 dark:text-white"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  {notification.title}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 text-xs truncate">
+                  {notification.message}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 dark:text-gray-500 text-xs">
+                  {notification.time}
+                </span>
+                {!notification.read && (
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-6">
+            <Bell className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-gray-400 font-medium">
+              No notifications
+            </p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
+              You're all caught up!
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -122,28 +122,74 @@ export default function Homepage() {
           return;
         }
 
-        // Fetch products and blogs in parallel for fast loading
+        // Add timeout protection for database queries
+        const createTimeoutPromise = (name, timeoutMs = 10000) =>
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`${name} timeout`)), timeoutMs)
+          );
+
+        // Fetch products and blogs in parallel with timeout protection
         const [productsResult, blogsResult] = await Promise.all([
           cachedProducts
             ? Promise.resolve({ data: cachedProducts, error: null })
-            : supabase
-                .from("products")
-                .select("id, name, price, image_url, category_id, description")
-                .limit(4),
+            : Promise.race([
+                supabase
+                  .from("products")
+                  .select(
+                    "id, name, price, image_url, category_id, description"
+                  )
+                  .eq("status", "active")
+                  .limit(4),
+                createTimeoutPromise("Products", 8000),
+              ]),
           cachedBlogs
             ? Promise.resolve({ data: cachedBlogs, error: null })
-            : supabase
-                .from("blog_posts")
-                .select("id, title, excerpt, created_at, image_url, tags")
-                .eq("status", "Published")
-                .order("created_at", { ascending: false })
-                .limit(3),
+            : Promise.race([
+                supabase
+                  .from("blog_posts")
+                  .select("id, title, excerpt, created_at, image_url, tags")
+                  .eq("status", "Published")
+                  .order("created_at", { ascending: false })
+                  .limit(3),
+                createTimeoutPromise("Blogs", 8000),
+              ]),
         ]);
 
-        // Handle products
-        if (productsResult.error) {
-          console.error("Failed to fetch products:", productsResult.error);
-          setProducts([]);
+        // Handle products with better error recovery
+        if (productsResult.error || !productsResult.data) {
+          console.error(
+            "Failed to fetch products:",
+            productsResult.error || "No data"
+          );
+          // Set fallback products
+          const fallbackProducts = [
+            {
+              id: 1,
+              name: "Executive Office Chair",
+              image_url: null,
+              description: "Premium ergonomic chair for executive offices",
+            },
+            {
+              id: 2,
+              name: "Modern Office Desk",
+              image_url: null,
+              description: "Sleek and functional desk for modern workspaces",
+            },
+            {
+              id: 3,
+              name: "Conference Table",
+              image_url: null,
+              description: "Professional table for meetings and presentations",
+            },
+            {
+              id: 4,
+              name: "Storage Cabinet",
+              image_url: null,
+              description: "Secure storage solution for office documents",
+            },
+          ];
+          setProducts(fallbackProducts);
+          dataCache.set(CACHE_KEYS.HOME_PRODUCTS, fallbackProducts);
         } else {
           const productsData = productsResult.data || [];
           setProducts(productsData);

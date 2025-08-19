@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { supabase } from "./lib/supabaseClient";
 
+// Context
+import { NotificationProvider } from "./context/NotificationContext";
+
 // Layout
 import AdminLayout from "./layouts/AdminLayout";
 
@@ -18,6 +21,10 @@ import EditProduct from "./pages/EditProduct";
 // Inquiries
 import Inquiries from "./pages/Inquiries";
 import ServiceInquiries from "./pages/ServiceInquiries";
+import ContactMessages from "./pages/ContactMessages";
+
+// Notifications
+import Notifications from "./pages/Notifications";
 
 // Newsletter
 import Newsletter from "./pages/Newsletter";
@@ -109,61 +116,69 @@ export default function App() {
   }, [darkMode]);
 
   return (
-    <div
-      className={
-        darkMode ? "dark bg-gray-900 text-gray-100" : "bg-white text-gray-900"
-      }
-    >
-      <AdminLayout toggleDarkMode={toggleDarkMode} darkMode={darkMode}>
-        <Routes>
-          {/* Dashboard */}
-          <Route path="/" element={<Dashboard />} />
-          {/* Products */}
-          <Route path="/products" element={<Products />} />
-          <Route path="/product-list" element={<ProductList />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/edit-product/:id" element={<EditProduct />} />
-          {/* Inquiries */}
-          <Route path="/inquiries" element={<Inquiries />} />
-          <Route path="/service-inquiries" element={<ServiceInquiries />} />
-          {/* Newsletter */}
-          <Route path="/newsletter" element={<Newsletter />} />
-          {/* Customers */}
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/customers/:id" element={<CustomerDetails />} />
-          {/* Categories & Content */}
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/content" element={<ContentManagement />} />
-          <Route path="/content/blogs" element={<BlogPostList />} />
-          <Route path="/content/blogs/create" element={<CreateBlogPost />} />
-          <Route path="/content/blogs/edit/:id" element={<EditBlogPost />} />
-          <Route path="/content/banners" element={<HomePageBanners />} />
-          <Route path="/content/media-upload" element={<UploadImages />} />{" "}
-          {/* ✅ Added */}
-          {/* Analytics */}
-          <Route path="/analytics" element={<AnalyticsOverview />} />
-          <Route
-            path="/analytics/sales-performance"
-            element={<SalesPerformance />}
-          />
-          <Route path="/analytics/top-products" element={<TopProducts />} />
-          <Route path="/analytics/user-behavior" element={<UserBehavior />} />
-          {/* Discounts */}
-          <Route path="/discounts" element={<Discounts />} />
-          <Route path="/discounts/create" element={<CreateDiscount />} />
-          <Route path="/discounts/edit/:id" element={<EditDiscount />} />
-          {/* User Management */}
-          <Route path="/users" element={<Users />} />
-          <Route path="/add-user" element={<AddUser />} />
-          <Route path="/edit-user/:id" element={<EditUser />} />
-          {/* Admin Roles */}
-          <Route path="/admin-roles" element={<AdminRoles />} />
-          <Route path="/add-role" element={<AddRole />} />
-          <Route path="/edit-role/:id" element={<EditAdminRole />} />
-          {/* Profile */}
-          <Route path="/profile" element={<AdminProfile />} />
-        </Routes>
-      </AdminLayout>
-    </div>
+    <NotificationProvider>
+      <div
+        className={
+          darkMode ? "dark bg-gray-900 text-gray-100" : "bg-white text-gray-900"
+        }
+      >
+        <AdminLayout toggleDarkMode={toggleDarkMode} darkMode={darkMode}>
+          <Routes>
+            {/* Dashboard */}
+            <Route path="/" element={<Dashboard />} />
+            {/* Products */}
+            <Route path="/products" element={<Products />} />
+            <Route path="/product-list" element={<ProductList />} />
+            <Route path="/add-product" element={<AddProduct />} />
+            <Route path="/edit-product/:id" element={<EditProduct />} />
+            {/* Inquiries */}
+            <Route path="/inquiries" element={<Inquiries />} />
+            <Route path="/service-inquiries" element={<ServiceInquiries />} />
+            <Route path="/contact-messages" element={<ContactMessages />} />
+            {/* Notifications */}
+            <Route path="/notifications" element={<Notifications />} />
+            {/* Newsletter */}
+            <Route path="/newsletter" element={<Newsletter />} />
+            {/* Customers */}
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/customers/:id" element={<CustomerDetails />} />
+            {/* Categories & Content */}
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/content" element={<ContentManagement />} />
+            <Route path="/content/blogs" element={<BlogPostList />} />
+            <Route path="/content/blogs/create" element={<CreateBlogPost />} />
+            <Route path="/content/blogs/edit/:id" element={<EditBlogPost />} />
+            <Route path="/content/banners" element={<HomePageBanners />} />
+            <Route
+              path="/content/media-upload"
+              element={<UploadImages />}
+            />{" "}
+            {/* ✅ Added */}
+            {/* Analytics */}
+            <Route path="/analytics" element={<AnalyticsOverview />} />
+            <Route
+              path="/analytics/sales-performance"
+              element={<SalesPerformance />}
+            />
+            <Route path="/analytics/top-products" element={<TopProducts />} />
+            <Route path="/analytics/user-behavior" element={<UserBehavior />} />
+            {/* Discounts */}
+            <Route path="/discounts" element={<Discounts />} />
+            <Route path="/discounts/create" element={<CreateDiscount />} />
+            <Route path="/discounts/edit/:id" element={<EditDiscount />} />
+            {/* User Management */}
+            <Route path="/users" element={<Users />} />
+            <Route path="/add-user" element={<AddUser />} />
+            <Route path="/edit-user/:id" element={<EditUser />} />
+            {/* Admin Roles */}
+            <Route path="/admin-roles" element={<AdminRoles />} />
+            <Route path="/add-role" element={<AddRole />} />
+            <Route path="/edit-role/:id" element={<EditAdminRole />} />
+            {/* Profile */}
+            <Route path="/profile" element={<AdminProfile />} />
+          </Routes>
+        </AdminLayout>
+      </div>
+    </NotificationProvider>
   );
 }

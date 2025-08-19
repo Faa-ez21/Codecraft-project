@@ -59,31 +59,43 @@ export default function ContactPage() {
       return;
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    const { error } = await supabase
-      .from("contact_messages")
-      .insert([
-        { name, email, subject, message, created_at: new Date().toISOString() },
+    try {
+      // Insert into contact table using the schema you provided
+      const { error } = await supabase.from("contact").insert([
+        {
+          name: name.trim(),
+          email: email.trim(),
+          subject: subject.trim(),
+          message: message.trim(),
+          created_at: new Date().toISOString(),
+        },
       ]);
 
-    if (error) {
+      if (error) {
+        console.error("Contact form error:", error);
+        setStatus({
+          loading: false,
+          message: "Failed to send message. Please try again.",
+          type: "error",
+        });
+      } else {
+        setStatus({ loading: false, message: "", type: "success" });
+        setIsSubmitted(true);
+        setFormData({ name: "", email: "", subject: "", message: "" });
+
+        // Reset form after success animation
+        setTimeout(() => {
+          setIsSubmitted(false);
+          setStatus({ loading: false, message: "", type: "" });
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
       setStatus({
         loading: false,
-        message: "Failed to send message.",
+        message: "An unexpected error occurred. Please try again.",
         type: "error",
       });
-    } else {
-      setStatus({ loading: false, message: "", type: "success" });
-      setIsSubmitted(true);
-      setFormData({ name: "", email: "", subject: "", message: "" });
-
-      // Reset form after success animation
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setStatus({ loading: false, message: "", type: "" });
-      }, 3000);
     }
   };
 

@@ -18,12 +18,35 @@ import {
   TrendingUp,
   RefreshCw,
   Folder,
+  Tag,
+  Users,
+  MessageSquare,
+  Settings,
+  DollarSign,
+  ShieldCheck,
+  Mail,
+  Smartphone,
+  Globe,
+  MapPin,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  User,
+  Home,
+  Info,
+  Phone,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../supabase/supabaseClient";
 import Footer from "../components/footer";
 import Header from "../components/header";
+import { toast } from "react-hot-toast";
 import { useCart } from "../context/CartContext";
-import { supabase } from "../supabase/supabaseClient";
+import {
+  safeSupabaseQuery,
+  globalCache,
+  globalLoadingManager,
+} from "../utils/loadingUtils";
 import Sofa from "../assets/sofa.png";
 import Cabinet from "../assets/cabinet.jpg";
 
@@ -252,81 +275,156 @@ const ShopPage = () => {
   const observer = useRef();
 
   const loadCategories = async () => {
-    const { data: catData } = await supabase.from("categories").select("*");
-    const { data: subData } = await supabase.from("subcategories").select("*");
-    const groupedSub = subData.reduce((acc, curr) => {
-      acc[curr.category_id] = acc[curr.category_id] || [];
-      acc[curr.category_id].push(curr);
-      return acc;
-    }, {});
-    setCategories(catData || []);
-    setSubcategories(groupedSub);
+    try {
+      // Use safe Supabase query with timeout protection
+      const [catResult, subResult] = await Promise.all([
+        safeSupabaseQuery(() => supabase.from("categories").select("*"), [], {
+          name: "Categories",
+          timeout: 8000,
+        }),
+        safeSupabaseQuery(
+          () => supabase.from("subcategories").select("*"),
+          [],
+          { name: "Subcategories", timeout: 8000 }
+        ),
+      ]);
+
+      const catData = catResult.data || [];
+      const subData = subResult.data || [];
+
+      const groupedSub = subData.reduce((acc, curr) => {
+        acc[curr.category_id] = acc[curr.category_id] || [];
+        acc[curr.category_id].push(curr);
+        return acc;
+      }, {});
+
+      setCategories(catData);
+      setSubcategories(groupedSub);
+
+      // Cache for better performance
+      globalCache.set("shop_categories", catData);
+      globalCache.set("shop_subcategories", groupedSub);
+
+      console.log("✅ Categories loaded successfully:", catData.length);
+    } catch (error) {
+      console.error("❌ Failed to load categories:", error);
+      // Set fallback categories
+      const fallbackCategories = [
+        {
+          id: 1,
+          name: "Office Furniture",
+          description: "Premium office furniture",
+        },
+        { id: 2, name: "Storage", description: "Storage solutions" },
+        { id: 3, name: "Seating", description: "Chairs and seating" },
+      ];
+      setCategories(fallbackCategories);
+      setSubcategories({});
+    }
   };
 
   const loadFilterOptions = async () => {
-    const { data: matData } = await supabase
-      .from("products")
-      .select("materials");
-    const { data: colData } = await supabase.from("products").select("colors");
+    try {
+      // Use safe Supabase query with timeout protection
+      const [matResult, colResult] = await Promise.all([
+        safeSupabaseQuery(
+          () => supabase.from("products").select("materials"),
+          [],
+          { name: "Materials", timeout: 6000 }
+        ),
+        safeSupabaseQuery(
+          () => supabase.from("products").select("colors"),
+          [],
+          { name: "Colors", timeout: 6000 }
+        ),
+      ]);
 
-    // Handle both array (new) and string (legacy) materials
-    const allMaterials = (matData || []).flatMap((item) => {
-      const materials = [];
-      if (item.materials) {
-        if (Array.isArray(item.materials)) {
-          materials.push(...item.materials);
-        } else if (typeof item.materials === "string") {
-          // Handle comma-separated string format
-          materials.push(...item.materials.split(",").map((m) => m.trim()));
+      const matData = matResult.data || [];
+      const colData = colResult.data || [];
+
+      // Handle both array (new) and string (legacy) materials
+      const allMaterials = matData.flatMap((item) => {
+        const materials = [];
+        if (item.materials) {
+          if (Array.isArray(item.materials)) {
+            materials.push(...item.materials);
+          } else if (typeof item.materials === "string") {
+            // Handle comma-separated string format
+            materials.push(...item.materials.split(",").map((m) => m.trim()));
+          }
         }
-      }
-      return materials;
-    });
+        return materials;
+      });
 
-    // Handle both array (new) and string (legacy) colors
-    const allColors = (colData || []).flatMap((item) => {
-      const colors = [];
-      if (item.colors) {
-        if (Array.isArray(item.colors)) {
-          colors.push(...item.colors);
-        } else if (typeof item.colors === "string") {
-          // Handle comma-separated string format
-          colors.push(...item.colors.split(",").map((c) => c.trim()));
+      // Handle both array (new) and string (legacy) colors
+      const allColors = colData.flatMap((item) => {
+        const colors = [];
+        if (item.colors) {
+          if (Array.isArray(item.colors)) {
+            colors.push(...item.colors);
+          } else if (typeof item.colors === "string") {
+            // Handle comma-separated string format
+            colors.push(...item.colors.split(",").map((c) => c.trim()));
+          }
         }
-      }
-      return colors;
-    });
+        return colors;
+      });
 
-    const uniqueMaterials = [...new Set(allMaterials.filter(Boolean))];
-    const uniqueColors = [...new Set(allColors.filter(Boolean))];
+      const uniqueMaterials = [...new Set(allMaterials.filter(Boolean))];
+      const uniqueColors = [...new Set(allColors.filter(Boolean))];
 
-    console.log("🎨 Materials found:", uniqueMaterials);
-    console.log("🌈 Colors found:", uniqueColors);
+      console.log("🎨 Materials found:", uniqueMaterials);
+      console.log("🌈 Colors found:", uniqueColors);
 
-    // Fallback data if database has no materials/colors
-    const fallbackMaterials = [
-      "Wood",
-      "Metal",
-      "Fabric",
-      "Leather",
-      "Plastic",
-      "Glass",
-    ];
-    const fallbackColors = [
-      "Black",
-      "White",
-      "Brown",
-      "Gray",
-      "Blue",
-      "Green",
-      "Red",
-      "Yellow",
-    ];
+      // Fallback data if database has no materials/colors
+      const fallbackMaterials = [
+        "Wood",
+        "Metal",
+        "Fabric",
+        "Leather",
+        "Plastic",
+        "Glass",
+      ];
+      const fallbackColors = [
+        "Black",
+        "White",
+        "Brown",
+        "Gray",
+        "Blue",
+        "Green",
+        "Red",
+        "Yellow",
+      ];
 
-    setMaterials(
-      uniqueMaterials.length > 0 ? uniqueMaterials : fallbackMaterials
-    );
-    setColors(uniqueColors.length > 0 ? uniqueColors : fallbackColors);
+      setMaterials(
+        uniqueMaterials.length > 0 ? uniqueMaterials : fallbackMaterials
+      );
+      setColors(uniqueColors.length > 0 ? uniqueColors : fallbackColors);
+
+      // Cache for better performance
+      globalCache.set(
+        "shop_materials",
+        uniqueMaterials.length > 0 ? uniqueMaterials : fallbackMaterials
+      );
+      globalCache.set(
+        "shop_colors",
+        uniqueColors.length > 0 ? uniqueColors : fallbackColors
+      );
+    } catch (error) {
+      console.error("❌ Failed to load filter options:", error);
+      // Set fallback options
+      setMaterials(["Wood", "Metal", "Fabric", "Leather", "Plastic", "Glass"]);
+      setColors([
+        "Black",
+        "White",
+        "Brown",
+        "Gray",
+        "Blue",
+        "Green",
+        "Red",
+        "Yellow",
+      ]);
+    }
   };
 
   const loadProducts = async (reset = false) => {
@@ -452,53 +550,85 @@ const ShopPage = () => {
     const initializeShop = async () => {
       console.log("🚀 ShopPage initializing...");
       setIsLoading(true);
+      setInitialLoadComplete(false);
 
       try {
-        // Load categories and filter options
-        await Promise.all([loadCategories(), loadFilterOptions()]);
+        // Load categories and filter options with timeout
+        const initPromise = Promise.all([
+          loadCategories(),
+          loadFilterOptions(),
+        ]);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Initialization timeout")), 10000)
+        );
+
+        try {
+          await Promise.race([initPromise, timeoutPromise]);
+          console.log("🏪 Categories and filters loaded successfully");
+        } catch (error) {
+          console.warn("⚠️ Categories/filters loading failed:", error);
+          // Continue with basic functionality
+        }
 
         console.log("🏪 Loading initial products...");
-        await loadProducts(true);
-      } catch (error) {
-        console.error("Error initializing shop:", error);
-        // Even if categories fail, try to load products
-        console.log("🔄 Attempting to load products without categories...");
+        // Load products with timeout protection
+        const productsPromise = loadProducts(true);
+        const productsTimeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Products loading timeout")), 15000)
+        );
+
         try {
-          await loadProducts(true);
-        } catch (productError) {
-          console.error("Failed to load products:", productError);
+          await Promise.race([productsPromise, productsTimeoutPromise]);
+          console.log("✅ Initial products loaded successfully");
+        } catch (error) {
+          console.error("❌ Failed to load initial products:", error);
+          // Set empty products array to show "no products" message
+          setProducts([]);
         }
+      } catch (error) {
+        console.error("❌ Critical error during initialization:", error);
+        setProducts([]);
       } finally {
         setInitialLoadComplete(true);
         setIsLoading(false);
+        console.log("🎯 ShopPage initialization complete");
       }
     };
 
     initializeShop();
 
-    // Set up real-time subscription for products
-    const productSubscription = supabase
-      .channel("products-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "products",
-        },
-        (payload) => {
-          console.log("🔄 Product change detected:", payload);
-          console.log("🔄 Event type:", payload.eventType);
-          console.log("🔄 New data:", payload.new);
-          console.log("🔄 Old data:", payload.old);
-          // Refresh products when changes occur
-          setTimeout(() => {
-            console.log("⏱️ Refreshing products after 1 second delay...");
-            loadProducts(true);
-          }, 1000);
-        }
-      )
-      .subscribe();
+    // Set up real-time subscription for products with error handling
+    let productSubscription;
+    try {
+      productSubscription = supabase
+        .channel("products-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "products",
+          },
+          (payload) => {
+            console.log("🔄 Product change detected:", payload);
+            // Refresh products when changes occur (with debounce)
+            setTimeout(() => {
+              console.log("⏱️ Refreshing products after change...");
+              if (!isLoading) {
+                loadProducts(true);
+              }
+            }, 1000);
+          }
+        )
+        .subscribe();
+
+      console.log("🔄 Real-time subscriptions set up successfully");
+    } catch (subscriptionError) {
+      console.warn(
+        "⚠️ Failed to set up real-time subscriptions:",
+        subscriptionError
+      );
+    }
 
     // Set up real-time subscription for categories
     const categorySubscription = supabase
@@ -536,9 +666,13 @@ const ShopPage = () => {
 
     // Cleanup subscriptions
     return () => {
-      productSubscription.unsubscribe();
-      categorySubscription.unsubscribe();
-      subcategorySubscription.unsubscribe();
+      try {
+        if (productSubscription) productSubscription.unsubscribe();
+        categorySubscription.unsubscribe();
+        subcategorySubscription.unsubscribe();
+      } catch (cleanupError) {
+        console.warn("⚠️ Error during subscription cleanup:", cleanupError);
+      }
     };
   }, []);
 
