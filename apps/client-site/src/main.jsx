@@ -24,6 +24,7 @@ import ProductPage from "./pages/ProductPage";
 import NewsletterForm from "./pages/NewsletterForm";
 import BlogList from "./pages/BlogList";
 import BlogDetail from "./pages/BlogDetail";
+import { backgroundPrefetch } from "./utils/prefetch";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children, showLoginPage = false }) => {
@@ -109,6 +110,10 @@ const ProtectedRoute = ({ children, showLoginPage = false }) => {
 };
 
 const root = createRoot(document.getElementById("root"));
+
+// Start background prefetching for instant loading
+backgroundPrefetch();
+
 root.render(
   <StrictMode>
     <AuthProvider>

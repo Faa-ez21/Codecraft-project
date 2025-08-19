@@ -64,16 +64,28 @@ export default function Header() {
           setRole(adminData.role || "Admin");
         } else {
           // Try customers table
-          const { data: customerData } = await supabase
-            .from("customers")
-            .select("name")
-            .eq("id", currentUser.id)
-            .single();
+          try {
+            const { data: customerData, error } = await supabase
+              .from("customers")
+              .select("name")
+              .eq("id", currentUser.id)
+              .maybeSingle(); // Use maybeSingle instead of single to handle missing records
 
-          setUserName(
-            customerData?.name || currentUser.email?.split("@")[0] || "User"
-          );
-          setRole("Customer");
+            if (!error && customerData) {
+              setUserName(
+                customerData.name || currentUser.email?.split("@")[0] || "User"
+              );
+              setRole("Customer");
+            } else {
+              // Fallback if customer doesn't exist
+              setUserName(currentUser.email?.split("@")[0] || "User");
+              setRole("Customer");
+            }
+          } catch (err) {
+            console.warn("Customer lookup failed:", err);
+            setUserName(currentUser.email?.split("@")[0] || "User");
+            setRole("Customer");
+          }
         }
       }
     };
@@ -102,16 +114,30 @@ export default function Header() {
             setRole(adminData.role || "Admin");
           } else {
             // Try customers table
-            const { data: customerData } = await supabase
-              .from("customers")
-              .select("name")
-              .eq("id", session.user.id)
-              .single();
+            try {
+              const { data: customerData, error } = await supabase
+                .from("customers")
+                .select("name")
+                .eq("id", session.user.id)
+                .maybeSingle(); // Use maybeSingle instead of single
 
-            setUserName(
-              customerData?.name || session.user.email?.split("@")[0] || "User"
-            );
-            setRole("Customer");
+              if (!error && customerData) {
+                setUserName(
+                  customerData.name ||
+                    session.user.email?.split("@")[0] ||
+                    "User"
+                );
+                setRole("Customer");
+              } else {
+                // Fallback if customer doesn't exist
+                setUserName(session.user.email?.split("@")[0] || "User");
+                setRole("Customer");
+              }
+            } catch (err) {
+              console.warn("Customer lookup failed:", err);
+              setUserName(session.user.email?.split("@")[0] || "User");
+              setRole("Customer");
+            }
           }
         } else {
           setUser(null);

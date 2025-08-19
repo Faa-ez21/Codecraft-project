@@ -18,6 +18,7 @@ import {
   Clock,
 } from "lucide-react";
 import { supabase } from "../supabase/supabaseClient";
+import dataCache, { CACHE_KEYS } from "../utils/dataCache";
 
 import logo from "../assets/Logo.png";
 import heroImage from "../assets/chairs1.jpg";
@@ -104,47 +105,60 @@ export default function Homepage() {
   }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .limit(4);
-        if (error) console.error("Failed to fetch products:", error);
-        else setProducts(data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setTimeout(() => setIsLoading(false), 800); // Add slight delay for loading animation
-      }
-    };
-
-    const fetchBlogPosts = async () => {
       setIsBlogLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("blog_posts")
-          .select(
-            `
-            id,
-            title,
-            excerpt,
-            content,
-            created_at,
-            image_url,
-            tags,
-            author_id
-          `
-          )
-          .eq("status", "Published")
-          .order("created_at", { ascending: false })
-          .limit(3);
 
-        if (error) {
-          console.error("Failed to fetch blog posts:", error);
+      try {
+        // Check cache first for instant loading
+        const cachedProducts = dataCache.get(CACHE_KEYS.HOME_PRODUCTS);
+        const cachedBlogs = dataCache.get(CACHE_KEYS.HOME_BLOGS);
+
+        if (cachedProducts && cachedBlogs) {
+          // Instant load from cache
+          setProducts(cachedProducts);
+          setBlogPosts(cachedBlogs);
+          setIsLoading(false);
+          setIsBlogLoading(false);
+          return;
+        }
+
+        // Fetch products and blogs in parallel for fast loading
+        const [productsResult, blogsResult] = await Promise.all([
+          cachedProducts
+            ? Promise.resolve({ data: cachedProducts, error: null })
+            : supabase
+                .from("products")
+                .select("id, name, price, image_url, category_id, description")
+                .limit(4),
+          cachedBlogs
+            ? Promise.resolve({ data: cachedBlogs, error: null })
+            : supabase
+                .from("blog_posts")
+                .select("id, title, excerpt, created_at, image_url, tags")
+                .eq("status", "Published")
+                .order("created_at", { ascending: false })
+                .limit(3),
+        ]);
+
+        // Handle products
+        if (productsResult.error) {
+          console.error("Failed to fetch products:", productsResult.error);
+          setProducts([]);
+        } else {
+          const productsData = productsResult.data || [];
+          setProducts(productsData);
+          // Cache for future loads
+          if (!cachedProducts) {
+            dataCache.set(CACHE_KEYS.HOME_PRODUCTS, productsData);
+          }
+        }
+
+        // Handle blogs
+        if (blogsResult.error) {
+          console.error("Failed to fetch blog posts:", blogsResult.error);
           // Set dummy blog posts if table doesn't exist or no published posts
-          setBlogPosts([
+          const fallbackBlogs = [
             {
               id: 1,
               title: "Creating the Perfect Ergonomic Office Setup",
@@ -169,14 +183,22 @@ export default function Homepage() {
               created_at: "2024-07-25",
               image_url: null,
             },
-          ]);
+          ];
+          setBlogPosts(fallbackBlogs);
+          dataCache.set(CACHE_KEYS.HOME_BLOGS, fallbackBlogs);
         } else {
-          setBlogPosts(data || []);
+          const blogsData = blogsResult.data || [];
+          setBlogPosts(blogsData);
+          // Cache for future loads
+          if (!cachedBlogs) {
+            dataCache.set(CACHE_KEYS.HOME_BLOGS, blogsData);
+          }
         }
       } catch (error) {
-        console.error("Error fetching blog posts:", error);
-        // Set dummy blog posts as fallback
-        setBlogPosts([
+        console.error("Error fetching data:", error);
+        // Set fallback data
+        setProducts([]);
+        const fallbackBlogs = [
           {
             id: 1,
             title: "Creating the Perfect Ergonomic Office Setup",
@@ -201,14 +223,16 @@ export default function Homepage() {
             created_at: "2024-07-25",
             image_url: null,
           },
-        ]);
+        ];
+        setBlogPosts(fallbackBlogs);
       } finally {
-        setTimeout(() => setIsBlogLoading(false), 600);
+        // Remove artificial delays for instant loading
+        setIsLoading(false);
+        setIsBlogLoading(false);
       }
     };
 
-    fetchProducts();
-    fetchBlogPosts();
+    fetchData();
   }, []);
 
   // Exit-intent detection

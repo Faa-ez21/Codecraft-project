@@ -215,12 +215,20 @@ export default function BlogDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-yellow-50">
         <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center justify-center min-h-[70vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading article...</p>
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-200 border-t-green-600 mx-auto mb-6"></div>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400/20 to-yellow-400/20 animate-pulse"></div>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Loading Article
+            </h3>
+            <p className="text-gray-600">
+              Please wait while we fetch the content...
+            </p>
           </div>
         </div>
         <Footer />
@@ -230,24 +238,33 @@ export default function BlogDetail() {
 
   if (error || !blog) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-yellow-50">
         <Header />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center max-w-md mx-auto p-8">
-            <div className="text-red-500 text-6xl mb-4">📄</div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+        <div className="flex items-center justify-center min-h-[70vh]">
+          <div className="text-center max-w-md mx-auto px-6">
+            <div className="text-red-500 text-6xl mb-6">⚠️</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">
               Article Not Found
-            </h1>
-            <p className="text-gray-600 mb-6">
-              The article you're looking for doesn't exist or has been removed.
+            </h3>
+            <p className="text-gray-600 mb-8">
+              The article you're looking for doesn't exist or has been moved.
             </p>
-            <Link
-              to="/"
-              className="inline-flex items-center bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transition-all duration-300"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-medium transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Go Back
+              </button>
+              <Link
+                to="/blog"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-yellow-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all transform hover:scale-105"
+              >
+                <BookOpen className="w-4 h-4" />
+                Browse Articles
+              </Link>
+            </div>
           </div>
         </div>
         <Footer />
@@ -256,110 +273,124 @@ export default function BlogDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-yellow-50">
       <Header />
+
+      {/* Reading Progress Bar */}
+      <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
+        <div
+          id="reading-progress"
+          className="h-full bg-gradient-to-r from-green-500 to-yellow-600 transition-all duration-300"
+          style={{ width: "0%" }}
+        ></div>
+      </div>
 
       {/* Hero Section */}
       <section className="relative pt-24 pb-12 overflow-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 right-10 w-72 h-72 bg-gradient-to-bl from-green-100/30 to-transparent rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 left-10 w-80 h-80 bg-gradient-to-tr from-blue-100/25 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute top-20 right-10 w-72 h-72 bg-gradient-to-bl from-yellow-100/40 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 left-10 w-80 h-80 bg-gradient-to-tr from-green-100/30 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-green-50/20 to-yellow-50/20 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto px-6">
-          {/* Back Button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-6 transition-colors duration-200"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Articles
-          </button>
+          {/* Header Content Container with subtle background */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 shadow-sm border border-white/50">
+            {/* Back Button */}
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center text-gray-700 hover:text-gray-900 mb-6 transition-colors duration-200 drop-shadow-sm"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Articles
+            </button>
 
-          {/* Article Meta */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6">
-            <div className="flex items-center">
-              <Calendar className="w-4 h-4 mr-2" />
-              {new Date(blog.created_at).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+            {/* Article Meta */}
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-700 mb-6 drop-shadow-sm">
+              <div className="flex items-center">
+                <Calendar className="w-4 h-4 mr-2" />
+                {new Date(blog.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+              <div className="flex items-center">
+                <Clock className="w-4 h-4 mr-2" />
+                {readTime} min read
+              </div>
+              <div className="flex items-center">
+                <User className="w-4 h-4 mr-2" />
+                Expert Office Furnish
+              </div>
             </div>
-            <div className="flex items-center">
-              <Clock className="w-4 h-4 mr-2" />
-              {readTime} min read
-            </div>
-            <div className="flex items-center">
-              <User className="w-4 h-4 mr-2" />
-              Expert Office Furnish
-            </div>
-          </div>
 
-          {/* Title */}
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight mb-6">
-            {blog.title}
-          </h1>
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6 drop-shadow-sm">
+              {blog.title}
+            </h1>
 
-          {/* Excerpt */}
-          {blog.excerpt && (
-            <p className="text-xl text-gray-600 leading-relaxed mb-8">
-              {blog.excerpt}
-            </p>
-          )}
+            {/* Excerpt */}
+            {blog.excerpt && (
+              <p className="text-xl text-gray-700 leading-relaxed mb-8 drop-shadow-sm">
+                {blog.excerpt}
+              </p>
+            )}
 
-          {/* Tags */}
-          {blog.tags && blog.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-8">
-              {blog.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full"
+            {/* Tags */}
+            {blog.tags && blog.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-8">
+                {blog.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Social Sharing */}
+            <div className="flex items-center gap-4 mb-8">
+              <span className="text-sm text-gray-600">Share this article:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleShare("facebook")}
+                  className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors duration-200"
+                  title="Share on Facebook"
                 >
-                  {tag}
-                </span>
-              ))}
+                  <Facebook className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleShare("twitter")}
+                  className="p-2 text-yellow-500 hover:bg-yellow-50 rounded-full transition-colors duration-200"
+                  title="Share on Twitter"
+                >
+                  <Twitter className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleShare("linkedin")}
+                  className="p-2 text-green-700 hover:bg-green-50 rounded-full transition-colors duration-200"
+                  title="Share on LinkedIn"
+                >
+                  <Linkedin className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleShare("copy")}
+                  className="p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors duration-200"
+                  title="Copy link"
+                >
+                  {copied ? (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Copy className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
-          )}
-
-          {/* Social Sharing */}
-          <div className="flex items-center gap-4 mb-8">
-            <span className="text-sm text-gray-600">Share this article:</span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleShare("facebook")}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors duration-200"
-                title="Share on Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleShare("twitter")}
-                className="p-2 text-blue-400 hover:bg-blue-50 rounded-full transition-colors duration-200"
-                title="Share on Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleShare("linkedin")}
-                className="p-2 text-blue-700 hover:bg-blue-50 rounded-full transition-colors duration-200"
-                title="Share on LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleShare("copy")}
-                className="p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors duration-200"
-                title="Copy link"
-              >
-                {copied ? (
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                ) : (
-                  <Copy className="w-5 h-5" />
-                )}
-              </button>
-            </div>
+            {/* End of header content container */}
           </div>
         </div>
       </section>
@@ -425,7 +456,7 @@ export default function BlogDetail() {
               {/* Reading progress bar */}
               <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
                 <div
-                  className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-green-500 to-yellow-500 transition-all duration-300"
                   style={{ width: "0%" }}
                   id="reading-progress"
                 ></div>

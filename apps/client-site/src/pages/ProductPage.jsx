@@ -35,6 +35,7 @@ import {
   debugProducts,
   testRelatedProductsQuery,
 } from "../utils/debugProducts";
+import dataCache, { CACHE_KEYS } from "../utils/dataCache";
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -112,20 +113,25 @@ const ProductPage = () => {
     fetchProduct();
   }, [id]);
 
-  useEffect(() => {
-    if (product) {
-      fetchProductDiscount();
-    }
-  }, [product]);
-
-  const fetchProductDiscount = async () => {
-    if (!product?.id) return;
+  const fetchProductDiscount = async (productId) => {
+    if (!productId) return null;
 
     try {
+      // Check cache first
+      const cacheKey = CACHE_KEYS.PRODUCT_DISCOUNT(productId);
+      const cachedDiscount = dataCache.get(cacheKey);
+
+      if (cachedDiscount !== null) {
+        setProductDiscount(cachedDiscount);
+        return cachedDiscount;
+      }
+
       const { data, error } = await supabase
         .from("discounts")
-        .select("*")
-        .contains("product_ids", [product.id])
+        .select(
+          "id, discount_percentage, discount_amount, start_date, end_date"
+        )
+        .contains("product_ids", [productId])
         .eq("status", "Active")
         .gte("end_date", new Date().toISOString())
         .lte("start_date", new Date().toISOString())
@@ -133,10 +139,19 @@ const ProductPage = () => {
 
       if (!error && data) {
         setProductDiscount(data);
+        // Cache the discount
+        dataCache.set(cacheKey, data, 2 * 60 * 1000); // 2 minutes cache for discounts
+        return data;
+      } else {
+        setProductDiscount(null);
+        // Cache null result to avoid repeated queries
+        dataCache.set(cacheKey, null, 2 * 60 * 1000);
+        return null;
       }
     } catch (error) {
       console.log("No active discount found for this product");
       setProductDiscount(null);
+      return null;
     }
   };
 
@@ -145,47 +160,91 @@ const ProductPage = () => {
       setLoading(true);
       console.log("Fetching product with ID:", id, "Type:", typeof id);
 
-      // Try different ID formats in case of type mismatch
-      const queries = [
-        // Try as string
-        supabase.from("products").select("*").eq("id", id).single(),
-        // Try as integer
-        supabase.from("products").select("*").eq("id", parseInt(id)).single(),
-      ];
+      // Check cache first for instant loading
+      const cacheKey = CACHE_KEYS.PRODUCT(id);
+      const cachedProduct = dataCache.get(cacheKey);
 
-      let data, error;
-      for (const query of queries) {
-        const result = await query;
-        if (!result.error) {
-          data = result.data;
-          error = null;
-          break;
-        }
-        error = result.error;
+      if (cachedProduct) {
+        setProduct(cachedProduct);
+        setLoading(false);
+        // Fetch discount in parallel (non-blocking)
+        fetchProductDiscount(cachedProduct.id);
+        // Track product view for recommendations (don't wait for this)
+        trackProductView(cachedProduct.id, cachedProduct.category_id);
+        return;
       }
+
+      // Optimized query with only essential fields for faster loading
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          `
+          id,
+          name,
+          description,
+          price,
+          image_url,
+          additional_images,
+          category_id,
+          specifications,
+          tags,
+          stock_quantity,
+          discount_price
+        `
+        )
+        .eq("id", id)
+        .single();
 
       console.log("Supabase response:", { data, error });
-      console.log(
-        "Additional images:",
-        data?.additional_images,
-        "Length:",
-        data?.additional_images?.length
-      );
 
       if (error || !data) {
-        // If still not found, let's see what products exist
-        const { data: allProducts } = await supabase
+        // If not found with string ID, try with integer ID
+        const { data: retryData, error: retryError } = await supabase
           .from("products")
-          .select("id, name")
-          .limit(5);
-        console.log("Available products:", allProducts);
-        throw new Error("Product not found");
+          .select(
+            `
+            id,
+            name,
+            description,
+            price,
+            image_url,
+            additional_images,
+            category_id,
+            specifications,
+            tags,
+            stock_quantity,
+            discount_price
+          `
+          )
+          .eq("id", parseInt(id))
+          .single();
+
+        if (retryError || !retryData) {
+          // If still not found, let's see what products exist
+          const { data: allProducts } = await supabase
+            .from("products")
+            .select("id, name")
+            .limit(5);
+          console.log("Available products:", allProducts);
+          throw new Error("Product not found");
+        }
+
+        setProduct(retryData);
+        // Cache the product for future loads
+        dataCache.set(cacheKey, retryData);
+        // Fetch discount in parallel (non-blocking)
+        fetchProductDiscount(retryData.id);
+        // Track product view for recommendations (don't wait for this)
+        trackProductView(retryData.id, retryData.category_id);
+      } else {
+        setProduct(data);
+        // Cache the product for future loads
+        dataCache.set(cacheKey, data);
+        // Fetch discount in parallel (non-blocking)
+        fetchProductDiscount(data.id);
+        // Track product view for recommendations (don't wait for this)
+        trackProductView(data.id, data.category_id);
       }
-
-      setProduct(data);
-
-      // Track product view for recommendations
-      trackProductView(data.id, data.category_id);
     } catch (error) {
       console.error("Error fetching product:", error);
       setError("Product not found");

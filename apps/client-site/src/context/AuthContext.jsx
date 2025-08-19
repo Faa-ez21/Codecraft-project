@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
           .from("customers")
           .select("name, email, phone, location")
           .eq("id", sessionUser.id)
-          .single(),
+          .maybeSingle(), // Use maybeSingle instead of single
       ]);
 
       // Check admin result first

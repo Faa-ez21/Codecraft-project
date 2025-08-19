@@ -239,7 +239,6 @@ const ShopPage = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const observer = useRef();
-  
 
   const loadCategories = async () => {
     const { data: catData } = await supabase.from("categories").select("*");
@@ -320,6 +319,9 @@ const ShopPage = () => {
   };
 
   const loadProducts = async (reset = false) => {
+    // Prevent multiple simultaneous calls
+    if (isLoading && !reset) return;
+
     console.log("📦 Loading products...", {
       selectedCategory,
       reset,
@@ -367,7 +369,9 @@ const ShopPage = () => {
       if (filters.color) {
         query = query.contains("colors", [filters.color]);
       }
-      if (searchTerm) query = query.ilike("name", `%${searchTerm}%`);
+      if (searchTerm.trim()) {
+        query = query.ilike("name", `%${searchTerm.trim()}%`);
+      }
 
       // Add pagination
       const currentPage = reset ? 1 : page;
@@ -397,12 +401,12 @@ const ShopPage = () => {
       setHasMore((data || []).length === 12);
     } catch (error) {
       console.error("❌ Error in loadProducts:", error);
+    } finally {
+      // Add delay for smooth loading animation
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 300);
     }
-
-    // Add delay for smooth loading animation
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
   };
 
   const lastProductRef = useCallback(
@@ -419,8 +423,17 @@ const ShopPage = () => {
   );
 
   useEffect(() => {
-    loadCategories();
-    loadFilterOptions();
+    const initializeShop = async () => {
+      console.log("🚀 ShopPage initializing...");
+      await loadCategories();
+      await loadFilterOptions();
+
+      // Load initial products after categories are loaded
+      console.log("🏪 Loading initial products...");
+      loadProducts(true);
+    };
+
+    initializeShop();
 
     // Set up real-time subscription for products
     const productSubscription = supabase
@@ -489,8 +502,32 @@ const ShopPage = () => {
   }, []);
 
   useEffect(() => {
-    loadProducts(true);
-  }, [selectedCategory, filters, searchTerm]);
+    // Skip if categories haven't loaded yet (initial mount)
+    // This prevents duplicate loading since the first useEffect handles initial load
+    if (categories.length === 0) {
+      console.log("⏭️ Skipping filter effect - categories not loaded yet");
+      return;
+    }
+
+    console.log("🔄 Filter changed, reloading products...", {
+      selectedCategory,
+      filters,
+      searchTerm,
+    });
+
+    // Add a small delay to debounce rapid filter changes
+    const timeoutId = setTimeout(() => {
+      loadProducts(true);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    selectedCategory,
+    filters.material,
+    filters.color,
+    searchTerm,
+    categories.length,
+  ]);
 
   const toggleCategoryExpand = (catId) => {
     setExpandedCats((prev) => ({
