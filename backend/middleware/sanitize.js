@@ -1,7 +1,9 @@
 // middleware/sanitize.js
 const xss = require('xss');
 
-// Remove MongoDB operator keys and dangerous dotted keys and sanitize string values
+/**
+ * Recursively remove dangerous keys and sanitize string values
+ */
 function stripDangerousKeys(obj) {
   if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
     for (const key of Object.keys(obj)) {
@@ -23,13 +25,16 @@ function stripDangerousKeys(obj) {
     }
   } else if (Array.isArray(obj)) {
     obj.forEach((v, i) => {
-      if (typeof v === 'object') stripDangerousKeys(v);
+      if (typeof v === 'object' && v !== null) stripDangerousKeys(v);
       else if (typeof v === 'string') obj[i] = xss(v);
     });
   }
   return obj;
 }
 
+/**
+ * Express middleware to sanitize incoming requests
+ */
 function sanitizeRequest(req, _res, next) {
   if (req.body) stripDangerousKeys(req.body);
   if (req.query) stripDangerousKeys(req.query);
