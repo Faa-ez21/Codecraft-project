@@ -458,7 +458,9 @@ export default function ProductList() {
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-lg">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-purple-100 rounded-lg">
-                <DollarSign className="w-6 h-6 text-purple-600" />
+                <span className="w-6 h-6 text-purple-600 flex items-center justify-center text-lg font-bold">
+                  ₵
+                </span>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Value</p>

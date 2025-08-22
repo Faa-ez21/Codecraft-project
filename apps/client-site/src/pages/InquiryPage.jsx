@@ -573,11 +573,11 @@ export default function ProductInquiry() {
                           className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
                         >
                           <option value="">Select budget range</option>
-                          <option value="under_1000">Under $1,000</option>
-                          <option value="1000_5000">$1,000 - $5,000</option>
-                          <option value="5000_10000">$5,000 - $10,000</option>
-                          <option value="10000_25000">$10,000 - $25,000</option>
-                          <option value="above_25000">Above $25,000</option>
+                          <option value="under_1000">Under GH₵1,000</option>
+                          <option value="1000_5000">GH₵1,000 - GH₵5,000</option>
+                          <option value="5000_10000">GH₵5,000 - GH₵10,000</option>
+                          <option value="10000_25000">GH₵10,000 - GH₵25,000</option>
+                          <option value="above_25000">Above GH₵25,000</option>
                         </select>
                       </div>
 

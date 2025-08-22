@@ -251,7 +251,7 @@ export default function Orders() {
               </p>
             </div>
             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-              <DollarSign className="w-6 h-6 text-green-600" />
+              <span className="w-6 h-6 text-green-600">₵</span>
             </div>
           </div>
         </div>

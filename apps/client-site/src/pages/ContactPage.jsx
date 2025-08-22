@@ -22,6 +22,7 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: "",
   });
@@ -48,23 +49,24 @@ export default function ContactPage() {
     e.preventDefault();
     setStatus({ loading: true, message: "", type: "" });
 
-    const { name, email, subject, message } = formData;
+    const { name, email, phone, subject, message } = formData;
 
     if (!name || !email || !subject || !message) {
       setStatus({
         loading: false,
-        message: "All fields are required.",
+        message: "All required fields must be filled.",
         type: "error",
       });
       return;
     }
 
     try {
-      // Insert into contact table using the schema you provided
-      const { error } = await supabase.from("contact").insert([
+      // Insert into contact_messages table using the correct schema
+      const { error } = await supabase.from("contact_messages").insert([
         {
           name: name.trim(),
           email: email.trim(),
+          phone_numbers: phone ? parseFloat(phone.replace(/\D/g, "")) : null, // Convert phone to numeric, remove non-digits
           subject: subject.trim(),
           message: message.trim(),
           created_at: new Date().toISOString(),
@@ -81,7 +83,13 @@ export default function ContactPage() {
       } else {
         setStatus({ loading: false, message: "", type: "success" });
         setIsSubmitted(true);
-        setFormData({ name: "", email: "", subject: "", message: "" });
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: "",
+        });
 
         // Reset form after success animation
         setTimeout(() => {
@@ -321,6 +329,21 @@ export default function ContactPage() {
                         className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
                         placeholder="Enter your email address"
                         required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                        <Phone className="w-4 h-4 mr-2 text-green-600" />
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
+                        placeholder="Enter your phone number"
                       />
                     </div>
                   </div>

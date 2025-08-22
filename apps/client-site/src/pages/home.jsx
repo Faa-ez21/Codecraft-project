@@ -498,7 +498,7 @@ export default function Homepage() {
             <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-green-500/20 rounded-full mb-6 backdrop-blur-sm border border-yellow-500/30">
               <Star className="w-4 h-4 text-yellow-500 mr-2" />
               <span className="text-sm text-white font-medium">
-                Premium Office Solutions
+                Work Smart,Sit Safe
               </span>
             </div>
 
@@ -571,7 +571,7 @@ export default function Homepage() {
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto mb-16 text-lg">
               Experience the difference with our commitment to quality,
-              sustainability, and customer satisfaction
+              sustainability, and customer retention
             </p>
           </div>
 
@@ -591,7 +591,7 @@ export default function Homepage() {
               },
               {
                 title: "Flexible Policies",
-                desc: "Enjoy trial periods, comprehensive warranties, and hassle-free returns.",
+                desc: "Enjoy comprehensive warranties, and express deliveries.",
                 color: "from-green-600 to-yellow-600",
                 delay: "delay-700",
               },
@@ -1132,7 +1132,7 @@ export default function Homepage() {
                 your first order +
                 <span className="font-bold text-yellow-600">
                   {" "}
-                  FREE Design Consultation
+                  24-Hour Design Consultation
                 </span>{" "}
                 worth $200!
               </p>
@@ -1145,7 +1145,7 @@ export default function Homepage() {
                 </div>
                 <div className="flex items-center text-sm text-gray-700">
                   <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                  FREE professional design consultation
+                  24-hour design consultation offer
                 </div>
                 <div className="flex items-center text-sm text-gray-700">
                   <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />

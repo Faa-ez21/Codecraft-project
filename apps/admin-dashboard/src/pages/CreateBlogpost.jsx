@@ -336,9 +336,9 @@ Selecting the right office chair is one of the most important decisions you can 
 ## Budget Considerations
 
 Quality office chairs are an investment in your health:
-- Entry-level ergonomic chairs: $200-$500
-- Mid-range options with advanced features: $500-$1,000
-- Premium chairs with extensive adjustability: $1,000+
+- Entry-level ergonomic chairs: ₵1,500-3,800
+- Mid-range options with advanced features: ₵3,800-7,600
+- Premium chairs with extensive adjustability: ₵7,600+
 
 ## Maintenance and Longevity
 

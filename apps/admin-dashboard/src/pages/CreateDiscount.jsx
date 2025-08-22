@@ -297,7 +297,7 @@ export default function CreateDiscount() {
                     >
                       <option value="">Select Type</option>
                       <option value="Percentage">Percentage (%)</option>
-                      <option value="Fixed">Fixed Amount ($)</option>
+                      <option value="Fixed">Fixed Amount (₵)</option>
                     </select>
                   </div>
 
@@ -323,7 +323,7 @@ export default function CreateDiscount() {
                         {form.discount_type === "Percentage" ? (
                           <Percent className="w-4 h-4 text-gray-400" />
                         ) : (
-                          <DollarSign className="w-4 h-4 text-gray-400" />
+                          <span className="w-4 h-4 text-gray-400">₵</span>
                         )}
                       </div>
                     </div>
@@ -395,7 +395,7 @@ export default function CreateDiscount() {
                   >
                     {products.map((p) => (
                       <option key={p.id} value={p.id} className="py-2">
-                        {p.name} - ${p.price}
+                        {p.name} - ₵{p.price}
                       </option>
                     ))}
                   </select>
@@ -477,7 +477,7 @@ export default function CreateDiscount() {
                       ? `${
                           form.discount_type === "Percentage"
                             ? form.discount_value + "%"
-                            : "$" + form.discount_value
+                            : "₵" + form.discount_value
                         }`
                       : "Not set"}
                   </span>
@@ -517,7 +517,7 @@ export default function CreateDiscount() {
                         {product.name}
                       </span>
                       <span className="text-sm text-gray-600">
-                        ${product.price}
+                        ₵{product.price}
                       </span>
                     </div>
                   ))}

@@ -59,20 +59,44 @@ const Users = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
+      // Only fetch from users table (admins, managers, staff - not customers)
       const { data, error } = await supabase
         .from("users")
         .select(
           `
-          *,
-          orders(count)
+          id,
+          name,
+          email,
+          role,
+          phone,
+          address,
+          city,
+          avatar_url,
+          status,
+          created_at,
+          updated_at
         `
         )
         .order(sortBy, { ascending: sortOrder === "asc" });
 
-      if (error) throw error;
-      setUsers(data || []);
+      if (error) {
+        console.error("Error fetching users:", error);
+        setUsers([]);
+      } else {
+        // Ensure all users have proper data structure
+        const formattedUsers = (data || []).map((user) => ({
+          ...user,
+          status: user.status || "active",
+          role: user.role || "user",
+          phone: user.phone || "Not provided",
+          address: user.address || "Not provided",
+          city: user.city || "Not provided",
+        }));
+        setUsers(formattedUsers);
+      }
     } catch (error) {
-      console.error("Error fetching users:", error.message);
+      console.error("Error fetching users:", error);
+      setUsers([]);
     } finally {
       setLoading(false);
     }

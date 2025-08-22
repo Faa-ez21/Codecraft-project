@@ -75,7 +75,7 @@ export default function CustomerDetails() {
 
     setMessagesLoading(true);
     const { data, error } = await supabase
-      .from("contact")
+      .from("contact_messages")
       .select("*")
       .eq("email", customer.email)
       .order("created_at", { ascending: false })
@@ -292,14 +292,18 @@ export default function CustomerDetails() {
                 },
                 {
                   title: "Total Spent",
-                  value: `$${stats.totalSpent.toFixed(2)}`,
-                  icon: DollarSign,
+                  value: `₵${stats.totalSpent.toFixed(2)}`,
+                  icon: (
+                    <span className="w-6 h-6 flex items-center justify-center text-lg font-bold">
+                      ₵
+                    </span>
+                  ),
                   color: "from-green-500 to-emerald-500",
-                  change: "+$150 this month",
+                  change: "+₵150 this month",
                 },
                 {
                   title: "Avg Order",
-                  value: `$${stats.avgOrderValue.toFixed(2)}`,
+                  value: `₵${stats.avgOrderValue.toFixed(2)}`,
                   icon: TrendingUp,
                   color: "from-purple-500 to-pink-500",
                   change: "+5% vs last month",
@@ -381,7 +385,7 @@ export default function CustomerDetails() {
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-gray-800">
-                            ${order.total?.toFixed(2) || "0.00"}
+                            ₵{order.total?.toFixed(2) || "0.00"}
                           </p>
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${

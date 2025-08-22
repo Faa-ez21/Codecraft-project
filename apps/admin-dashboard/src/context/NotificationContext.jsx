@@ -70,7 +70,7 @@ export const NotificationProvider = ({ children }) => {
   const fetchContactMessages = async () => {
     try {
       const { data, error } = await supabase
-        .from("contact")
+        .from("contact_messages")
         .select("*")
         .is("status", null)
         .order("created_at", { ascending: false })
@@ -277,7 +277,7 @@ export const NotificationProvider = ({ children }) => {
       if (notificationId.startsWith("contact_")) {
         const messageId = notificationId.replace("contact_", "");
         await supabase
-          .from("contact")
+          .from("contact_messages")
           .update({ status: "read" })
           .eq("id", messageId);
       }
@@ -298,7 +298,7 @@ export const NotificationProvider = ({ children }) => {
 
       if (contactIds.length > 0) {
         await supabase
-          .from("contact")
+          .from("contact_messages")
           .update({ status: "read" })
           .in("id", contactIds);
       }

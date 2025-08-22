@@ -155,7 +155,7 @@ export default function AnalyticsOverview() {
           value: `GH₵${stats.total_revenue?.toLocaleString() || "0"}`,
           change: `${stats.revenue_growth || 0}%`,
           changeType: stats.revenue_growth >= 0 ? "positive" : "negative",
-          icon: <DollarSign className="w-6 h-6" />,
+          icon: <span className="w-6 h-6 flex items-center justify-center text-lg font-bold">₵</span>,
           color: "text-green-600",
           bgColor: "bg-green-100 dark:bg-green-900/30",
         },

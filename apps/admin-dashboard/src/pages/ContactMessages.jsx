@@ -72,7 +72,7 @@ Expert Office Furnish Ltd.
 
       // Fetch contact messages
       const { data, error } = await supabase
-        .from("contact")
+        .from("contact_messages")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -104,7 +104,7 @@ Expert Office Furnish Ltd.
   const updateMessageStatus = async (messageId, status) => {
     try {
       const { error } = await supabase
-        .from("contact")
+        .from("contact_messages")
         .update({ status, updated_at: new Date().toISOString() })
         .eq("id", messageId);
 
@@ -195,7 +195,7 @@ Expert Office Furnish Ltd.
 
     try {
       const { error } = await supabase
-        .from("contact")
+        .from("contact_messages")
         .delete()
         .eq("id", messageId);
 
@@ -573,6 +573,16 @@ Expert Office Furnish Ltd.
                     </label>
                     <p className="text-gray-900">{selectedMessage.email}</p>
                   </div>
+                  {selectedMessage.phone_numbers && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">
+                        Phone Number
+                      </label>
+                      <p className="text-gray-900">
+                        {selectedMessage.phone_numbers}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>

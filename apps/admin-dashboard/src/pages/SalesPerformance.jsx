@@ -360,7 +360,9 @@ export default function SalesPerformance() {
                     </div>
                   </div>
                   <div className="p-3 bg-blue-100 rounded-lg">
-                    <DollarSign className="w-6 h-6 text-blue-600" />
+                    <span className="w-6 h-6 text-blue-600 flex items-center justify-center text-lg font-bold">
+                      ₵
+                    </span>
                   </div>
                 </div>
               </div>

@@ -32,7 +32,7 @@ const InteriorDecor = () => {
 
   const projects = [
     {
-      title: "Pinnacle Office Complex",
+      title: "Accra Corporate Headquarters",
       img: Pinnacle,
       path: "https://photos.app.goo.gl/DuRGyy2zFmyqiCch6",
       description:
@@ -41,7 +41,7 @@ const InteriorDecor = () => {
       year: "2024",
     },
     {
-      title: "Calbank Financial Center",
+      title: "Financial Center - East Legon",
       img: Calbank,
       path: "https://photos.app.goo.gl/DmyHSgGh9hdYqbF39",
       description:
@@ -377,7 +377,7 @@ const InteriorDecor = () => {
                 <button className="group px-8 py-4 bg-gradient-to-r from-green-600 to-yellow-600 text-white rounded-2xl font-semibold hover:shadow-2xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden">
                   <span className="relative z-10 flex items-center">
                     <Sparkles className="w-5 h-5 mr-2" />
-                    Get Free Consultation
+                    24-Hour Consultation Offer
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-yellow-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </button>

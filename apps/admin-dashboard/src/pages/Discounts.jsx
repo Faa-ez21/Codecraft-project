@@ -193,7 +193,9 @@ export default function Discounts() {
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-lg">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-orange-100 rounded-lg">
-                <DollarSign className="w-6 h-6 text-orange-600" />
+                <span className="w-6 h-6 text-orange-600 flex items-center justify-center text-lg font-bold">
+                  ₵
+                </span>
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
@@ -353,7 +355,7 @@ export default function Discounts() {
                           {discount.discount_type === "percentage" ? (
                             <Percent className="w-4 h-4 text-purple-600" />
                           ) : (
-                            <DollarSign className="w-4 h-4 text-green-600" />
+                            <span className="w-4 h-4 text-green-600">₵</span>
                           )}
                           <span className="font-medium">
                             {discount.discount_type === "percentage"
@@ -442,7 +444,7 @@ export default function Discounts() {
                           }`}
                         />
                       ) : (
-                        <DollarSign className="w-5 h-5 text-green-600" />
+                        <span className="w-5 h-5 text-green-600">₵</span>
                       )}
                     </div>
                   </div>

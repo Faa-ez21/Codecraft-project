@@ -288,7 +288,9 @@ export default function TopProducts() {
                 </div>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
-                <DollarSign className="w-6 h-6 text-green-600" />
+                <span className="w-6 h-6 text-green-600 flex items-center justify-center text-lg font-bold">
+                  ₵
+                </span>
               </div>
             </div>
           </div>
@@ -393,7 +395,7 @@ export default function TopProducts() {
 
                       <div className="flex items-center gap-6 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
-                          <DollarSign className="w-4 h-4" />
+                          <span className="w-4 h-4">₵</span>
                           <span>
                             Revenue: GHS {item.revenue?.toLocaleString() || "0"}
                           </span>

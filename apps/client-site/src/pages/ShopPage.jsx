@@ -140,13 +140,6 @@ const ProductCard = ({ product, index }) => {
             </div>
           </div>
 
-          {/* Quality Badge */}
-          <div className="absolute top-4 right-4">
-            <span className="bg-gradient-to-r from-green-500 to-yellow-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-lg">
-              Premium Quality
-            </span>
-          </div>
-
           {/* Featured Badge */}
           {product.is_featured && (
             <div className="absolute top-4 left-4">

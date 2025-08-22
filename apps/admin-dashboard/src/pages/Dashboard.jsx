@@ -20,7 +20,6 @@ import {
   Star,
   AlertTriangle,
   TrendingUp,
-  DollarSign,
   Eye,
   Calendar,
   Filter,
@@ -333,7 +332,11 @@ export default function Dashboard() {
         <StatCard
           title="Total Revenue"
           value={`GH₵ ${totalRevenue.toLocaleString()}`}
-          icon={<DollarSign className="w-6 h-6" />}
+          icon={
+            <span className="w-6 h-6 flex items-center justify-center text-lg font-bold">
+              ₵
+            </span>
+          }
           color="green"
           change="+12.5%"
           changeType="increase"

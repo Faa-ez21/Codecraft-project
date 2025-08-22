@@ -545,7 +545,7 @@ export default function CartPage() {
                   <div className="flex items-center justify-center gap-6 mt-6 text-sm text-gray-500">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                      <span>Free Consultation</span>
+                      <span>24-Hour Consultation</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
