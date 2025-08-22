@@ -265,6 +265,8 @@ const ShopPage = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoadingLock, setIsLoadingLock] = useState(false); // Prevent race conditions
   const observer = useRef();
 
   const loadCategories = async () => {
@@ -443,7 +445,13 @@ const ShopPage = () => {
   };
 
   const loadProducts = async (reset = false) => {
-    // Prevent multiple simultaneous calls unless it's a reset
+    // Prevent multiple simultaneous calls with a lock mechanism
+    if (isLoadingLock && !reset) {
+      console.log("🔒 Load locked, skipping...");
+      return;
+    }
+
+    // Additional check for loading state
     if (isLoading && !reset) {
       console.log("⏳ Already loading products, skipping...");
       return;
@@ -456,6 +464,7 @@ const ShopPage = () => {
       categoriesLoaded: categories.length > 0,
     });
 
+    setIsLoadingLock(true);
     setIsLoading(true);
 
     try {
@@ -496,6 +505,10 @@ const ShopPage = () => {
           selectedCategory,
           matchedCategory,
           matchedSub,
+          availableCategories: categories.map((c) => ({
+            id: c.id,
+            name: c.name,
+          })),
         });
 
         if (matchedCategory) {
@@ -504,6 +517,10 @@ const ShopPage = () => {
         } else if (matchedSub) {
           query = query.eq("subcategory_id", matchedSub.id);
           console.log("✅ Filtering by subcategory_id:", matchedSub.id);
+        } else {
+          console.warn("⚠️ No matching category found for:", selectedCategory);
+          // If no category matches, show no products instead of all products
+          query = query.eq("category_id", "non-existent-id");
         }
       }
 
@@ -535,6 +552,29 @@ const ShopPage = () => {
       console.log("📦 Products loaded:", data?.length || 0);
       console.log("🔍 Sample product:", data?.[0]);
 
+      // Debug: Show all products and their categories
+      if (data && data.length > 0) {
+        console.log("📊 All loaded products with categories:");
+        data.forEach((product, index) => {
+          console.log(
+            `  ${index + 1}. "${product.name}" - category_id: ${
+              product.category_id
+            }, subcategory_id: ${product.subcategory_id}`
+          );
+        });
+
+        // Check for products with missing category associations
+        const productsWithoutCategory = data.filter(
+          (p) => !p.category_id && !p.subcategory_id
+        );
+        if (productsWithoutCategory.length > 0) {
+          console.warn(
+            "⚠️ Products without category associations:",
+            productsWithoutCategory.map((p) => p.name)
+          );
+        }
+      }
+
       // Filter out invalid products
       const validProducts = (data || []).filter((product) => {
         if (!product || !product.id || !product.name) {
@@ -544,16 +584,71 @@ const ShopPage = () => {
         return true;
       });
 
-      console.log("✅ Valid products after filtering:", validProducts.length);
+      console.log("✅ Valid products after validation:", validProducts.length);
+
+      // Additional client-side category filtering as backup
+      let finalProducts = validProducts;
+      if (selectedCategory !== "All") {
+        const matchedCategory = categories.find(
+          (c) => c.name === selectedCategory
+        );
+        const matchedSub = Object.values(subcategories)
+          .flat()
+          .find((s) => s.name === selectedCategory);
+
+        if (matchedCategory) {
+          finalProducts = validProducts.filter(
+            (product) => product.category_id === matchedCategory.id
+          );
+          console.log(
+            `🔍 Client-side filter by category "${selectedCategory}": ${finalProducts.length} products`
+          );
+        } else if (matchedSub) {
+          finalProducts = validProducts.filter(
+            (product) => product.subcategory_id === matchedSub.id
+          );
+          console.log(
+            `🔍 Client-side filter by subcategory "${selectedCategory}": ${finalProducts.length} products`
+          );
+        } else {
+          console.warn(
+            `⚠️ No category match found for "${selectedCategory}", showing no products`
+          );
+          finalProducts = [];
+        }
+      }
+
+      console.log(
+        "✅ Final products after category filtering:",
+        finalProducts.length
+      );
 
       if (reset) {
-        setProducts(validProducts);
+        console.log(
+          "🔄 Resetting products array with",
+          finalProducts.length,
+          "products"
+        );
+        setProducts(finalProducts);
         setPage(2);
       } else {
-        setProducts((prev) => [...prev, ...validProducts]);
+        console.log(
+          "➕ Appending",
+          finalProducts.length,
+          "products to existing array"
+        );
+        setProducts((prev) => [...prev, ...finalProducts]);
         setPage((prev) => prev + 1);
       }
       setHasMore((data || []).length === 12);
+      console.log(
+        "📊 Final state - Products:",
+        finalProducts.length,
+        "Page:",
+        reset ? 2 : page + 1,
+        "HasMore:",
+        (data || []).length === 12
+      );
     } catch (error) {
       console.error("❌ Error in loadProducts:", error);
 
@@ -594,6 +689,7 @@ const ShopPage = () => {
       // Add delay for smooth loading animation
       setTimeout(() => {
         setIsLoading(false);
+        setIsLoadingLock(false); // Release the lock
       }, 200);
     }
   };
@@ -661,6 +757,7 @@ const ShopPage = () => {
 
               await Promise.race([productsPromise, productsTimeoutPromise]);
               console.log("✅ Initial products loaded successfully");
+              setError(null); // Clear any previous errors
               return;
             } catch (error) {
               console.warn(`⚠️ Attempt ${i + 1} failed:`, error.message);
@@ -680,11 +777,15 @@ const ShopPage = () => {
             "❌ Failed to load initial products after retries:",
             error
           );
-          // Set empty products array to show "no products" message
+          // Set error state and empty products array
+          setError(
+            "Failed to load products. Please check your connection and try again."
+          );
           setProducts([]);
         }
       } catch (error) {
         console.error("❌ Critical error during initialization:", error);
+        setError("Failed to initialize shop. Please refresh the page.");
         setProducts([]);
       } finally {
         setInitialLoadComplete(true);
@@ -788,14 +889,15 @@ const ShopPage = () => {
       searchTerm,
     });
 
-    // Reset page to 1 when filters change
+    // Reset page and hasMore state immediately
     setPage(1);
     setHasMore(true);
+    setIsLoadingLock(false); // Clear any existing locks
 
     // Add a small delay to debounce rapid filter changes
     const timeoutId = setTimeout(() => {
-      loadProducts(true);
-    }, 200);
+      loadProducts(true); // Always reset when filters change
+    }, 300); // Increased debounce time
 
     return () => clearTimeout(timeoutId);
   }, [selectedCategory, filters.material, filters.color, searchTerm]);
