@@ -1,0 +1,16 @@
+# Ignore node_modules and environment files
+node_modules/
+.env
+frontend/.env
+backend/.env
+
+# Ignore frontend build output
+frontend/build/
+
+# Environment variables
+.env
+.env.bak
+
+# Certificates
+backend/cert/
+backend/certs/
