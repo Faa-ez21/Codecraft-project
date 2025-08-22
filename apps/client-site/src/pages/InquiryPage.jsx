@@ -166,6 +166,7 @@ export default function ProductInquiry() {
           name: form.name.trim(),
           email: form.email.trim(),
           contact: form.email.trim(),
+          phone: form.phone.trim() || null,
           message: form.message.trim(),
         };
 
@@ -528,6 +529,24 @@ export default function ProductInquiry() {
                     </div>
                   </div>
 
+                  {/* Phone number field for product inquiries */}
+                  {!fromService && (
+                    <div>
+                      <label className="flex items-center text-sm font-semibold text-gray-700 mb-3">
+                        <Phone className="w-4 h-4 mr-2 text-green-600" />
+                        Phone Number (Optional)
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={form.phone}
+                        onChange={handleChange}
+                        className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-green-400 focus:outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white"
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
+                  )}
+
                   {/* Additional fields for service inquiries */}
                   {fromService && serviceName && (
                     <div className="grid md:grid-cols-2 gap-6">
@@ -575,8 +594,12 @@ export default function ProductInquiry() {
                           <option value="">Select budget range</option>
                           <option value="under_1000">Under GH₵1,000</option>
                           <option value="1000_5000">GH₵1,000 - GH₵5,000</option>
-                          <option value="5000_10000">GH₵5,000 - GH₵10,000</option>
-                          <option value="10000_25000">GH₵10,000 - GH₵25,000</option>
+                          <option value="5000_10000">
+                            GH₵5,000 - GH₵10,000
+                          </option>
+                          <option value="10000_25000">
+                            GH₵10,000 - GH₵25,000
+                          </option>
                           <option value="above_25000">Above GH₵25,000</option>
                         </select>
                       </div>

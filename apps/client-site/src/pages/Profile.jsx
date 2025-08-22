@@ -98,16 +98,21 @@ export default function Profile() {
         // Record not found, create it
         if (isAdmin) {
           // Create admin record
-          const { error: insertError } = await supabase.from("users").insert({
-            id: user.id,
-            name: user.name || user.email?.split("@")[0] || "",
-            email: user.email,
-            role: user.role || "admin",
-            status: "active",
-            created_at: new Date().toISOString(),
-            last_active: new Date().toISOString(),
-            permissions: {},
-          });
+          const { error: insertError } = await supabase.from("users").upsert(
+            {
+              id: user.id,
+              name: user.name || user.email?.split("@")[0] || "",
+              email: user.email,
+              role: user.role || "admin",
+              status: "active",
+              created_at: new Date().toISOString(),
+              last_active: new Date().toISOString(),
+              permissions: {},
+            },
+            {
+              onConflict: "id",
+            }
+          );
 
           if (!insertError) {
             setProfile({
@@ -123,15 +128,20 @@ export default function Profile() {
           // Create customer record
           const { error: insertError } = await supabase
             .from("customers")
-            .insert({
-              id: user.id,
-              name: user.name || user.email?.split("@")[0] || "",
-              email: user.email,
-              phone: "",
-              location: "",
-              orders: 0,
-              spent: 0,
-            });
+            .upsert(
+              {
+                id: user.id,
+                name: user.name || user.email?.split("@")[0] || "",
+                email: user.email,
+                phone: "",
+                location: "",
+                orders: 0,
+                spent: 0,
+              },
+              {
+                onConflict: "id",
+              }
+            );
 
           if (!insertError) {
             setProfile({

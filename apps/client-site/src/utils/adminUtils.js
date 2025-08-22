@@ -101,17 +101,22 @@ export const deleteAdmin = async (adminId) => {
  */
 export const createMissingCustomerRecord = async (user) => {
   try {
-    const { error } = await supabase.from("customers").insert([
+    const { error } = await supabase.from("customers").upsert(
+      [
+        {
+          id: user.id,
+          name: user.user_metadata?.name || user.email.split("@")[0],
+          email: user.email,
+          phone: "",
+          location: "",
+          orders: 0,
+          spent: 0,
+        },
+      ],
       {
-        id: user.id,
-        name: user.user_metadata?.name || user.email.split("@")[0],
-        email: user.email,
-        phone: "",
-        location: "",
-        orders: 0,
-        spent: 0,
-      },
-    ]);
+        onConflict: "id",
+      }
+    );
 
     if (error) {
       console.error("Error creating missing customer record:", error);

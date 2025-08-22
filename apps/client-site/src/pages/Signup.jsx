@@ -111,10 +111,9 @@ export default function SignupPage() {
 
     try {
       if (form.adminCode === ADMIN_CODE) {
-        // Admin signup
-        const { error: adminInsertError } = await supabase
-          .from("users")
-          .insert([
+        // Admin signup - use upsert to handle potential duplicates
+        const { error: adminInsertError } = await supabase.from("users").upsert(
+          [
             {
               id: userId,
               name: form.name,
@@ -125,7 +124,11 @@ export default function SignupPage() {
               last_active: new Date().toISOString(),
               permissions: {},
             },
-          ]);
+          ],
+          {
+            onConflict: "id",
+          }
+        );
 
         if (adminInsertError) {
           console.error(
@@ -137,20 +140,25 @@ export default function SignupPage() {
           return;
         }
       } else {
-        // Customer signup
+        // Customer signup - use upsert to handle potential duplicates
         const { error: customerInsertError } = await supabase
           .from("customers")
-          .insert([
+          .upsert(
+            [
+              {
+                id: userId,
+                name: form.name,
+                email: form.email,
+                phone: "",
+                location: "",
+                orders: 0,
+                spent: 0,
+              },
+            ],
             {
-              id: userId,
-              name: form.name,
-              email: form.email,
-              phone: "",
-              location: "",
-              orders: 0,
-              spent: 0,
-            },
-          ]);
+              onConflict: "id",
+            }
+          );
 
         if (customerInsertError) {
           console.error(

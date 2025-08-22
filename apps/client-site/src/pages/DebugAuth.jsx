@@ -86,17 +86,22 @@ export default function DebugAuth() {
 
         // Test database insertion
         if (data.user?.id) {
-          const { error: dbError } = await supabase.from("customers").insert([
+          const { error: dbError } = await supabase.from("customers").upsert(
+            [
+              {
+                id: data.user.id,
+                name: "Test User",
+                email: testEmail,
+                phone: "",
+                location: "",
+                orders: 0,
+                spent: 0,
+              },
+            ],
             {
-              id: data.user.id,
-              name: "Test User",
-              email: testEmail,
-              phone: "",
-              location: "",
-              orders: 0,
-              spent: 0,
-            },
-          ]);
+              onConflict: "id",
+            }
+          );
 
           if (dbError) {
             addResult(`Database insert error: ${dbError.message}`, "error");

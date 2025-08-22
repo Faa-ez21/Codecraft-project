@@ -73,17 +73,22 @@ export default function SimpleAuth() {
 
         if (data.user) {
           // Try to create customer record
-          const { error: dbError } = await supabase.from("customers").insert([
+          const { error: dbError } = await supabase.from("customers").upsert(
+            [
+              {
+                id: data.user.id,
+                name: name,
+                email: email,
+                phone: "",
+                location: "",
+                orders: 0,
+                spent: 0,
+              },
+            ],
             {
-              id: data.user.id,
-              name: name,
-              email: email,
-              phone: "",
-              location: "",
-              orders: 0,
-              spent: 0,
-            },
-          ]);
+              onConflict: "id",
+            }
+          );
 
           if (dbError) {
             console.error("Database insert error:", dbError);

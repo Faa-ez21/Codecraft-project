@@ -66,18 +66,23 @@ export function AuthProvider({ children }) {
       // If neither exists, this is a new user - create customer profile
       // The database trigger should handle this, but as fallback:
       if (!customerData && !adminData) {
-        const { error: insertError } = await supabase.from("customers").insert({
-          id: sessionUser.id,
-          name:
-            sessionUser.user_metadata?.name ||
-            sessionUser.email?.split("@")[0] ||
-            "Customer",
-          email: sessionUser.email,
-          phone: null,
-          location: null,
-          orders: 0,
-          spent: 0,
-        });
+        const { error: insertError } = await supabase.from("customers").upsert(
+          {
+            id: sessionUser.id,
+            name:
+              sessionUser.user_metadata?.name ||
+              sessionUser.email?.split("@")[0] ||
+              "Customer",
+            email: sessionUser.email,
+            phone: null,
+            location: null,
+            orders: 0,
+            spent: 0,
+          },
+          {
+            onConflict: "id",
+          }
+        );
 
         if (!insertError) {
           setUser((prev) => ({
