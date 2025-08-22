@@ -420,6 +420,28 @@ const ShopPage = () => {
     }
   };
 
+  // Test Supabase connection before attempting to load products
+  const testConnection = async () => {
+    try {
+      console.log("🔌 Testing Supabase connection...");
+      const { data, error } = await supabase
+        .from("products")
+        .select("id")
+        .limit(1);
+
+      if (error) {
+        console.error("❌ Connection test failed:", error);
+        return false;
+      }
+
+      console.log("✅ Connection test successful");
+      return true;
+    } catch (error) {
+      console.error("❌ Connection test error:", error);
+      return false;
+    }
+  };
+
   const loadProducts = async (reset = false) => {
     // Prevent multiple simultaneous calls unless it's a reset
     if (isLoading && !reset) {
@@ -437,11 +459,27 @@ const ShopPage = () => {
     setIsLoading(true);
 
     try {
-      let query = supabase.from("products").select(`
+      // Simplified query for better performance - only join categories/subcategories when needed
+      let query;
+      if (
+        selectedCategory === "All" &&
+        !filters.material &&
+        !filters.color &&
+        !searchTerm.trim()
+      ) {
+        // Fast query for initial load - just get products without joins
+        query = supabase.from("products").select(`
+          id, name, price, image_url, category_id, subcategory_id, 
+          stock_quantity, created_at, status, description
+        `);
+      } else {
+        // Full query with joins only when filtering is needed
+        query = supabase.from("products").select(`
           *,
           categories(id, name),
           subcategories(id, name)
         `);
+      }
 
       // Add status filter to only show active products
       query = query.eq("status", "active");
@@ -518,6 +556,40 @@ const ShopPage = () => {
       setHasMore((data || []).length === 12);
     } catch (error) {
       console.error("❌ Error in loadProducts:", error);
+
+      // If this is an initial load and it failed, try a simpler fallback query
+      if (reset && selectedCategory === "All") {
+        try {
+          console.log("🔄 Attempting fallback query...");
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from("products")
+            .select(
+              "id, name, price, image_url, description, stock_quantity, created_at"
+            )
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(12);
+
+          if (!fallbackError && fallbackData) {
+            console.log(
+              "✅ Fallback query successful:",
+              fallbackData.length,
+              "products"
+            );
+            setProducts(fallbackData);
+            setPage(2);
+            setHasMore(fallbackData.length === 12);
+            return;
+          }
+        } catch (fallbackErr) {
+          console.error("❌ Fallback query also failed:", fallbackErr);
+        }
+      }
+
+      // If all queries failed, set empty array
+      if (reset) {
+        setProducts([]);
+      }
     } finally {
       // Add delay for smooth loading animation
       setTimeout(() => {
@@ -546,6 +618,16 @@ const ShopPage = () => {
       setInitialLoadComplete(false);
 
       try {
+        // Test connection first
+        const connectionOk = await testConnection();
+        if (!connectionOk) {
+          console.error(
+            "❌ Database connection failed, showing offline message"
+          );
+          setProducts([]);
+          return;
+        }
+
         // Load categories and filter options with timeout
         const initPromise = Promise.all([
           loadCategories(),
@@ -564,17 +646,40 @@ const ShopPage = () => {
         }
 
         console.log("🏪 Loading initial products...");
-        // Load products with timeout protection
-        const productsPromise = loadProducts(true);
-        const productsTimeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Products loading timeout")), 15000)
-        );
+        // Load products with timeout protection and retry logic
+        const loadProductsWithRetry = async (retries = 2) => {
+          for (let i = 0; i <= retries; i++) {
+            try {
+              const productsPromise = loadProducts(true);
+              const productsTimeoutPromise = new Promise(
+                (_, reject) =>
+                  setTimeout(
+                    () => reject(new Error("Products loading timeout")),
+                    10000
+                  ) // Reduced to 10 seconds
+              );
+
+              await Promise.race([productsPromise, productsTimeoutPromise]);
+              console.log("✅ Initial products loaded successfully");
+              return;
+            } catch (error) {
+              console.warn(`⚠️ Attempt ${i + 1} failed:`, error.message);
+              if (i === retries) {
+                throw error;
+              }
+              // Wait 1 second before retry
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+          }
+        };
 
         try {
-          await Promise.race([productsPromise, productsTimeoutPromise]);
-          console.log("✅ Initial products loaded successfully");
+          await loadProductsWithRetry();
         } catch (error) {
-          console.error("❌ Failed to load initial products:", error);
+          console.error(
+            "❌ Failed to load initial products after retries:",
+            error
+          );
           // Set empty products array to show "no products" message
           setProducts([]);
         }
@@ -1088,25 +1193,38 @@ const ShopPage = () => {
                       )}
                     </div>
                     <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                      {initialLoadComplete
+                      {error
+                        ? "Connection Error"
+                        : initialLoadComplete
                         ? "No Products Found"
                         : "Loading Products..."}
                     </h3>
                     <p className="text-gray-600 mb-6">
-                      {initialLoadComplete
+                      {error
+                        ? "We're having trouble connecting to our database. Please try refreshing the page or check your internet connection."
+                        : initialLoadComplete
                         ? "We couldn't find any products matching your criteria. Try adjusting your filters or search terms."
                         : "Please wait while we load the latest products for you."}
                     </p>
-                    {initialLoadComplete && (
+                    {(initialLoadComplete || error) && (
                       <button
                         onClick={() => {
-                          setSearchTerm("");
-                          setSelectedCategory("All");
-                          setFilters({ material: "", color: "" });
+                          if (error) {
+                            // If there's an error, retry loading products
+                            setError(null);
+                            setLoading(true);
+                            setInitialLoadComplete(false);
+                            loadProducts();
+                          } else {
+                            // If no error, just clear filters
+                            setSearchTerm("");
+                            setSelectedCategory("All");
+                            setFilters({ material: "", color: "" });
+                          }
                         }}
                         className="bg-gradient-to-r from-green-500 to-yellow-500 hover:from-green-600 hover:to-yellow-600 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
                       >
-                        Clear All Filters
+                        {error ? "Retry Loading" : "Clear All Filters"}
                       </button>
                     )}
                   </div>
