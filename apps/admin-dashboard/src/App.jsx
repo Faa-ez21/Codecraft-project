@@ -1,0 +1,184 @@
+// src/App.jsx
+import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import { supabase } from "./lib/supabaseClient";
+
+// Context
+import { NotificationProvider } from "./context/NotificationContext";
+
+// Layout
+import AdminLayout from "./layouts/AdminLayout";
+
+// Dashboard
+import Dashboard from "./pages/Dashboard";
+
+// Products
+import Products from "./pages/Products";
+import ProductList from "./pages/ProductList";
+import AddProduct from "./pages/AddProduct";
+import EditProduct from "./pages/EditProduct";
+
+// Inquiries
+import Inquiries from "./pages/Inquiries";
+import ServiceInquiries from "./pages/ServiceInquiries";
+import ContactMessages from "./pages/ContactMessages";
+
+// Notifications
+import Notifications from "./pages/Notifications";
+
+// Newsletter
+import Newsletter from "./pages/Newsletter";
+
+// Customers
+import Customers from "./pages/Customers";
+import CustomerDetails from "./pages/CustomerDetails";
+
+// Categories & Content
+import Categories from "./pages/Categories";
+import ContentManagement from "./pages/ContentManagement";
+import BlogPostList from "./pages/BlogPostList";
+import CreateBlogPost from "./pages/CreateBlogpost";
+import EditBlogPost from "./pages/EditBlogPost";
+import HomePageBanners from "./pages/HomepageBanners";
+import UploadImages from "./pages/UploadImages"; // ✅ Added
+
+// Discounts
+import Discounts from "./pages/Discounts";
+import CreateDiscount from "./pages/CreateDiscount";
+import EditDiscount from "./pages/EditDiscount";
+
+// Analytics
+import AnalyticsOverview from "./pages/AnalyticsOverview";
+import SalesPerformance from "./pages/SalesPerformance";
+import TopProducts from "./pages/TopProducts";
+import UserBehavior from "./pages/UserBehavior";
+
+// User Management
+import Users from "./pages/Users";
+import AddUser from "./pages/AddUser";
+import EditUser from "./pages/EditUser";
+
+// Admin Roles
+import AdminRoles from "./pages/Adminroles";
+import AddRole from "./pages/AddRole";
+import EditAdminRole from "./pages/EditAdminRole";
+
+// Profile
+import AdminProfile from "./pages/AdminProfile";
+
+export default function App() {
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => setDarkMode(!darkMode);
+
+  // Auto-login from URL params when redirected from client site
+  useEffect(() => {
+    const handleAutoLogin = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const accessToken = urlParams.get("access_token");
+      const refreshToken = urlParams.get("refresh_token");
+      const type = urlParams.get("type");
+
+      if (accessToken && refreshToken && type === "admin_login") {
+        console.log("Auto-login detected, setting session...");
+
+        try {
+          // Set the session in admin dashboard
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (error) {
+            console.error("Error setting admin session:", error);
+          } else {
+            console.log("Admin session set successfully:", data);
+
+            // Clean up URL parameters
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+        } catch (err) {
+          console.error("Auto-login error:", err);
+        }
+      }
+    };
+
+    handleAutoLogin();
+  }, []);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
+  return (
+    <NotificationProvider>
+      <div
+        className={
+          darkMode ? "dark bg-gray-900 text-gray-100" : "bg-white text-gray-900"
+        }
+      >
+        <AdminLayout toggleDarkMode={toggleDarkMode} darkMode={darkMode}>
+          <Routes>
+            {/* Dashboard */}
+            <Route path="/" element={<Dashboard />} />
+            {/* Products */}
+            <Route path="/products" element={<Products />} />
+            <Route path="/product-list" element={<ProductList />} />
+            <Route path="/add-product" element={<AddProduct />} />
+            <Route path="/edit-product/:id" element={<EditProduct />} />
+            {/* Inquiries */}
+            <Route path="/inquiries" element={<Inquiries />} />
+            <Route path="/service-inquiries" element={<ServiceInquiries />} />
+            <Route path="/contact-messages" element={<ContactMessages />} />
+            {/* Notifications */}
+            <Route path="/notifications" element={<Notifications />} />
+            {/* Newsletter */}
+            <Route path="/newsletter" element={<Newsletter />} />
+            {/* Customers */}
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/customers/:id" element={<CustomerDetails />} />
+            {/* Categories & Content */}
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/content" element={<ContentManagement />} />
+            <Route path="/content/blogs" element={<BlogPostList />} />
+            <Route path="/content/blogs/create" element={<CreateBlogPost />} />
+            <Route path="/content/blogs/edit/:id" element={<EditBlogPost />} />
+            <Route path="/content/banners" element={<HomePageBanners />} />
+            <Route
+              path="/content/media-upload"
+              element={<UploadImages />}
+            />{" "}
+            {/* ✅ Added */}
+            {/* Analytics */}
+            <Route path="/analytics" element={<AnalyticsOverview />} />
+            <Route
+              path="/analytics/sales-performance"
+              element={<SalesPerformance />}
+            />
+            <Route path="/analytics/top-products" element={<TopProducts />} />
+            <Route path="/analytics/user-behavior" element={<UserBehavior />} />
+            {/* Discounts */}
+            <Route path="/discounts" element={<Discounts />} />
+            <Route path="/discounts/create" element={<CreateDiscount />} />
+            <Route path="/discounts/edit/:id" element={<EditDiscount />} />
+            {/* User Management */}
+            <Route path="/users" element={<Users />} />
+            <Route path="/add-user" element={<AddUser />} />
+            <Route path="/edit-user/:id" element={<EditUser />} />
+            {/* Admin Roles */}
+            <Route path="/admin-roles" element={<AdminRoles />} />
+            <Route path="/add-role" element={<AddRole />} />
+            <Route path="/edit-role/:id" element={<EditAdminRole />} />
+            {/* Profile */}
+            <Route path="/profile" element={<AdminProfile />} />
+          </Routes>
+        </AdminLayout>
+      </div>
+    </NotificationProvider>
+  );
+}

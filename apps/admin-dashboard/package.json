@@ -1,0 +1,37 @@
+{
+  "name": "dashboard-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "postinstall": "npm rebuild sharp",
+    "preview": "vite preview",
+    "optimize-images": "node vite-plugin-sharp.js"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.2.6",
+    "@supabase/supabase-js": "^2.53.0",
+    "browser-image-compression": "^2.0.2",
+    "chart.js": "^4.5.0",
+    "dayjs": "^1.11.13",
+    "lucide-react": "^0.263.1",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "react-select": "^5.10.2",
+    "react-toastify": "^11.0.5",
+    "sharp": "^0.34.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "@vitejs/plugin-react-swc": "^3.11.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.4",
+    "vite": "^4.5.14"
+  }
+}
