@@ -38,40 +38,66 @@ export default function Customers() {
   const fetchCustomers = async () => {
     setLoading(true);
     try {
-      // Temporarily use a simple query to avoid policy issues
+      // Try to fetch from customers table with better error handling
       const { data, error } = await supabase
         .from("customers")
-        .select("*")
+        .select(
+          `
+          id,
+          name,
+          email,
+          phone,
+          location,
+          orders,
+          spent,
+          created_at,
+          updated_at
+        `
+        )
+        .order("created_at", { ascending: false })
         .limit(100);
 
       if (error) {
         console.error("Error fetching customers:", error);
-        // Create some sample data for now if database fails
-        const sampleCustomers = [
-          {
-            id: "1",
-            name: "John Doe",
-            email: "john.doe@email.com",
-            phone: "+233 20 123 4567",
-            location: "Accra, Ghana",
-            orders: 3,
-            spent: 2500.0,
-            created_at: new Date().toISOString(),
-            status: "active",
-          },
-          {
-            id: "2",
-            name: "Jane Smith",
-            email: "jane.smith@email.com",
-            phone: "+233 24 789 0123",
-            location: "Kumasi, Ghana",
-            orders: 1,
-            spent: 850.0,
-            created_at: new Date().toISOString(),
-            status: "active",
-          },
-        ];
-        setCustomers(sampleCustomers);
+
+        // Check if it's a network/CORS error vs a database error
+        if (
+          error.message?.includes("NetworkError") ||
+          error.message?.includes("CORS")
+        ) {
+          console.log(
+            "Network/CORS issue detected, using sample data for development"
+          );
+          // Use sample data for CORS/network issues
+          const sampleCustomers = [
+            {
+              id: "1",
+              name: "John Doe",
+              email: "john.doe@email.com",
+              phone: "+233 20 123 4567",
+              location: "Accra, Ghana",
+              orders: 3,
+              spent: 2500.0,
+              created_at: new Date().toISOString(),
+              status: "active",
+            },
+            {
+              id: "2",
+              name: "Jane Smith",
+              email: "jane.smith@email.com",
+              phone: "+233 24 789 0123",
+              location: "Kumasi, Ghana",
+              orders: 1,
+              spent: 850.0,
+              created_at: new Date().toISOString(),
+              status: "active",
+            },
+          ];
+          setCustomers(sampleCustomers);
+        } else {
+          // For other errors, set empty array
+          setCustomers([]);
+        }
       } else {
         // Transform data to ensure all required fields exist
         const transformedCustomers = (data || []).map((customer) => ({
@@ -84,10 +110,36 @@ export default function Customers() {
           status: "active",
         }));
         setCustomers(transformedCustomers);
+        console.log(
+          `Successfully loaded ${transformedCustomers.length} customers from database`
+        );
       }
     } catch (error) {
       console.error("Unexpected error fetching customers:", error);
-      setCustomers([]);
+
+      // Check if it's a network error
+      if (
+        error.message?.includes("NetworkError") ||
+        error.message?.includes("fetch")
+      ) {
+        console.log("Network error detected, using sample data");
+        const sampleCustomers = [
+          {
+            id: "1",
+            name: "John Doe",
+            email: "john.doe@email.com",
+            phone: "+233 20 123 4567",
+            location: "Accra, Ghana",
+            orders: 3,
+            spent: 2500.0,
+            created_at: new Date().toISOString(),
+            status: "active",
+          },
+        ];
+        setCustomers(sampleCustomers);
+      } else {
+        setCustomers([]);
+      }
     }
     setLoading(false);
   };

@@ -293,7 +293,7 @@ export default function CustomerDetails() {
                 {
                   title: "Total Spent",
                   value: `₵${stats.totalSpent.toFixed(2)}`,
-                  icon: (
+                  icon: () => (
                     <span className="w-6 h-6 flex items-center justify-center text-lg font-bold">
                       ₵
                     </span>
@@ -324,7 +324,11 @@ export default function CustomerDetails() {
                     <div
                       className={`p-2 rounded-xl bg-gradient-to-r ${stat.color} text-white shadow-lg`}
                     >
-                      <stat.icon className="w-5 h-5" />
+                      {typeof stat.icon === "function" ? (
+                        <stat.icon />
+                      ) : (
+                        <stat.icon className="w-5 h-5" />
+                      )}
                     </div>
                   </div>
                   <div>

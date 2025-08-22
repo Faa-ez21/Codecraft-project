@@ -134,7 +134,7 @@ export default function Homepage() {
             setTimeout(() => reject(new Error(`${name} timeout`)), timeoutMs)
           );
 
-        // Fetch products and blogs in parallel with timeout protection
+        // Fetch products and blogs in parallel with reasonable timeout
         const [productsResult, blogsResult] = await Promise.all([
           cachedProducts
             ? Promise.resolve({ data: cachedProducts, error: null })
@@ -146,8 +146,8 @@ export default function Homepage() {
                   )
                   .eq("status", "active")
                   .limit(4),
-                createTimeoutPromise("Products", 8000),
-              ]),
+                createTimeoutPromise("Products", 15000), // Increased timeout to 15 seconds
+              ]).catch((error) => ({ data: null, error })),
           cachedBlogs
             ? Promise.resolve({ data: cachedBlogs, error: null })
             : Promise.race([
@@ -157,8 +157,8 @@ export default function Homepage() {
                   .eq("status", "Published")
                   .order("created_at", { ascending: false })
                   .limit(3),
-                createTimeoutPromise("Blogs", 8000),
-              ]),
+                createTimeoutPromise("Blogs", 15000), // Increased timeout to 15 seconds
+              ]).catch((error) => ({ data: null, error })),
         ]);
 
         // Handle products with better error recovery
