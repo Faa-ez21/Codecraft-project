@@ -23,7 +23,7 @@ import NewsletterToast from "../components/NewsletterToast";
 
 import heroImage from "../assets/chairs1.jpg";
 import VisionMission from "../assets/Vision-Mission.jpg";
-import BgVision from "../assets/Bg-vision.jpg";
+import BgVision from "../assets/Bg-Vision.jpg";
 import productsBackground from "../assets/ExpertOffice.jpg";
 import Header from "../components/header";
 import Footer from "../components/footer";
