@@ -48,7 +48,7 @@ import {
   globalLoadingManager,
 } from "../utils/loadingUtils";
 import Sofa from "../assets/sofa.png";
-import Cabinet from "../assets/cabinet.jpg";
+import Cabinet from "../assets/Cabinet.jpg";
 
 const ProductCard = ({ product, index }) => {
   const { addToCart } = useCart();
