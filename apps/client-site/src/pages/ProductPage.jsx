@@ -42,6 +42,8 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
+  console.log("🔍 ProductPage rendered with ID:", id);
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -158,7 +160,7 @@ const ProductPage = () => {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      console.log("Fetching product with ID:", id, "Type:", typeof id);
+      console.log("🔍 Fetching product with ID:", id, "Type:", typeof id);
 
       // Check cache first for instant loading
       const cacheKey = CACHE_KEYS.PRODUCT(id);
@@ -174,7 +176,7 @@ const ProductPage = () => {
         return;
       }
 
-      // Optimized query with only essential fields for faster loading
+      // Optimized query with only existing fields
       const { data, error } = await supabase
         .from("products")
         .select(
@@ -184,18 +186,21 @@ const ProductPage = () => {
           description,
           price,
           image_url,
-          additional_images,
           category_id,
-          specifications,
-          tags,
+          subcategory_id,
           stock_quantity,
-          discount_price
+          status,
+          created_at
         `
         )
         .eq("id", id)
         .single();
 
       console.log("Supabase response:", { data, error });
+
+      if (error) {
+        console.error("❌ Database error:", error);
+      }
 
       if (error || !data) {
         // If not found with string ID, try with integer ID
@@ -208,12 +213,11 @@ const ProductPage = () => {
             description,
             price,
             image_url,
-            additional_images,
             category_id,
-            specifications,
-            tags,
+            subcategory_id,
             stock_quantity,
-            discount_price
+            status,
+            created_at
           `
           )
           .eq("id", parseInt(id))
@@ -226,6 +230,11 @@ const ProductPage = () => {
             .select("id, name")
             .limit(5);
           console.log("Available products:", allProducts);
+          console.log("❌ Product ID not found:", id);
+          console.log(
+            "📋 Available product IDs:",
+            allProducts?.map((p) => p.id)
+          );
           throw new Error("Product not found");
         }
 

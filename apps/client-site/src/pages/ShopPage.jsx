@@ -557,9 +557,11 @@ const ShopPage = () => {
         console.log("📊 All loaded products with categories:");
         data.forEach((product, index) => {
           console.log(
-            `  ${index + 1}. "${product.name}" - category_id: ${
-              product.category_id
-            }, subcategory_id: ${product.subcategory_id}`
+            `  ${index + 1}. "${product.name}" - ID: ${
+              product.id
+            } - category_id: ${product.category_id}, subcategory_id: ${
+              product.subcategory_id
+            }`
           );
         });
 
